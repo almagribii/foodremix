@@ -21,6 +21,21 @@ export default function DashboardLayout({
     }
   }, [loading, isAuthenticated, router]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   if (loading || !isAuthenticated) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-[#F5F5F3]">
@@ -44,15 +59,22 @@ export default function DashboardLayout({
         userNickname={nickname}
       />
 
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm lg:hidden cursor-pointer"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       <div
         className={`transition-all duration-300 ease-in-out pt-20 ${
           isSidebarOpen ? "lg:pl-64" : "lg:pl-20"
         }`}
       >
-\        <Header
+        <Header
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           isSidebarOpen={isSidebarOpen}
-        />{" "}
+        />
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
