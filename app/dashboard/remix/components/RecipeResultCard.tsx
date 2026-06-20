@@ -1,6 +1,6 @@
 "use client";
 
-interface RecipeData {
+export interface RecipeData {
   recipeName: string;
   ingredientsUsed: string[];
   instructions: string[];
@@ -9,7 +9,7 @@ interface RecipeData {
 }
 
 interface RecipeResultCardProps {
-  recipe: RecipeData | null;
+  recipe: RecipeData;
   onOpenShareModal: () => void;
 }
 
@@ -17,82 +17,71 @@ export default function RecipeResultCard({
   recipe,
   onOpenShareModal,
 }: RecipeResultCardProps) {
-  if (!recipe) {
-    return (
-      <div className="bg-zinc-50 border border-dashed border-zinc-200 rounded-3xl p-12 text-center text-xs text-zinc-400 font-medium flex flex-col items-center justify-center h-full min-h-[300px]">
-        <svg
-          className="h-8 w-8 text-zinc-300 mb-2"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={1.5}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-          />
-        </svg>
-        Belum ada racikan menu gizi aktif. Masukkan kombinasi bahan baku Anda di
-        panel sebelah kiri.
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-white border border-zinc-200/80 rounded-3xl p-6 shadow-sm space-y-6">
-      {/* Header Resep */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-zinc-100 pb-4">
-        <div className="space-y-1">
-          <span className="text-[9px] font-black tracking-widest uppercase bg-emerald-50 border border-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header Info */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-zinc-100 pb-5">
+        <div className="space-y-1.5">
+          <span className="text-[9px] font-black tracking-widest uppercase bg-[#EAB308]/10 border border-[#EAB308]/20 text-[#7A5E05] px-2.5 py-0.5 rounded-md inline-block">
             Gemini AI Optimization
           </span>
-          <h2 className="text-xl font-black text-zinc-800 tracking-tight">
+          <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight">
             {recipe.recipeName}
           </h2>
         </div>
         <button
+          type="button"
           onClick={onOpenShareModal}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-sky-50 border border-sky-100 text-sky-800 hover:bg-sky-100 transition text-xs font-bold rounded-xl shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#1A1A1A] hover:bg-zinc-800 text-white transition text-[10px] font-black uppercase tracking-widest rounded-xl shrink-0 shadow-sm"
         >
-          🤝 Bagi / Patungan Bahan
+          🤝 Patungan Bahan
         </button>
       </div>
 
-      {/* Metrik SDGs */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-3 bg-zinc-50/60 border border-zinc-100 rounded-2xl">
-          <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">
+      {/* Grid Penghitung Target SDGs */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="p-4 bg-[#F5F5F3] border border-zinc-200/60 rounded-xl">
+          <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block mb-0.5">
             Estimasi Uang Dihemat
           </span>
-          <span className="text-sm font-black text-zinc-800">
-            Rp {recipe.moneySaved.toLocaleString("id-ID")}
+          <span className="text-base font-black text-[#1A1A1A]">
+            Rp{" "}
+            {recipe.moneySaved
+              ? recipe.moneySaved.toLocaleString("id-ID")
+              : "0"}
           </span>
         </div>
-        <div className="p-3 bg-zinc-50/60 border border-zinc-100 rounded-2xl">
-          <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">
+        <div className="p-4 bg-[#F5F5F3] border border-zinc-200/60 rounded-xl">
+          <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block mb-0.5">
             Emisi Karbon Dicegah
           </span>
-          <span className="text-sm font-black text-emerald-600">
-            {recipe.carbonPrevented} Kg CO₂
+          <span className="text-base font-black text-emerald-600">
+            {recipe.carbonPrevented || 0} Kg CO₂
           </span>
         </div>
       </div>
 
-      {/* Detail Langkah */}
-      <div className="space-y-3">
-        <div>
-          <h4 className="text-xs font-black uppercase tracking-wider text-zinc-400">
-            Langkah Pengolahan Kreatif
-          </h4>
-        </div>
-        <ol className="space-y-2.5 list-decimal pl-4 text-xs text-zinc-600 leading-relaxed font-medium">
-          {recipe.instructions.map((step, idx) => (
-            <li key={idx} className="pl-1">
-              {step}
-            </li>
-          ))}
-        </ol>
+      {/* Langkah Resep */}
+      <div className="space-y-3 pt-2">
+        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+          Langkah Pengolahan Kreatif
+        </h4>
+        {recipe.instructions && recipe.instructions.length > 0 ? (
+          <ol className="space-y-3 list-decimal pl-4 text-xs text-zinc-600 leading-relaxed font-medium">
+            {recipe.instructions.map((step, idx) => (
+              <li
+                key={idx}
+                className="pl-1 marker:font-bold marker:text-zinc-400"
+              >
+                {step}
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="text-xs text-zinc-400 font-medium italic">
+            Tidak ada detail langkah instruksi untuk resep ini.
+          </p>
+        )}
       </div>
     </div>
   );
