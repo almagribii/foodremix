@@ -12,11 +12,13 @@ export async function GET(request: NextRequest) {
     if (!payload)
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
+    // FIKS: Menggunakan 'userId' untuk mencari UserProfile yang sesuai dengan User ID akun
     const profile = await prisma.userProfile.findUnique({
-      where: { id: payload.userId },
+      where: { userId: payload.userId },
     });
 
-    return NextResponse.json(profile);
+    // FIKS: Dibungkus ke dalam properti 'profile' agar sesuai dengan pembacaan data di frontend
+    return NextResponse.json({ profile });
   } catch (error) {
     console.error("Fetch profile error:", error);
     return NextResponse.json(
@@ -69,8 +71,9 @@ export async function PUT(request: NextRequest) {
       return [];
     };
 
+    // FIKS: Menggunakan 'userId' untuk melakukan update pada tabel UserProfile
     const updatedProfile = await prisma.userProfile.update({
-      where: { id: payload.userId },
+      where: { userId: payload.userId },
       data: {
         nickname,
         dailyBudgetTarget: parseFloat(String(dailyBudgetTarget)) || 30000,
@@ -84,7 +87,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       message: "Profil berhasil diperbarui",
-      userProfile: updatedProfile,
+      profile: updatedProfile, // FIKS: Menggunakan kunci penamaan 'profile' yang konsisten
     });
   } catch (error) {
     console.error("Update profile DB error:", error);

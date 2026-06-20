@@ -1,103 +1,155 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
-import LocationMap from "@/components/LocationMap";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-export default function EditProfilePage() {
-  const router = useRouter();
-  const { token, checkAuth } = useAuth();
+interface ProfileData {
+  nickname: string;
+  dailyBudgetTarget: number;
+  medicalConditions: string[];
+  allergies: string[];
+  generalLocation: string;
+  latitude: number | null;
+  longitude: number | null;
+}
 
-  const [nickname, setNickname] = useState("");
-  const [dailyBudgetTarget, setDailyBudgetTarget] = useState("30000");
-  const [generalLocation, setGeneralLocation] = useState("");
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
-
-  const [medicalInput, setMedicalInput] = useState("");
-  const [medicalConditions, setMedicalConditions] = useState<string[]>([]);
-
-  const [allergyInput, setAllergyInput] = useState("");
-  const [allergies, setAllergies] = useState<string[]>([]);
-
+export default function ProfilePage() {
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [locating, setLocating] = useState(false); // Loading khusus deteksi GPS
   const [message, setMessage] = useState({ type: "", text: "" });
 
+  const [formData, setFormData] = useState<ProfileData>({
+    nickname: "",
+    dailyBudgetTarget: 30000,
+    medicalConditions: [],
+    allergies: [],
+    generalLocation: "",
+    latitude: null,
+    longitude: null,
+  });
+
+  const [newCondition, setNewCondition] = useState("");
+  const [newAllergy, setNewAllergy] = useState("");
+
   useEffect(() => {
-    async function loadProfile() {
+    let isMounted = true;
+    const fetchProfile = async () => {
+      const activeToken = token || localStorage.getItem("token");
+      if (!activeToken) return;
+
       try {
-        const activeToken = token || localStorage.getItem("token");
         const res = await fetch("/api/user/profile", {
           headers: { Authorization: `Bearer ${activeToken}` },
         });
         if (res.ok) {
           const data = await res.json();
-
-          // Failsafe: Mengamankan data dari nilai null jika record profile belum dibuat
-          const safeData = data || {};
-
-          setNickname(safeData.nickname || "");
-          setDailyBudgetTarget(String(safeData.dailyBudgetTarget || 30000));
-          setGeneralLocation(safeData.generalLocation || "");
-          setLatitude(safeData.latitude || null);
-          setLongitude(safeData.longitude || null);
-          setMedicalConditions(safeData.medicalConditions || []);
-          setAllergies(safeData.allergies || []);
+          if (isMounted && data.profile) {
+            setFormData({
+              nickname: data.profile.nickname || "",
+              dailyBudgetTarget: data.profile.dailyBudgetTarget || 30000,
+              medicalConditions: data.profile.medicalConditions || [],
+              allergies: data.profile.allergies || [],
+              generalLocation: data.profile.generalLocation || "",
+              latitude: data.profile.latitude || null,
+              longitude: data.profile.longitude || null,
+            });
+          }
         }
       } catch (err) {
         console.error("Gagal memuat profil:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
-    }
-    loadProfile();
+    };
+
+    fetchProfile();
+    return () => {
+      isMounted = false;
+    };
   }, [token]);
 
-  const handleAddMedical = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && medicalInput.trim()) {
-      e.preventDefault();
-      if (!medicalConditions.includes(medicalInput.trim().toLowerCase())) {
-        setMedicalConditions([
-          ...medicalConditions,
-          medicalInput.trim().toLowerCase(),
-        ]);
-      }
-      setMedicalInput("");
+  // Fungsi Proteksi Lokasi: Mengambil GPS Perangkat & Mengubah menjadi Teks Wilayah Baku
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      setMessage({
+        type: "error",
+        text: "Browser Anda tidak mendukung deteksi lokasi GPS.",
+      });
+      return;
     }
-  };
 
-  const handleRemoveMedical = (index: number) => {
-    setMedicalConditions(medicalConditions.filter((_, i) => i !== index));
-  };
-
-  const handleAddAllergy = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && allergyInput.trim()) {
-      e.preventDefault();
-      if (!allergies.includes(allergyInput.trim().toLowerCase())) {
-        setAllergies([...allergies, allergyInput.trim().toLowerCase()]);
-      }
-      setAllergyInput("");
-    }
-  };
-
-  const handleRemoveAllergy = (index: number) => {
-    setAllergies(allergies.filter((_, i) => i !== index));
-  };
-
-  const handleLocationSelect = (lat: number, lng: number, name: string) => {
-    setLatitude(lat);
-    setLongitude(lng);
-    setGeneralLocation(name);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
+    setLocating(true);
     setMessage({ type: "", text: "" });
 
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        try {
+          // Reverse Geocoding gratis menggunakan Nominatim OpenStreetMap API
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1`,
+          );
+
+          if (response.ok) {
+            const geoData = await response.json();
+            // Ambil nama kecamatan/kota/desa yang human-readable
+            const displayName = geoData.display_name
+              .split(",")
+              .slice(0, 3)
+              .join(",")
+              .trim();
+
+            setFormData((prev) => ({
+              ...prev,
+              latitude,
+              longitude,
+              generalLocation:
+                displayName ||
+                `Koordinat: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+            }));
+            setMessage({
+              type: "success",
+              text: "Lokasi GPS berhasil disinkronkan!",
+            });
+          } else {
+            // Fallback jika API Geocode sibuk
+            setFormData((prev) => ({ ...prev, latitude, longitude }));
+          }
+        } catch (err) {
+          console.error("Reverse geocode error:", err);
+        } finally {
+          setLocating(false);
+        }
+      },
+      (error) => {
+        setLocating(false);
+        setMessage({
+          type: "error",
+          text: "Gagal mendeteksi lokasi. Pastikan izin GPS di browser Anda aktif.",
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validasi Akhir sebelum dikirim ke database
+    if (!formData.latitude || !formData.longitude) {
+      setMessage({
+        type: "error",
+        text: "Gagal menyimpan. Harap klik tombol deteksi lokasi terlebih dahulu untuk mengunci koordinat Remix Share yang valid!",
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage({ type: "", text: "" });
     const activeToken = token || localStorage.getItem("token");
 
     try {
@@ -107,254 +159,366 @@ export default function EditProfilePage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${activeToken}`,
         },
-        body: JSON.stringify({
-          nickname,
-          dailyBudgetTarget,
-          medicalConditions,
-          allergies,
-          generalLocation,
-          latitude,
-          longitude,
-        }),
+        body: JSON.stringify(formData),
       });
-
-      const data = await res.json();
 
       if (res.ok) {
         setMessage({
           type: "success",
-          text: "Profil personalisasi berhasil disimpan!",
+          text: "Profil Foodremix berhasil diperbarui!",
         });
-
-        const localUser = localStorage.getItem("user");
-        if (localUser) {
-          const parsed = JSON.parse(localUser);
-          parsed.userProfile = data.userProfile;
-          localStorage.setItem("user", JSON.stringify(parsed));
-        }
-
-        if (checkAuth) await checkAuth();
-
-        setTimeout(() => {
-          router.push("/dashboard");
-          window.location.reload();
-        }, 1200);
       } else {
+        const errData = await res.json();
         setMessage({
           type: "error",
-          text: data.error || "Gagal memperbarui profil.",
+          text: errData.error || "Gagal memperbarui profil.",
         });
       }
-    } catch {
-      setMessage({ type: "error", text: "Terjadi kesalahan koneksi server." });
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: "error", text: "Gangguan koneksi server." });
     } finally {
       setSubmitting(false);
     }
   };
 
+  const addCondition = () => {
+    if (
+      newCondition.trim() &&
+      !formData.medicalConditions.includes(newCondition.trim().toLowerCase())
+    ) {
+      setFormData({
+        ...formData,
+        medicalConditions: [
+          ...formData.medicalConditions,
+          newCondition.trim().toLowerCase(),
+        ],
+      });
+      setNewCondition("");
+    }
+  };
+
+  const removeCondition = (indexToRemove: number) => {
+    setFormData({
+      ...formData,
+      medicalConditions: formData.medicalConditions.filter(
+        (_, i) => i !== indexToRemove,
+      ),
+    });
+  };
+
+  const addAllergy = () => {
+    if (
+      newAllergy.trim() &&
+      !formData.allergies.includes(newAllergy.trim().toLowerCase())
+    ) {
+      setFormData({
+        ...formData,
+        allergies: [...formData.allergies, newAllergy.trim().toLowerCase()],
+      });
+      setNewAllergy("");
+    }
+  };
+
+  const removeAllergy = (indexToRemove: number) => {
+    setFormData({
+      ...formData,
+      allergies: formData.allergies.filter((_, i) => i !== indexToRemove),
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-[#1A1A1A]" />
-        <p className="text-xs font-medium text-zinc-400">
-          Menyusun konfigurasi personalisasi...
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-[#1A1A1A]" />
+        <p className="text-xs font-semibold text-zinc-400">
+          Sinkronisasi data profil Foodremix...
         </p>
       </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="max-w-4xl mx-auto space-y-8 pb-12"
-    >
-      <div className="flex flex-col gap-1 border-b border-zinc-200 pb-5">
-        <h1 className="text-3xl font-bold tracking-tight text-[#1A1A1A]">
-          Personalisasi Akun
+    <div className="max-w-7xl mx-auto space-y-6 pb-16">
+      <div className="border-b border-zinc-200 pb-5">
+        <h1 className="text-2xl font-black tracking-tight text-[#1A1A1A]">
+          Profil Pengguna
         </h1>
-        <p className="text-sm text-zinc-500">
-          Sesuaikan regulasi medis, target penghematan kantong, dan penyesuaian
-          sharelock P2P kamu.
+        <p className="text-xs text-zinc-500">
+          Konfigurasi batas proteksi medis dan lokasi presisi untuk fitur Remix
+          Share.
         </p>
       </div>
 
-      <AnimatePresence mode="wait">
-        {message.text && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className={`p-4 rounded-2xl text-xs font-semibold border backdrop-blur-sm flex items-center gap-2.5 ${
-              message.type === "success"
-                ? "bg-emerald-50/80 border-emerald-200 text-emerald-800"
-                : "bg-rose-50/80 border-rose-200 text-rose-800"
-            }`}
-          >
-            <span>{message.type === "success" ? "✨" : "⚠️"}</span>
-            {message.text}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <form
+          onSubmit={handleSaveProfile}
+          className="lg:col-span-7 bg-white border border-zinc-200/80 rounded-3xl p-6 shadow-sm space-y-6"
+        >
+          <div className="flex items-center gap-4">
+            <div className="h-14 w-14 bg-zinc-100 border border-zinc-200 rounded-2xl flex items-center justify-center text-[#1A1A1A] font-black text-lg">
+              {formData.nickname
+                ? formData.nickname.charAt(0).toUpperCase()
+                : "U"}
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-[#1A1A1A]">
+                Informasi Dasar & Lokasi
+              </h3>
+              <p className="text-[11px] text-zinc-400">
+                Data koordinat GPS dikunci rapat demi akurasi jarak patungan
+                pangan.
+              </p>
+            </div>
+          </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="bg-white rounded-3xl border border-zinc-200/80 p-6 sm:p-8 shadow-sm space-y-8">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-xs font-bold tracking-wide uppercase text-zinc-500">
-                Nama Panggilan
+          {message.text && (
+            <div
+              className={`p-3 border text-xs font-semibold rounded-xl ${
+                message.type === "success"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                  : "bg-rose-50 border-rose-200 text-rose-800"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
+                Nama Panggilan (Nickname)
               </label>
               <input
                 type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                className="w-full px-4 py-3 text-sm bg-zinc-50/80 border border-zinc-200 text-[#1A1A1A] rounded-2xl outline-none transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-[#EAB308]/30 focus:border-[#EAB308]"
+                value={formData.nickname}
+                onChange={(e) =>
+                  setFormData({ ...formData, nickname: e.target.value })
+                }
+                className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
                 required
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold tracking-wide uppercase text-zinc-500">
-                Target Belanja Harian (Rp)
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
+                Target Anggaran Harian (Rp)
               </label>
               <input
                 type="number"
-                value={dailyBudgetTarget}
-                onChange={(e) => setDailyBudgetTarget(e.target.value)}
-                className="w-full px-4 py-3 text-sm bg-zinc-50/80 border border-zinc-200 text-[#1A1A1A] rounded-2xl outline-none transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-[#EAB308]/30 focus:border-[#EAB308]"
+                value={formData.dailyBudgetTarget}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    dailyBudgetTarget: Number(e.target.value),
+                  })
+                }
+                className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
                 required
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 pt-2 border-t border-zinc-100">
-            <div className="space-y-2">
-              <label className="text-xs font-bold tracking-wide uppercase text-zinc-500">
-                Kondisi Medis / Penyakit
-              </label>
-              <input
-                type="text"
-                value={medicalInput}
-                onChange={(e) => setMedicalInput(e.target.value)}
-                onKeyDown={handleAddMedical}
-                placeholder="Ketik lalu tekan Enter..."
-                className="w-full px-4 py-3 text-sm bg-zinc-50/80 border border-zinc-200 text-[#1A1A1A] rounded-2xl outline-none transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-[#EAB308]/30 focus:border-[#EAB308]"
-              />
-              <div className="flex flex-wrap gap-1.5 pt-2">
-                <AnimatePresence>
-                  {medicalConditions.map((condition, idx) => (
-                    <motion.span
-                      key={condition}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 text-zinc-800 text-xs font-semibold rounded-xl border border-zinc-200/50"
-                    >
-                      {condition}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMedical(idx)}
-                        className="text-zinc-400 hover:text-rose-500 text-sm font-bold transition-colors"
-                      >
-                        ✕
-                      </button>
-                    </motion.span>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-bold tracking-wide uppercase text-zinc-500">
-                Alergi Makanan
-              </label>
-              <input
-                type="text"
-                value={allergyInput}
-                onChange={(e) => setAllergyInput(e.target.value)}
-                onKeyDown={handleAddAllergy}
-                placeholder="Ketik lalu tekan Enter..."
-                className="w-full px-4 py-3 text-sm bg-zinc-50/80 border border-zinc-200 text-[#1A1A1A] rounded-2xl outline-none transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-[#EAB308]/30 focus:border-[#EAB308]"
-              />
-              <div className="flex flex-wrap gap-1.5 pt-2">
-                <AnimatePresence>
-                  {allergies.map((allergy, idx) => (
-                    <motion.span
-                      key={allergy}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#EAB308]/10 text-[#bc9003] text-xs font-semibold rounded-xl border border-[#EAB308]/20"
-                    >
-                      {allergy}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveAllergy(idx)}
-                        className="text-[#EAB308] hover:text-rose-500 text-sm font-bold transition-colors"
-                      >
-                        ✕
-                      </button>
-                    </motion.span>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-3xl border border-zinc-200/80 p-6 sm:p-8 shadow-sm space-y-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold tracking-wide uppercase text-zinc-500">
-              Titik Penyelarasan Peta P2P
+          {/* DENGAN VALIDASI DETEKSI LOKASI GPS BAKU */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400 block">
+              Wilayah Tempat Tinggal (General Location)
             </label>
-            <p className="text-xs text-zinc-400">
-              Tentukan cakupan wilayah pembagian makanan. Koordinat akurat
-              menjamin validasi radius P2P yang efisien.
-            </p>
-          </div>
-
-          <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-200 text-xs font-medium text-zinc-600 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 overflow-hidden">
-              <span className="text-base shrink-0">📍</span>
-              <span className="truncate">
-                {generalLocation || "Belum ada koordinat tersemat"}
-              </span>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={formData.generalLocation}
+                readOnly
+                placeholder="Klik tombol disamping untuk sinkronisasi lokasi..."
+                className="flex-1 px-4 py-2.5 text-xs bg-zinc-100 border border-zinc-200 text-zinc-600 rounded-xl outline-none cursor-not-allowed"
+                required
+              />
+              <button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={locating}
+                className="px-4 py-2.5 bg-zinc-100 border border-zinc-300 text-zinc-700 text-xs font-bold rounded-xl hover:bg-zinc-200 transition flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
+              >
+                <svg
+                  className={`h-4 w-4 text-zinc-600 ${locating ? "animate-spin" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                {locating ? "Mencari GPS..." : "Deteksi Lokasi"}
+              </button>
             </div>
-            {latitude && longitude && (
-              <span className="text-[10px] font-mono shrink-0 bg-zinc-200 px-2.5 py-1 rounded-lg text-zinc-700">
-                {latitude.toFixed(4)}, {longitude.toFixed(4)}
-              </span>
+
+            {/* Indikator tersembunyi penanda validitas data koordinat */}
+            {formData.latitude && formData.longitude && (
+              <p className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 mt-1">
+                ✓ Koordinat Terkunci: [{formData.latitude.toFixed(5)},{" "}
+                {formData.longitude.toFixed(5)}]
+              </p>
             )}
           </div>
 
-          <div className="border border-zinc-200/80 rounded-2xl overflow-hidden shadow-inner h-[320px]">
-            <LocationMap
-              onSelectLocation={handleLocationSelect}
-              initialLat={latitude}
-              initialLng={longitude}
-            />
+          <div className="space-y-2 border-t border-zinc-100 pt-4">
+            <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400 block">
+              Proteksi Medis (Riwayat Penyakit)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newCondition}
+                onChange={(e) => setNewCondition(e.target.value)}
+                placeholder="Tambah penyakit (cth: maag)"
+                className="flex-1 px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none"
+                onKeyDown={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addCondition())
+                }
+              />
+              <button
+                type="button"
+                onClick={addCondition}
+                className="px-4 py-2 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl hover:bg-zinc-800"
+              >
+                Tambah
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {formData.medicalConditions.map((condition, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 border border-sky-100 text-sky-800 text-[11px] font-bold rounded-lg uppercase"
+                >
+                  {condition}
+                  <button
+                    type="button"
+                    onClick={() => removeCondition(index)}
+                    className="text-sky-400 hover:text-sky-700 font-bold"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2 border-t border-zinc-100 pt-4">
+            <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400 block">
+              Alergi Makanan Aktif
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newAllergy}
+                onChange={(e) => setNewAllergy(e.target.value)}
+                placeholder="Tambah alergi (cth: seafood)"
+                className="flex-1 px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none"
+                onKeyDown={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addAllergy())
+                }
+              />
+              <button
+                type="button"
+                onClick={addAllergy}
+                className="px-4 py-2 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl hover:bg-zinc-800"
+              >
+                Tambah
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {formData.allergies.map((allergy, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-100 text-amber-800 text-[11px] font-bold rounded-lg uppercase"
+                >
+                  {allergy}
+                  <button
+                    type="button"
+                    onClick={() => removeAllergy(index)}
+                    className="text-amber-400 hover:text-amber-700 font-bold"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end border-t border-zinc-100 pt-4">
+            <button
+              type="submit"
+              disabled={submitting || locating}
+              className="px-5 py-2.5 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl hover:bg-zinc-800 transition disabled:opacity-50"
+            >
+              {submitting ? "Menyimpan..." : "Simpan Profil"}
+            </button>
+          </div>
+        </form>
+
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-white border border-zinc-200/80 rounded-3xl p-6 shadow-sm space-y-4">
+            <h3 className="text-sm font-black text-[#1A1A1A] tracking-tight">
+              Status Guard Foodremix
+            </h3>
+            <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100 space-y-3">
+              <div className="flex justify-between text-xs">
+                <span className="font-bold text-zinc-500">
+                  Batas Hemat Harian
+                </span>
+                <span className="font-black text-emerald-600">
+                  Rp {formData.dailyBudgetTarget.toLocaleString("id-ID")}
+                </span>
+              </div>
+              <div className="h-2 bg-zinc-200 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  className="h-full bg-emerald-500 rounded-full"
+                />
+              </div>
+            </div>
+            <div className="text-xs text-zinc-500 leading-relaxed font-medium">
+              Sistem AI Jurnal Kesehatan akan otomatis menyaring dan memotong
+              nilai skor kesehatan (*healthScore*) jika Anda mencatat makanan
+              yang melanggar{" "}
+              <span className="font-bold text-zinc-700">
+                {formData.medicalConditions.length} pantangan medis
+              </span>{" "}
+              atau{" "}
+              <span className="font-bold text-zinc-700">
+                {formData.allergies.length} jenis alergi
+              </span>{" "}
+              yang telah Anda daftarkan.
+            </div>
+          </div>
+
+          <div className="bg-[#1A1A1A] text-white rounded-3xl p-6 shadow-md relative overflow-hidden">
+            <span className="text-[10px] font-black tracking-widest uppercase text-zinc-400 block">
+              Jangkauan Komunitas
+            </span>
+            <h4 className="text-sm font-black mt-1 mb-2">Lokasi P2P Aktif</h4>
+            <p className="text-xs text-zinc-300 leading-relaxed font-normal">
+              Saat ini profil Anda terdaftar di area{" "}
+              <span className="text-amber-400 font-bold">
+                {formData.generalLocation || "Belum ditentukan"}
+              </span>
+              . Anda dapat berpartisipasi membagikan bahan pangan berlebih atau
+              patungan belanja dengan pengguna lain di sekitar radius wilayah
+              ini.
+            </p>
           </div>
         </div>
-
-        <div className="flex justify-end items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.push("/dashboard")}
-            className="px-6 py-3 text-sm font-bold text-zinc-500 hover:bg-zinc-200/60 rounded-2xl transition-colors duration-200"
-            disabled={submitting}
-          >
-            Batal
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="px-7 py-3 text-sm font-bold bg-[#1A1A1A] text-white hover:bg-zinc-800 rounded-2xl transition-all duration-200 disabled:opacity-50 shadow-sm"
-          >
-            {submitting ? "Menyimpan..." : "Simpan Perubahan"}
-          </button>
-        </div>
-      </form>
-    </motion.div>
+      </div>
+    </div>
   );
 }
