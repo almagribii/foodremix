@@ -96,7 +96,7 @@ export default function Sidebar({
       ),
     },
     {
-      name: "Wellness Journal",
+      name: "Rekam Gizi",
       path: "/dashboard/journal",
       icon: (
         <svg
