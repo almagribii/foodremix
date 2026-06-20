@@ -20,7 +20,14 @@ export interface AuthContextType {
   token: string | null;
   loading: boolean;
   isAuthenticated: boolean;
-  register: (email: string, password: string, name?: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    nickname: string,
+    generalLocation: string,
+    dailyBudgetTarget?: number,
+    name?: string,
+  ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -39,7 +46,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check auth saat mount
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -59,8 +65,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const data = await res.json();
           setUser(data.user);
           setToken(savedToken);
+          localStorage.setItem("user", JSON.stringify(data.user));
         } else {
           localStorage.removeItem("token");
+          localStorage.removeItem("user");
         }
       } catch (error) {
         console.error("Check auth error:", error);
@@ -77,6 +85,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const savedToken = localStorage.getItem("token");
       if (!savedToken) {
         setUser(null);
+        setToken(null);
+        localStorage.removeItem("user");
         setLoading(false);
         return;
       }
@@ -91,8 +101,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const data = await res.json();
         setUser(data.user);
         setToken(savedToken);
+        localStorage.setItem("user", JSON.stringify(data.user));
       } else {
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
         setToken(null);
         setUser(null);
       }
@@ -100,12 +112,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error("Check auth error:", error);
       setUser(null);
       setToken(null);
+      localStorage.removeItem("user");
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (email: string, password: string, name?: string) => {
+  const register = async (
+    email: string,
+    password: string,
+    nickname: string,
+    generalLocation: string,
+    dailyBudgetTarget?: number,
+    name?: string,
+  ) => {
     setLoading(true);
     try {
       const res = await fetch("/api/auth/register", {
@@ -113,7 +133,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          nickname,
+          generalLocation,
+          dailyBudgetTarget,
+        }),
       });
 
       if (!res.ok) {
@@ -125,6 +152,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const newToken = data.token;
 
       localStorage.setItem("token", newToken);
+      localStorage.setItem("user", JSON.stringify(data.user));
       setToken(newToken);
       setUser(data.user);
     } catch (error) {
@@ -153,14 +181,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const data = await res.json();
       const newToken = data.token;
 
-      console.log("✅ Login response:", data);
       localStorage.setItem("token", newToken);
-      console.log("✅ Token saved to localStorage:", newToken);
+      localStorage.setItem("user", JSON.stringify(data.user));
       setToken(newToken);
       setUser(data.user);
-      console.log("✅ State updated - token and user set");
     } catch (error) {
-      console.error("❌ Login error:", error);
+      console.error("Login error:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -184,15 +210,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null);
       setToken(null);
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       setLoading(false);
     }
   };
 
   const isAuthenticated = !!user;
 
-  // Debug: log authentication state changes
   useEffect(() => {
-    console.log("🔐 Auth state changed:", {
+    console.log("Auth state changed:", {
       isAuthenticated,
       user: user?.email,
       token: token ? "exists" : "null",
