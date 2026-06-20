@@ -8,6 +8,12 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
   },
+  generate: [
+    {
+      provider: "prisma-client-js",
+      output: "app/generated/prisma",
+    },
+  ],
   datasource: {
     url: process.env["DATABASE_URL"],
   },
