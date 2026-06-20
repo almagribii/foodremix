@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 interface Notification {
   id: string;
@@ -18,6 +20,7 @@ export default function Header({
   onToggleSidebar,
   isSidebarOpen,
 }: HeaderProps) {
+  const pathname = usePathname();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -41,13 +44,32 @@ export default function Header({
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
+  // Fungsi menghasilkan array objek breadcrumb dari URL saat ini
+  const generateBreadcrumbs = () => {
+    if (!pathname) return [];
+
+    const paths = pathname.split("/").filter((path) => path);
+    return paths.map((path, index) => {
+      const url = `/${paths.slice(0, index + 1).join("/")}`;
+
+      // Formatting nama folder: kebab-case / snake_case -> Kapital Kata Biasa
+      const label = path
+        .replace(/[-_]/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+
+      return { label, url, isLast: index === paths.length - 1 };
+    });
+  };
+
+  const breadcrumbs = generateBreadcrumbs();
+
   return (
     <header
       className={`fixed top-0 right-0 z-10 flex h-20 items-center justify-between bg-[#F5F5F3]/80 backdrop-blur-md px-4 sm:px-6 lg:px-8 border-b border-zinc-200 transition-all duration-300 ease-in-out ${
         isSidebarOpen ? "left-0 lg:left-64" : "left-0 lg:left-20"
       }`}
     >
-      <div className="flex items-center gap-4 overflow-hidden">
+      <div className="flex items-center gap-4 overflow-hidden flex-1 mr-4">
         <button
           onClick={onToggleSidebar}
           type="button"
@@ -68,19 +90,60 @@ export default function Header({
           </svg>
         </button>
 
-        <div className="overflow-hidden">
-          <h2 className="text-sm sm:text-lg font-bold text-[#1A1A1A] tracking-tight truncate">
-            Pusat Kontrol Finansial & Gizi
-          </h2>
-          <p className="text-[10px] sm:text-xs text-zinc-500 truncate">
-            Pantau survival memasakmu hari ini.
-          </p>
-        </div>
+        {/* Komponen Breadcrumb Dinamis Premium */}
+        <nav className="flex items-center space-x-2 text-xs font-semibold overflow-x-auto no-scrollbar py-1">
+          <Link
+            href="/dashboard"
+            className="text-zinc-400 hover:text-zinc-800 transition-colors whitespace-nowrap shrink-0"
+          >
+            Home
+          </Link>
+
+          {breadcrumbs.map((crumb, idx) => {
+            // Kita lewati render jika foldernya bernama "Dashboard" agar tidak duplikat dengan Home
+            if (crumb.label.toLowerCase() === "dashboard") return null;
+
+            return (
+              <div
+                key={crumb.url}
+                className="flex items-center space-x-2 shrink-0"
+              >
+                <svg
+                  className="h-3 w-3 text-zinc-300 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+                {crumb.isLast ? (
+                  <span className="text-[#1A1A1A] font-black truncate max-w-[140px] sm:max-w-[200px]">
+                    {crumb.label}
+                  </span>
+                ) : (
+                  <Link
+                    href={crumb.url}
+                    className="text-zinc-400 hover:text-zinc-800 transition-colors whitespace-nowrap"
+                  >
+                    {crumb.label}
+                  </Link>
+                )}
+              </div>
+            );
+          })}
+        </nav>
       </div>
 
       <div className="relative shrink-0">
         <button
-          onClick={() => setShowDropdown(!showDropdown)}
+          onClick={() => {
+            setShowDropdown(!showDropdown);
+          }}
           type="button"
           className="relative p-2.5 bg-white border border-zinc-200 text-[#1A1A1A] rounded-xl hover:bg-zinc-50 transition-colors shadow-sm flex items-center justify-center"
         >
