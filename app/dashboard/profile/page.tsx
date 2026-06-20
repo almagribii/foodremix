@@ -35,13 +35,17 @@ export default function EditProfilePage() {
         });
         if (res.ok) {
           const data = await res.json();
-          setNickname(data.nickname || "");
-          setDailyBudgetTarget(String(data.dailyBudgetTarget || 30000));
-          setGeneralLocation(data.generalLocation || "");
-          setLatitude(data.latitude);
-          setLongitude(data.longitude);
-          setMedicalConditions(data.medicalConditions || []);
-          setAllergies(data.allergies || []);
+
+          // Failsafe: Mengamankan data dari nilai null jika record profile belum dibuat
+          const safeData = data || {};
+
+          setNickname(safeData.nickname || "");
+          setDailyBudgetTarget(String(safeData.dailyBudgetTarget || 30000));
+          setGeneralLocation(safeData.generalLocation || "");
+          setLatitude(safeData.latitude || null);
+          setLongitude(safeData.longitude || null);
+          setMedicalConditions(safeData.medicalConditions || []);
+          setAllergies(safeData.allergies || []);
         }
       } catch (err) {
         console.error("Gagal memuat profil:", err);
