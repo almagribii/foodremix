@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 
 interface SidebarProps {
@@ -32,7 +33,7 @@ export default function Sidebar({
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"
+            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
           />
         </svg>
       ),
@@ -51,7 +52,7 @@ export default function Sidebar({
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
           />
         </svg>
       ),
@@ -70,7 +71,7 @@ export default function Sidebar({
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
           />
         </svg>
       ),
@@ -89,7 +90,12 @@ export default function Sidebar({
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
           />
         </svg>
       ),
@@ -108,66 +114,66 @@ export default function Sidebar({
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
       ),
     },
   ];
 
-const handleLogout = async () => {
-  try {
-    const token = localStorage.getItem("token") || "";
-
-    if (token) {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token") || "";
+      if (token) {
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      router.replace("/");
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
-  } catch (error) {
-    console.error("Logout backend call failed:", error);
-  } finally {
- 
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    router.replace("/");
-    window.location.reload();
-  }
-};
+  };
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-30 flex h-full w-64 flex-col justify-between bg-[#1A1A1A] text-white p-6 shadow-xl transition-transform duration-350 ease-in-out lg:translate-x-0 ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
+      className={`fixed inset-y-0 left-0 z-30 flex h-full flex-col justify-between bg-[#1A1A1A] text-white py-6 shadow-xl transition-all duration-300 ease-in-out lg:translate-x-0 ${
+        isOpen
+          ? "w-64 translate-x-0 px-0"
+          : "w-20 -translate-x-full lg:translate-x-0 px-0"
       }`}
     >
-      <div>
-        <div className="mb-10 flex items-center justify-between px-2">
-          <div className="flex items-center gap-3">
-            <svg
-              className="h-6 w-6 text-[#EAB308]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m2.828-9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-              />
-            </svg>
-            <h1 className="text-xl font-bold tracking-wider text-[#EAB308]">
+      <div
+        className={`flex items-center shrink-0 ${isOpen ? "justify-between px-6" : "justify-center"}`}
+      >
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="relative h-9 w-9 overflow-hidden transition-transform rounded-xl group-hover:scale-105">
+            <Image
+              src="/logo-food.png"
+              alt="Foodremix Logo"
+              fill
+              className="object-contain" /* Menghapus p-1 dari image agar memanfaatkan ruang penuh secara presisi */
+              priority
+            />
+          </div>
+          {isOpen && (
+            <h1 className="text-xl font-black tracking-wider text-[#EAB308] animate-in fade-in duration-200">
               Foodremix
             </h1>
-          </div>
+          )}
+        </Link>
+
+        {isOpen && (
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white lg:hidden"
+            className="p-1.5 rounded-xl hover:bg-zinc-800 text-zinc-400 hover:text-white lg:hidden transition-colors"
           >
             <svg
               className="h-5 w-5"
@@ -183,49 +189,96 @@ const handleLogout = async () => {
               />
             </svg>
           </button>
-        </div>
+        )}
+      </div>
 
-        <nav className="space-y-2">
+      <div className="flex-1 flex flex-col justify-center my-8">
+        <nav className="space-y-1">
           {menuItems.map((item) => {
             const isActive = pathname === item.path;
             return (
               <Link
                 key={item.path}
                 href={item.path}
-                onClick={onClose}
-                className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${
+                className={`relative flex items-center transition-all duration-200 text-sm font-semibold group w-full ${
+                  isOpen ? "px-6 py-3.5 gap-4" : "justify-center py-5"
+                } ${
                   isActive
-                    ? "bg-[#EAB308] text-[#1A1A1A] font-bold shadow-md"
-                    : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                    ? "bg-gradient-to-r from-amber-500/10 to-transparent border-l-[3px] border-[#EAB308] text-[#EAB308]"
+                    : "text-zinc-400 hover:bg-zinc-800/40 hover:text-white border-l-[3px] border-transparent"
                 }`}
               >
                 <span
-                  className={`transition-colors ${isActive ? "text-[#1A1A1A]" : "text-zinc-400 group-hover:text-white"}`}
+                  className={`transition-colors duration-200 ${isActive ? "text-[#EAB308]" : "text-zinc-400 group-hover:text-white"}`}
                 >
                   {item.icon}
                 </span>
-                {item.name}
+
+                {isOpen ? (
+                  <span className="animate-in fade-in duration-150">
+                    {item.name}
+                  </span>
+                ) : (
+                  <span className="absolute left-full ml-4 px-3 py-2 bg-[#1A1A1A] text-zinc-200 text-xs font-bold rounded-xl border border-zinc-800 shadow-xl opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 whitespace-nowrap z-50">
+                    {item.name}
+                  </span>
+                )}
               </Link>
             );
           })}
         </nav>
       </div>
 
-      <div className="border-t border-zinc-800 pt-4">
-        <div className="flex items-center gap-3 px-2 mb-4">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EAB308] text-[#1A1A1A] font-bold text-sm">
-            {userNickname.substring(0, 2).toUpperCase()}
+      <div className="pt-4 shrink-0 space-y-3 px-4">
+        <Link
+          href="/dashboard/profile"
+          className={`relative flex items-center justify-between rounded-2xl transition-all duration-200 group text-left ${
+            isOpen
+              ? "p-3 bg-zinc-900/40 border border-zinc-800/50 hover:bg-zinc-800/50 hover:border-zinc-700/60"
+              : "justify-center p-1.5 hover:bg-zinc-800/60"
+          }`}
+        >
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EAB308] text-[#1A1A1A] font-black text-xs shadow-md">
+              {userNickname.substring(0, 2).toUpperCase()}
+            </div>
+            {isOpen ? (
+              <div className="overflow-hidden animate-in fade-in duration-200">
+                <p className="text-[10px] text-zinc-500 font-medium tracking-wide uppercase">
+                  Profil Saya
+                </p>
+                <p className="truncate text-sm font-bold text-zinc-200 group-hover:text-[#EAB308] transition-colors">
+                  {userNickname}
+                </p>
+              </div>
+            ) : (
+              <span className="absolute left-full ml-4 px-3 py-2 bg-[#1A1A1A] text-zinc-200 text-xs font-bold rounded-xl border border-zinc-800 shadow-xl opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 whitespace-nowrap z-50">
+                Profil ({userNickname})
+              </span>
+            )}
           </div>
-          <div className="overflow-hidden">
-            <p className="text-xs text-zinc-500">Selamat datang,</p>
-            <p className="truncate text-sm font-semibold text-zinc-200">
-              {userNickname}
-            </p>
-          </div>
-        </div>
+          {isOpen && (
+            <svg
+              className="h-4 w-4 text-zinc-500 group-hover:text-white transition-transform duration-200 group-hover:translate-x-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          )}
+        </Link>
+
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-950/30 hover:text-red-300 transition-colors"
+          className={`relative flex items-center rounded-2xl text-sm font-bold text-zinc-400 hover:bg-rose-950/20 hover:text-rose-400 transition-all duration-200 group ${
+            isOpen ? "w-full px-4 py-3.5 gap-4" : "justify-center w-full py-3.5"
+          }`}
         >
           <svg
             className="h-5 w-5"
@@ -240,7 +293,13 @@ const handleLogout = async () => {
               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
             />
           </svg>
-          Keluar Aplikasi
+          {isOpen ? (
+            <span className="animate-in fade-in duration-200">Keluar</span>
+          ) : (
+            <span className="absolute left-full ml-4 px-3 py-2 bg-rose-950 text-rose-300 text-xs font-bold rounded-xl border border-rose-900 shadow-xl opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 whitespace-nowrap z-50">
+              Keluar Aplikasi
+            </span>
+          )}
         </button>
       </div>
     </aside>

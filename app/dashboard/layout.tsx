@@ -13,11 +13,11 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const { user, loading, isAuthenticated } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.replace("/");
+      router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
 
@@ -44,15 +44,15 @@ export default function DashboardLayout({
         userNickname={nickname}
       />
 
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      <div className="transition-all duration-350 ease-in-out lg:pl-64 pt-20">
-        <Header onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+      <div
+        className={`transition-all duration-300 ease-in-out pt-20 ${
+          isSidebarOpen ? "lg:pl-64" : "lg:pl-20"
+        }`}
+      >
+\        <Header
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
+        />{" "}
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
