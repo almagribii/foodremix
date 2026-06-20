@@ -18,35 +18,36 @@ const WELCOME_MSG: Message = {
 
 export default function RemixChatPage() {
   const { token } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
+
+  // LAZY STATE INITIALIZATION: Membaca localStorage langsung saat state dibuat (Aman dari Eror ESLint)
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== "undefined") {
+      const savedChat = localStorage.getItem("foodremix_chat_history");
+      if (savedChat) {
+        try {
+          return JSON.parse(savedChat);
+        } catch {
+          return [WELCOME_MSG];
+        }
+      }
+    }
+    return [WELCOME_MSG];
+  });
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // 1. Ambil data chat dari localStorage saat komponen pertama kali di-load
-  useEffect(() => {
-    const savedChat = localStorage.getItem("foodremix_chat_history");
-    if (savedChat) {
-      try {
-        setMessages(JSON.parse(savedChat));
-      } catch {
-        setMessages([WELCOME_MSG]);
-      }
-    } else {
-      setMessages([WELCOME_MSG]);
-    }
-  }, []);
-
-  // 2. Simpan setiap perubahan pesan ke localStorage secara otomatis
+  // Menyimpan setiap perubahan pesan ke localStorage secara otomatis
   useEffect(() => {
     if (messages.length > 0) {
       localStorage.setItem("foodremix_chat_history", JSON.stringify(messages));
     }
   }, [messages]);
 
-  // 3. Auto Scroll to bottom
+  // Auto Scroll ke bawah
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
@@ -80,7 +81,6 @@ export default function RemixChatPage() {
     try {
       const activeToken = token || localStorage.getItem("token");
 
-      // Ambil context obrolan terakhir
       const historyContext = messages.slice(-4).map((m) => ({
         role: m.role === "user" ? "user" : "model",
         text: m.text,
@@ -129,12 +129,10 @@ export default function RemixChatPage() {
     }
   };
 
-  // Helper sederhana untuk merender teks format bold (**) and list (-) dari Gemini AI secara estetik
   const renderMessageText = (text: string) => {
     return text.split("\n").map((line, i) => {
       let content: React.ReactNode = line;
 
-      // Cek format bold **text**
       if (line.includes("**")) {
         const parts = line.split("**");
         content = parts.map((part, idx) =>
@@ -148,7 +146,6 @@ export default function RemixChatPage() {
         );
       }
 
-      // Cek format bullet points - atau *
       if (line.trim().startsWith("- ") || line.trim().startsWith("* ")) {
         return (
           <ul key={i} className="list-disc pl-5 my-0.5 space-y-0.5">
@@ -198,7 +195,6 @@ export default function RemixChatPage() {
           </div>
         </div>
 
-        {/* Tombol Clear / Reset Chat History */}
         <button
           onClick={handleClearChat}
           disabled={loading || isClearing || messages.length <= 1}
@@ -237,7 +233,6 @@ export default function RemixChatPage() {
                 <div
                   className={`flex gap-3 max-w-[80%] ${isUser ? "flex-row-reverse" : "flex-row"}`}
                 >
-                  {/* Indikator Avatar Inisial Bulat */}
                   <div
                     className={`h-7 w-7 rounded-lg text-[10px] font-black border tracking-tighter shrink-0 flex items-center justify-center shadow-sm ${
                       isUser
@@ -248,7 +243,6 @@ export default function RemixChatPage() {
                     {isUser ? "ME" : "AI"}
                   </div>
 
-                  {/* Isi Teks Obrolan */}
                   <div
                     className={`px-4 py-3 rounded-2xl text-xs shadow-sm space-y-1.5 leading-relaxed ${
                       isUser
@@ -264,7 +258,6 @@ export default function RemixChatPage() {
           })}
         </AnimatePresence>
 
-        {/* Loading Indicator Berdenyut Minimalis */}
         {loading && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -281,7 +274,7 @@ export default function RemixChatPage() {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Form Input Sticky Botton */}
+      {/* Form Input Sticky Bottom */}
       <form
         onSubmit={handleSendMessage}
         className="p-4 border-t border-zinc-100 bg-white flex items-center gap-3"
