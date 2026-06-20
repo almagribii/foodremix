@@ -16,7 +16,6 @@ const fallingIngredients = [
   { emoji: "🍄", size: "text-3xl", left: "76%", top: "15%", delay: 1.2, duration: 7.5, xRange: [0, 15, 0], yRange: [0, -30, 0] },
 ];
 
-// ─── AMAN & VALID: ANIMASI ORIENTASI BERBASIS TWEEN EASE INOUT ───
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -47,10 +46,11 @@ const titleVariants: Variants = {
   hidden: { opacity: 0, y: 25, scale: 0.98 },
   visible: {
     opacity: 1,
-    y: [25, 0, -6, 0], // Masuk dari bawah lalu otomatis melayang loop lambat
+    y: [25, 0, -6, 0], 
     scale: 1,
     transition: { 
       y: {
+        type: "tween",
         ease: "easeInOut",
         duration: 5,
         repeat: Infinity,
@@ -62,7 +62,6 @@ const titleVariants: Variants = {
   }
 };
 
-// Animasi khusus untuk gelombang pembatas teks (The Art of Cooking)
 const waveLineVariants: Variants = {
   hidden: { opacity: 0, scaleX: 0.3 },
   visible: {
@@ -84,6 +83,7 @@ const descVariants: Variants = {
     y: [15, 0, -3, 0], 
     transition: { 
       y: {
+        type: "tween",
         ease: "easeInOut",
         duration: 5,
         repeat: Infinity,
@@ -97,12 +97,11 @@ const descVariants: Variants = {
 
 export default function Hero() {
   return (
-    // section diberi relative agar divider mutlak menempel di bawahnya
-    <section className="relative bg-[#FBFBFA] overflow-hidden pt-20 pb-20 flex flex-col items-center justify-center text-center min-h-[95vh] z-0">
+    <section className="relative bg-[#FBFBFA] overflow-hidden pt-20 pb-28 flex flex-col items-center justify-center text-center min-h-[95vh] z-0">
       
       {/* ─── 1. BACKGROUND PATTERN BATIK MINI ─── */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.04] select-none z-0"
+        className="absolute inset-0 pointer-events-none opacity-[0.06] select-none z-0"
         style={{
           backgroundImage: "url('/bg-pattern.jpeg')", 
           backgroundRepeat: "repeat",
@@ -121,7 +120,7 @@ export default function Hero() {
             className={`absolute ${item.size} opacity-[0.18]`}
             style={{ left: item.left, top: item.top }}
             animate={{ x: item.xRange, y: item.yRange, rotate: [0, 360] }}
-            transition={{ duration: item.duration, delay: item.delay, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ type: "tween", duration: item.duration, delay: item.delay, repeat: Infinity, ease: "easeInOut" }}
           >
             {item.emoji}
           </motion.div>
@@ -131,7 +130,7 @@ export default function Hero() {
       {/* KONTEN UTAMA HERO */}
       <div className="relative max-w-4xl mx-auto px-6 flex flex-col items-center z-20">
         
-        {/* LOGO EMBLEM PERSEGI MELENGKUNG DENGAN LOGO UTAMA BERPUTAR */}
+        {/* LOGO EMBLEM PERSEGI */}
         <motion.div 
           className="w-28 h-28 rounded-[28px] bg-gradient-to-b from-white via-[#F5F5F3] to-[#E6E6E3] p-1.5 shadow-[0_20px_40px_rgba(234,179,8,0.08)] border border-amber-500/15 flex flex-col items-center justify-center mb-8 relative group cursor-pointer"
           initial={{ opacity: 0, y: -10 }}
@@ -140,7 +139,6 @@ export default function Hero() {
         >
           <div className="absolute inset-1 rounded-[24px] border border-amber-400/30 bg-gradient-to-b from-transparent to-black/[0.01]" />
           
-          {/* Logo Bundar Berputar Otomatis */}
           <motion.div 
             className="w-16 h-16 relative rounded-full overflow-hidden border border-stone-200/60 shadow-inner"
             animate={{ rotate: 360 }}
@@ -158,6 +156,7 @@ export default function Hero() {
               src="/logo-food.png" 
               alt="Foodremix Main Logo"
               fill
+              sizes="64px"
               className="object-cover"
             />
           </motion.div>
@@ -167,14 +166,13 @@ export default function Hero() {
           </span>
         </motion.div>
 
-        {/* TULISAN TENGAH DENGAN MULTI-ANIMASI SLOW YANG BERJALAN TERUS (INFINITE) */}
+        {/* TULISAN TENGAH */}
         <motion.div
           className="space-y-6 max-w-3xl flex flex-col items-center mt-2"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          {/* Tagline Atas */}
           <motion.span 
             variants={taglineVariants}
             className="text-[10px] sm:text-xs font-medium uppercase text-[#a17e26] font-sans block select-none mb-1 text-center"
@@ -182,7 +180,6 @@ export default function Hero() {
             ✦ The Art of Cooking ✦
           </motion.span>
 
-          {/* Judul Utama: Efek Mengambang Lambat / Floating Slow */}
           <motion.h1 
             variants={titleVariants}
             className="italic text-5xl sm:text-7xl font-normal text-stone-800 tracking-tight leading-[1.02] select-none font-serif text-center"
@@ -197,7 +194,7 @@ export default function Hero() {
             </span>
           </motion.h1>
 
-          {/* PEMBATAS GELOMBANG DENGAN OUTLINE GELAP & EFEK GLOW AMBER BAGIAN ATAS TEXT */}
+          {/* PEMBATAS GELOMBANG */}
           <motion.div 
             variants={waveLineVariants}
             className="w-40 h-8 relative flex items-center justify-center my-1 select-none filter drop-shadow-[0_0_8px_rgba(194,155,56,0.5)]"
@@ -208,7 +205,6 @@ export default function Hero() {
               xmlns="http://www.w3.org/2000/svg"
               className="w-full h-full overflow-visible"
             >
-              {/* Gelombang Bayangan Belakang / Outline Gelap Lembut */}
               <path 
                 d="M10 15C30 5, 50 25, 70 15C90 5, 110 25, 130 15C140 10, 145 12, 150 15" 
                 stroke="#292524" 
@@ -216,7 +212,6 @@ export default function Hero() {
                 strokeLinecap="round"
                 opacity="0.8"
               />
-              {/* Gelombang Inti Bagian Depan (Warna Emas Terang dengan Efek Glow) */}
               <path 
                 d="M10 15C30 5, 50 25, 70 15C90 5, 110 25, 130 15C140 10, 145 12, 150 15" 
                 stroke="#eab308" 
@@ -224,7 +219,6 @@ export default function Hero() {
                 strokeLinecap="round"
               />
             </svg>
-            {/* Titik Berlian Tengah Estetik */}
             <div className="absolute text-[9px] text-[#292524] font-bold bg-[#FBFBFA] px-1 shadow-[0_0_4px_#eab308] rounded-full border border-amber-500/30">✦</div>
           </motion.div>
 
@@ -331,12 +325,11 @@ export default function Hero() {
 
       </div>
 
-      {/* ─── 3. PEMBATAS HALAMAN BARU (SECTION DIVIDER): GLOWING WAVE ─── */}
+      {/* ─── 3. SECTION DIVIDER: GLOWING WAVE (PERBAIKAN TRANSISI BERSIH) ─── */}
       <div 
-        className="absolute bottom-0 left-0 right-0 w-full overflow-hidden select-none z-30 filter drop-shadow-[0_-5px_15px_rgba(234,179,8,0.3)]"
+        className="absolute bottom-0 left-0 right-0 w-full overflow-hidden select-none z-30 filter drop-shadow-[0_-8px_20px_rgba(234,179,8,0.25)]"
         style={{
-          // Trik CSS: WaveDivider ini akan menimpa atas component Feature di bawahnya
-          marginBottom: "-1px" 
+          marginBottom: "-3px" 
         }}
       >
         <svg 
@@ -346,39 +339,40 @@ export default function Hero() {
           className="w-full h-auto overflow-visible"
           preserveAspectRatio="none"
         >
-          {/* Latar Belakang Wave Divider (Menyesuaikan warna Feature Section di bawahnya, misal: Putih) */}
+          {/* Bagian bawah diisi warna gelap solid milik section Features di bawahnya */}
+          {/* Kurva diturunkan ke Y: 65 & 45 untuk menjamin potongan lurus sempurna di bagian bawah */}
           <path 
-            d="M0,120 L0,40 C120,20, 240,60, 360,40 C480,20, 600,60, 720,40 C840,20, 960,60, 1080,40 C1200,20, 1320,60, 1440,40 L1440,120 Z" 
-            fill="white" // 👈 Ganti sesuai warna background section Feature Anda
+            d="M0,120 L0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65 L1440,120 Z" 
+            fill="#1C1614" 
           />
           
-          {/* Garis Outline Gelap Ketiga (Dark Accent) */}
+          {/* Garis Outline Gelap */}
           <motion.path 
-            d="M0,40 C120,20, 240,60, 360,40 C480,20, 600,60, 720,40 C840,20, 960,60, 1080,40 C1200,20, 1320,60, 1440,40" 
-            stroke="#1C1917" // Stone 900
-            strokeWidth="2" 
+            d="M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65" 
+            stroke="#1C1917" 
+            strokeWidth="2.5" 
             strokeLinecap="round"
-            opacity="0.9"
+            opacity="0.95"
             animate={{ d: [
-              "M0,40 C120,20, 240,60, 360,40 C480,20, 600,60, 720,40 C840,20, 960,60, 1080,40 C1200,20, 1320,60, 1440,40",
-              "M0,45 C120,25, 240,55, 360,45 C480,25, 600,55, 720,45 C840,25, 960,55, 1080,45 C1200,25, 1320,55, 1440,45",
-              "M0,40 C120,20, 240,60, 360,40 C480,20, 600,60, 720,40 C840,20, 960,60, 1080,40 C1200,20, 1320,60, 1440,40"
+              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65",
+              "M0,70 C120,50, 240,80, 360,70 C480,50, 600,80, 720,70 C840,50, 960,80, 1080,70 C1200,50, 1320,80, 1440,70",
+              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65"
             ]}}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ type: "tween", duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
 
-          {/* Garis Inti Berpendar Emas (Glow Core) */}
+          {/* Garis Inti Berpendar Emas */}
           <motion.path 
-            d="M0,40 C120,20, 240,60, 360,40 C480,20, 600,60, 720,40 C840,20, 960,60, 1080,40 C1200,20, 1320,60, 1440,40" 
-            stroke="#eab308" // Amber 500
-            strokeWidth="1" 
+            d="M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65" 
+            stroke="#eab308" 
+            strokeWidth="1.2" 
             strokeLinecap="round"
             animate={{ d: [
-              "M0,40 C120,20, 240,60, 360,40 C480,20, 600,60, 720,40 C840,20, 960,60, 1080,40 C1200,20, 1320,60, 1440,40",
-              "M0,45 C120,25, 240,55, 360,45 C480,25, 600,55, 720,45 C840,25, 960,55, 1080,45 C1200,25, 1320,55, 1440,45",
-              "M0,40 C120,20, 240,60, 360,40 C480,20, 600,60, 720,40 C840,20, 960,60, 1080,40 C1200,20, 1320,60, 1440,40"
+              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65",
+              "M0,70 C120,50, 240,80, 360,70 C480,50, 600,80, 720,70 C840,50, 960,80, 1080,70 C1200,50, 1320,80, 1440,70",
+              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65"
             ]}}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}
+            transition={{ type: "tween", duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.08 }}
           />
         </svg>
       </div>
