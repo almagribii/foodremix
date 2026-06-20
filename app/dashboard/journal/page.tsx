@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import JournalCard from "@/components/rekam-gizi/JournalCard";
 import DailyNutrientSummary from "@/components/rekam-gizi/DailyNutrientSummary";
 import NutrientBarChart from "@/components/rekam-gizi/NutrientBarChart";
-import WeeklyMacroDonut from "@/components/rekam-gizi/WeeklyMacroDonut";
+import DailyMacroDonut from "@/components/rekam-gizi/DailyMacroDonut";
 
 interface JournalLog {
   id: string;
@@ -184,7 +184,7 @@ export default function RekamGiziPage() {
                 d="M12 4v16m8-8H4"
               />
             </motion.svg>
-            {isFormOpen ? "Tutup Form" : "Entri Baru"}
+            {isFormOpen ? "Tutup Form" : "Rekam Baru"}
           </button>
         </div>
       </div>
@@ -254,7 +254,7 @@ export default function RekamGiziPage() {
               </div>
             )}
           </div>
-          <NutrientBarChart data={analytics?.minerals || []} />
+          <NutrientBarChart />
         </div>
 
         <div className="lg:col-span-5 space-y-6">
@@ -265,11 +265,15 @@ export default function RekamGiziPage() {
               currentProtein={analytics?.daily.protein || 0}
               dateString={selectedDate} // Salurkan state filter kalender ke sini
             />
-            <WeeklyMacroDonut
-              macro={analytics?.macro || { karbo: 55, lemak: 25, protein: 20 }}
+            <DailyMacroDonut
+              macro={
+                analytics?.daily.calories && analytics.daily.calories > 0
+                  ? analytics.macro
+                  : { karbo: 0, lemak: 0, protein: 0 }
+              }
+              dateString={selectedDate}
             />
           </div>
-          
         </div>
       </div>
     </div>

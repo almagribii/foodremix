@@ -15,13 +15,13 @@ export default function RegisterPage() {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
-  
+
   // Account fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
-  
+
   // Profile fields
   const [nickname, setNickname] = useState("");
   const [dailyBudgetTarget, setDailyBudgetTarget] = useState("30000");
@@ -30,7 +30,7 @@ export default function RegisterPage() {
   const [generalLocation, setGeneralLocation] = useState("");
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
-  
+
   // UI states
   const [error, setError] = useState("");
   const [showMap, setShowMap] = useState(false);
@@ -43,13 +43,13 @@ export default function RegisterPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  // Auto-detect lokasi sekarang
+  // Auto-detect lokasi sekarang dengan optimasi string wilayah Foodremix
   const handleAutoDetectLocation = async () => {
     setLocatingGeolocation(true);
     setError("");
 
     if (!navigator.geolocation) {
-      setError("Browser Anda tidak support geolocation");
+      setError("Browser Anda tidak mendukung deteksi lokasi GPS.");
       setLocatingGeolocation(false);
       return;
     }
@@ -60,33 +60,41 @@ export default function RegisterPage() {
         setLatitude(lat);
         setLongitude(lng);
 
-        // Reverse geocoding menggunakan Nominatim (OpenStreetMap)
         try {
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`,
           );
           const data = await response.json();
-          
-          // Extract nama lokasi dari response
-          const locationName =
-            data.address?.city ||
-            data.address?.town ||
-            data.address?.village ||
-            data.address?.county ||
-            `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-          
-          setGeneralLocation(locationName);
-        } catch (err) {
-          // Fallback jika reverse geocoding error
-          setGeneralLocation(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-        }
 
-        setLocatingGeolocation(false);
+          // Memecah komponen alamat agar menghasilkan format string daerah yang rapi
+          if (data.display_name) {
+            const displayName = data.display_name
+              .split(",")
+              .slice(0, 3)
+              .join(",")
+              .trim();
+            setGeneralLocation(displayName);
+          } else {
+            const locationName =
+              data.address?.suburb ||
+              data.address?.town ||
+              data.address?.city ||
+              `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            setGeneralLocation(locationName);
+          }
+        } catch (err) {
+          setGeneralLocation(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        } finally {
+          setLocatingGeolocation(false);
+        }
       },
       (err) => {
-        setError(`Error: ${err.message}`);
+        setError(
+          `Gagal mengunci GPS: ${err.message}. Silakan pilih lewat peta.`,
+        );
         setLocatingGeolocation(false);
       },
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   };
 
@@ -103,17 +111,27 @@ export default function RegisterPage() {
     setError("");
 
     if (!email || !password || !name || !nickname || !generalLocation) {
-      setError("Nama, email, nickname, lokasi, dan password harus diisi");
+      setError(
+        "Nama, email, nickname, lokasi, dan password harus diisi lengkap.",
+      );
       return;
     }
 
     if (password.length < 6) {
-      setError("Password minimal 6 karakter");
+      setError("Password minimal harus 6 karakter.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Password tidak cocok");
+      setError("Konfirmasi password tidak cocok.");
+      return;
+    }
+
+    // Proteksi Akhir: Validasi ketersediaan data koordinat demi Remix Share
+    if (!latitude || !longitude) {
+      setError(
+        "Harap klik tombol 'Auto' atau 'Peta' untuk mengunci koordinat lokasi Anda.",
+      );
       return;
     }
 
@@ -132,12 +150,12 @@ export default function RegisterPage() {
           dailyBudgetTarget: parseFloat(dailyBudgetTarget),
           medicalConditions: medicalConditions
             .split(",")
-            .map((c) => c.trim())
-            .filter((c) => c),
+            .map((c) => c.trim().toLowerCase())
+            .filter(Boolean),
           allergies: allergies
             .split(",")
-            .map((a) => a.trim())
-            .filter((a) => a),
+            .map((a) => a.trim().toLowerCase())
+            .filter(Boolean),
           generalLocation,
           latitude,
           longitude,
@@ -164,14 +182,21 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-light py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-card rounded-lg shadow-md p-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">Daftar Akun</h1>
-          <p className="text-foreground mb-6">Bergabunglah dengan Foodremix</p>
+    <div className="min-h-screen bg-zinc-50 py-12 px-4 flex flex-col justify-center items-center">
+      <div className="max-w-2xl w-full mx-auto">
+        {/* Kontainer Utama Bergaya Minimalis Premium */}
+        <div className="bg-white border border-zinc-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-[#1A1A1A]">
+              Daftar Akun
+            </h1>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Bergabunglah dengan ekosistem pangan hemat & sehat Foodremix.
+            </p>
+          </div>
 
           {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold rounded-xl">
               {error}
             </div>
           )}
@@ -179,15 +204,15 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Nama Lengkap */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
                   Nama Lengkap *
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
                   placeholder="Nama lengkap"
                   disabled={loading}
                   required
@@ -195,51 +220,50 @@ export default function RegisterPage() {
               </div>
 
               {/* Nickname */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Nickname *
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
+                  Nama Panggilan (Nickname) *
                 </label>
                 <input
                   type="text"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  placeholder="Nama panggilan"
+                  className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
+                  placeholder="Nama panggilan akun"
                   disabled={loading}
                   required
                 />
               </div>
 
               {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Email *
+              <div className="md:col-span-2 space-y-1.5">
+                <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
+                  Alamat Email *
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  placeholder="you@example.com"
+                  className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
+                  placeholder="nama@email.com"
                   disabled={loading}
                   required
                 />
               </div>
 
-              {/* Lokasi */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Lokasi *
+              {/* Lokasi Terproteksi Validasi */}
+              <div className="md:col-span-2 space-y-1.5">
+                <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
+                  Wilayah Tempat Tinggal (Lokasi P2P) *
                 </label>
-                
-                {/* Location input + buttons */}
-                <div className="flex gap-2 mb-2">
+
+                <div className="flex gap-2">
                   <input
                     type="text"
                     value={generalLocation}
                     onChange={(e) => setGeneralLocation(e.target.value)}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                    placeholder="Masukkan atau pilih lokasi"
+                    className="flex-1 px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
+                    placeholder="Masukkan atau cari lokasi Anda..."
                     disabled={loading}
                     required
                   />
@@ -247,23 +271,23 @@ export default function RegisterPage() {
                     type="button"
                     onClick={handleAutoDetectLocation}
                     disabled={loading || locatingGeolocation}
-                    className="px-4 py-2 bg-accent text-primary rounded-lg font-semibold hover:bg-opacity-90 transition disabled:opacity-50 whitespace-nowrap"
+                    className="px-4 py-2.5 bg-zinc-100 border border-zinc-300 text-zinc-700 text-xs font-bold rounded-xl hover:bg-zinc-200 transition flex items-center gap-1.5 shrink-0 disabled:opacity-50"
                   >
-                    {locatingGeolocation ? "Detecting..." : "📍 Auto"}
+                    {locatingGeolocation ? "Mencari..." : "📍 Auto"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowMap(!showMap)}
                     disabled={loading}
-                    className="px-4 py-2 bg-accent text-primary rounded-lg font-semibold hover:bg-opacity-90 transition disabled:opacity-50 whitespace-nowrap"
+                    className="px-4 py-2.5 bg-zinc-100 border border-zinc-300 text-zinc-700 text-xs font-bold rounded-xl hover:bg-zinc-200 transition flex items-center gap-1.5 shrink-0"
                   >
-                    🗺️ Map
+                    🗺️ Peta
                   </button>
                 </div>
 
-                {/* Map picker */}
+                {/* Map picker container rendering */}
                 {showMap && (
-                  <div className="mb-4 p-4 border border-gray-300 rounded-lg bg-white">
+                  <div className="mt-3 p-4 border border-zinc-200 rounded-2xl bg-zinc-50 overflow-hidden shadow-inner">
                     <LocationMap
                       onSelectLocation={handleMapSelect}
                       initialLat={latitude}
@@ -273,22 +297,23 @@ export default function RegisterPage() {
                 )}
 
                 {latitude && longitude && (
-                  <p className="text-xs text-foreground mt-1">
-                    📍 Koordinat: {latitude.toFixed(4)}, {longitude.toFixed(4)}
+                  <p className="text-[10px] font-bold text-emerald-600 mt-1 flex items-center gap-1">
+                    ✓ Koordinat Aktif Terkunci: [{latitude.toFixed(4)},{" "}
+                    {longitude.toFixed(4)}]
                   </p>
                 )}
               </div>
 
               {/* Password */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
                   Password *
                 </label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
                   placeholder="••••••••"
                   disabled={loading}
                   required
@@ -296,31 +321,31 @@ export default function RegisterPage() {
               </div>
 
               {/* Konfirmasi Password */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
                   Konfirmasi Password *
                 </label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
                   placeholder="••••••••"
                   disabled={loading}
                   required
                 />
               </div>
 
-              {/* Daily Budget Target */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Target Budget Harian (Rp)
+              {/* Target Budget Harian */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
+                  Target Budget Hemat Harian (Rp)
                 </label>
                 <input
                   type="number"
                   value={dailyBudgetTarget}
                   onChange={(e) => setDailyBudgetTarget(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
                   placeholder="30000"
                   disabled={loading}
                   min="0"
@@ -328,30 +353,30 @@ export default function RegisterPage() {
               </div>
 
               {/* Medical Conditions */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Kondisi Medis
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
+                  Riwayat Penyakit (Proteksi Medis)
                 </label>
                 <input
                   type="text"
                   value={medicalConditions}
                   onChange={(e) => setMedicalConditions(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
                   placeholder="maag, hipertensi (pisahkan dengan koma)"
                   disabled={loading}
                 />
               </div>
 
               {/* Allergies */}
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Alergi Makanan
+              <div className="md:col-span-2 space-y-1.5">
+                <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
+                  Alergi Makanan Aktif
                 </label>
                 <input
                   type="text"
                   value={allergies}
                   onChange={(e) => setAllergies(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
                   placeholder="seafood, laktosa (pisahkan dengan koma)"
                   disabled={loading}
                 />
@@ -361,22 +386,20 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-opacity-90 transition disabled:opacity-50 mt-6"
+              className="w-full bg-[#1A1A1A] text-white py-3 rounded-xl font-bold hover:bg-zinc-800 transition shadow-sm disabled:opacity-50 mt-6 text-xs"
             >
-              {loading ? "Daftar..." : "Daftar"}
+              {loading ? "Memproses Pembuatan Akun..." : "Daftar Sekarang"}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-foreground">
-              Sudah punya akun?{" "}
-              <Link
-                href="/login"
-                className="text-accent font-semibold hover:underline"
-              >
-                Masuk di sini
-              </Link>
-            </p>
+          <div className="pt-4 border-t border-zinc-100 text-center text-xs text-zinc-500">
+            Sudah memiliki akun terdaftar?{" "}
+            <Link
+              href="/login"
+              className="text-[#1A1A1A] font-bold hover:underline"
+            >
+              Masuk di sini
+            </Link>
           </div>
         </div>
       </div>

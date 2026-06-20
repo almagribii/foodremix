@@ -13,39 +13,59 @@ export async function POST(request: NextRequest) {
       medicalConditions,
       allergies,
       generalLocation,
+      latitude,
+      longitude,
     } = await request.json();
 
-    // Validasi input
+    // 1. Validasi Input Utama Form
     if (!email || !password || !nickname || !generalLocation) {
       return NextResponse.json(
-        { error: "Email, password, nickname, dan lokasi harus diisi" },
+        {
+          error:
+            "Email, password, nickname, dan wilayah lokasi harus diisi lengkap",
+        },
         { status: 400 },
       );
     }
 
     if (password.length < 6) {
       return NextResponse.json(
-        { error: "Password minimal 6 karakter" },
+        { error: "Password minimal harus 6 karakter" },
         { status: 400 },
       );
     }
 
-    // Cek user sudah terdaftar
+    // 2. Cek Akun Terduplikasi
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "Email sudah terdaftar" },
+        { error: "Email tersebut sudah terdaftar di sistem Foodremix" },
         { status: 409 },
       );
     }
 
-    // Hash password
+    // 3. Hash Password dengan Aman
     const hashedPassword = await hashPassword(password);
 
-    // Buat user dan profile bersama
+    // 4. Sanitasi Array Medis & Alergi
+    const sanitizeToArray = (data: unknown): string[] => {
+      if (Array.isArray(data)) {
+        return data
+          .map((item) => String(item).trim().toLowerCase())
+          .filter(Boolean);
+      }
+      return [];
+    };
+
+    // 5. Ekstraksi Koordinat GPS dengan Fallback Aman (Default Ponorogo jika kosong)
+    // Koordinat pusat Kota Ponorogo: Lat -7.8681, Lng 111.4665
+    const parsedLat = latitude ? parseFloat(String(latitude)) : -7.8681;
+    const parsedLng = longitude ? parseFloat(String(longitude)) : 111.4665;
+
+    // 6. Transaksi Pembuatan User & UserProfile Secara Atomik di Postgres
     const user = await prisma.user.create({
       data: {
         email,
@@ -54,10 +74,12 @@ export async function POST(request: NextRequest) {
         userProfile: {
           create: {
             nickname,
-            dailyBudgetTarget: dailyBudgetTarget || 30000,
-            medicalConditions: medicalConditions || [],
-            allergies: allergies || [],
-            generalLocation: generalLocation, // Wajib, tidak boleh null
+            dailyBudgetTarget: parseFloat(String(dailyBudgetTarget)) || 30000,
+            medicalConditions: sanitizeToArray(medicalConditions),
+            allergies: sanitizeToArray(allergies),
+            generalLocation: generalLocation, // Wajib diisi string daerah baku
+            latitude: parsedLat,
+            longitude: parsedLng,
           },
         },
       },
@@ -66,7 +88,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Generate token
+    // 7. Generate JWT Session Token
     const token = generateToken({
       userId: user.id,
       email: user.email,
@@ -74,7 +96,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Registrasi berhasil",
+        message: "Registrasi akun Foodremix berhasil",
         user: {
           id: user.id,
           email: user.email,
@@ -91,9 +113,9 @@ export async function POST(request: NextRequest) {
       },
     );
   } catch (error) {
-    console.error("Register error:", error);
+    console.error("Register database error:", error);
     return NextResponse.json(
-      { error: "Terjadi kesalahan saat registrasi" },
+      { error: "Terjadi kesalahan internal saat memproses registrasi" },
       { status: 500 },
     );
   }
