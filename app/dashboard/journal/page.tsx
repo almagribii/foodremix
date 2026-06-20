@@ -184,7 +184,7 @@ export default function RekamGiziPage() {
                 d="M12 4v16m8-8H4"
               />
             </motion.svg>
-            {isFormOpen ? "Tutup Form" : "Entri Baru"}
+            {isFormOpen ? "Tutup Form" : "Rekam Baru"}
           </button>
         </div>
       </div>
