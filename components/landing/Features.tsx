@@ -25,8 +25,9 @@ export default function Features() {
   };
 
   return (
-    <section id="fitur" className="py-28 bg-[#1C1614] relative overflow-hidden flex flex-col items-center justify-center">
+    <section id="fitur" className="pt-28 pb-40 bg-[#1C1614] relative overflow-hidden flex flex-col items-center justify-center">
       
+      {/* BACKGROUND PATTERN UTAMA DI BODY SECTIONS */}
       <div 
         className="absolute inset-0 pointer-events-none opacity-[0.2] select-none z-0 mix-blend-overlay"
         style={{
@@ -70,10 +71,9 @@ export default function Features() {
         </motion.p>
       </div>
 
-      {/* ─── 3. CAROUSEL AREA COVFRFLOW 3D ─── */}
+      {/* CAROUSEL AREA COVERFLOW 3D */}
       <div className="relative w-full max-w-5xl flex items-center justify-center px-4 md:px-12 z-10 h-[460px]">
         
-        {/* Tombol Kiri Kaca Standar */}
         <button
           onClick={handlePrev}
           className="absolute left-4 md:left-12 p-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md text-stone-400 hover:text-amber-400 hover:border-amber-500/30 transition-all active:scale-95 z-30 cursor-pointer shadow-lg shadow-black/30"
@@ -82,12 +82,10 @@ export default function Features() {
           <ChevronLeft size={18} />
         </button>
 
-        {/* CONTANER UTAMA ANIMASI KOTAK */}
-        <div className="relative w-full h-full flex items-center justify-center overflow-hidden性能-none">
+        <div className="relative w-full h-full flex items-center justify-center overflow-hidden pointer-events-none">
           {featuresData.map((feature, idx) => {
             let offset = idx - activeIndex;
             
-            // Loop melingkar logic
             if (offset < -2) offset += featuresData.length;
             if (offset > 2) offset -= featuresData.length;
 
@@ -101,11 +99,11 @@ export default function Features() {
                 key={idx}
                 className="absolute w-[290px] sm:w-[330px] h-[400px] rounded-[36px] border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8 flex flex-col items-center justify-center text-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_25px_50px_-12px_rgba(0,0,0,0.6)] select-none"
                 animate={{
-                  x: offset * 230,              // Jarak geser kanan kiri
-                  scale: isCenter ? 1 : 0.82,    // Kunci mengecil di kanan-kiri bergantian
-                  opacity: isCenter ? 1 : 0.35,  // Memudar di tepi
-                  zIndex: isCenter ? 20 : 10,    // Tengah menimpa samping
-                  rotateY: offset * -12,         // Rotasi kedalaman visual 3D
+                  x: offset * 230,
+                  scale: isCenter ? 1 : 0.82,
+                  opacity: isCenter ? 1 : 0.35,
+                  zIndex: isCenter ? 20 : 10,
+                  rotateY: offset * -12,
                 }}
                 transition={{
                   type: "spring",
@@ -113,12 +111,10 @@ export default function Features() {
                   damping: 24,
                 }}
               >
-                {/* Efek Gradasi Sinar Internal Kaca Aktif */}
                 {isCenter && (
                   <div className="absolute inset-0 rounded-[36px] bg-gradient-to-b from-amber-500/[0.05] to-transparent pointer-events-none border border-amber-500/20" />
                 )}
 
-                {/* Wrapper Icon */}
                 <div className={`p-4 rounded-2xl mb-6 transition-all duration-500 ${
                   isCenter 
                     ? "bg-amber-500/10 text-amber-400 scale-110 shadow-[0_0_20px_rgba(245,158,11,0.15)]" 
@@ -127,14 +123,12 @@ export default function Features() {
                   {feature.icon}
                 </div>
 
-                {/* Judul Fitur di Dalam Card (Typography Dipercantik) */}
                 <h3 className={`text-base font-extrabold tracking-tight mb-3 transition-colors duration-500 uppercase ${
                   isCenter ? "text-amber-400 font-black tracking-wider" : "text-stone-300"
                 }`}>
                   {feature.title}
                 </h3>
 
-                {/* Deskripsi Fitur */}
                 <p className="text-xs text-stone-400 font-medium leading-relaxed px-2">
                   {feature.desc}
                 </p>
@@ -143,7 +137,6 @@ export default function Features() {
           })}
         </div>
 
-        {/* Tombol Kanan Kaca Standar */}
         <button
           onClick={handleNext}
           className="absolute right-4 md:right-12 p-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md text-stone-400 hover:text-amber-400 hover:border-amber-500/30 transition-all active:scale-95 z-30 cursor-pointer shadow-lg shadow-black/30"
@@ -154,8 +147,7 @@ export default function Features() {
 
       </div>
 
-      {/* Navigasi Bulat Tipis Bawah */}
-      <div className="flex items-center gap-2 mt-4 z-10 bg-white/[0.02] border border-white/5 px-4 py-2 rounded-full backdrop-blur-sm shadow-inner">
+      <div className="flex items-center gap-2 mt-4 z-10 bg-white/[0.02] border border-white/5 px-4 py-2 rounded-full backdrop-blur-sm shadow-inner mb-8">
         {featuresData.map((_, idx) => (
           <button
             key={idx}
@@ -165,6 +157,63 @@ export default function Features() {
             }`}
           />
         ))}
+      </div>
+
+      {/* ─── 3. PEMBATAS GELOMBANG TERINTEGRASI PATTERN PUTHIR (Solusi image_4ec841.png) ─── */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 w-full overflow-hidden select-none z-30 filter drop-shadow-[0_-8px_20px_rgba(234,179,8,0.15)]"
+        style={{ marginBottom: "-3px" }}
+      >
+        <svg 
+          viewBox="0 0 1440 120" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-auto overflow-visible"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            {/* Inject pola batik terang ke dalam kurva isi ombak */}
+            <pattern id="batik-white-wave" width="240" height="240" patternUnits="userSpaceOnUse">
+              <rect width="240" height="240" fill="#FBFBFA" />
+              <image href="/bg-pattern.jpeg" width="240" height="240" className="opacity-[0.06]" />
+            </pattern>
+          </defs>
+
+          {/* Isi struktur ombak menggunakan fill pattern batik putih */}
+          <path 
+            d="M0,120 L0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65 L1440,120 Z" 
+            fill="url(#batik-white-wave)" 
+          />
+          
+          {/* Garis Outline Gelap */}
+          <motion.path 
+            d="M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65" 
+            stroke="#1C1614" 
+            strokeWidth="2.5" 
+            strokeLinecap="round"
+            opacity="0.85"
+            animate={{ d: [
+              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65",
+              "M0,70 C120,50, 240,80, 360,70 C480,50, 600,80, 720,70 C840,50, 960,80, 1080,70 C1200,50, 1320,80, 1440,70",
+              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65"
+            ]}}
+            transition={{ type: "tween", duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {/* Garis Inti Berpendar Emas */}
+          <motion.path 
+            d="M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65" 
+            stroke="#eab308" 
+            strokeWidth="1.2" 
+            strokeLinecap="round"
+            animate={{ d: [
+              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65",
+              "M0,70 C120,50, 240,80, 360,70 C480,50, 600,80, 720,70 C840,50, 960,80, 1080,70 C1200,50, 1320,80, 1440,70",
+              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65"
+            ]}}
+            transition={{ type: "tween", duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.08 }}
+          />
+        </svg>
       </div>
 
     </section>

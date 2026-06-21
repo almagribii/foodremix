@@ -194,7 +194,7 @@ export default function Hero() {
             </span>
           </motion.h1>
 
-          {/* PEMBATAS GELOMBANG */}
+          {/* PEMBATAS GELOMBANG KECIL */}
           <motion.div 
             variants={waveLineVariants}
             className="w-40 h-8 relative flex items-center justify-center my-1 select-none filter drop-shadow-[0_0_8px_rgba(194,155,56,0.5)]"
@@ -325,7 +325,7 @@ export default function Hero() {
 
       </div>
 
-      {/* ─── 3. SECTION DIVIDER: GLOWING WAVE (PERBAIKAN TRANSISI BERSIH) ─── */}
+      {/* ─── 3. SECTION DIVIDER: GLOWING WAVE (POLA BATIK COKELAT MENYATU DINAMIS) ─── */}
       <div 
         className="absolute bottom-0 left-0 right-0 w-full overflow-hidden select-none z-30 filter drop-shadow-[0_-8px_20px_rgba(234,179,8,0.25)]"
         style={{
@@ -339,11 +339,20 @@ export default function Hero() {
           className="w-full h-auto overflow-visible"
           preserveAspectRatio="none"
         >
-          {/* Bagian bawah diisi warna gelap solid milik section Features di bawahnya */}
-          {/* Kurva diturunkan ke Y: 65 & 45 untuk menjamin potongan lurus sempurna di bagian bawah */}
+          {/* Suntikkan pola batik cokelat langsung ke dalam kurva SVG */}
+          <defs>
+            <pattern id="batik-pattern-wave" width="240" height="240" patternUnits="userSpaceOnUse">
+              {/* Warna latar belakang solid milik section Features */}
+              <rect width="240" height="240" fill="#1C1614" />
+              {/* Tekstur motif batik hiasan */}
+              <image href="/bg-pattern2.png" width="240" height="240" className="opacity-[0.2]" style={{ mixBlendMode: 'overlay' }} />
+            </pattern>
+          </defs>
+
+          {/* Isi struktur ombak menggunakan fill pattern batik */}
           <path 
             d="M0,120 L0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65 L1440,120 Z" 
-            fill="#1C1614" 
+            fill="url(#batik-pattern-wave)" 
           />
           
           {/* Garis Outline Gelap */}
