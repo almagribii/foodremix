@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { extractToken, verifyToken } from "@/lib/auth";
 import { GoogleGenAI, Part } from "@google/genai";
+import { triggerRemixNotification } from "@/lib/notifications";
 
 const apiKey = process.env.GEMINI_API_KEY_CHATBOT || "";
 const ai = new GoogleGenAI({ apiKey });
@@ -151,17 +152,28 @@ export async function POST(request: NextRequest) {
     // Jika input VALID, baru simpan ke tabel data histori memasak PostgreSQL
     let historyId = null;
     if (parsedResult.status === "VALID" && parsedResult.recipe) {
+      const moneySaved = parseFloat(parsedResult.recipe.moneySaved) || 20000;
+      const carbonPrevented =
+        parseFloat(parsedResult.recipe.carbonPrevented) || 0.4;
+
       const historyLog = await prisma.remixHistory.create({
         data: {
           userId: userProfile.id,
           recipeName: parsedResult.recipe.recipeName,
           ingredientsUsed: parsedResult.recipe.ingredientsUsed,
-          moneySaved: parseFloat(parsedResult.recipe.moneySaved) || 20000,
-          carbonPrevented:
-            parseFloat(parsedResult.recipe.carbonPrevented) || 0.4,
+          moneySaved,
+          carbonPrevented,
         },
       });
       historyId = historyLog.id;
+
+      // Trigger notifikasi remix — fire-and-forget
+      triggerRemixNotification(
+        userProfile.id,
+        parsedResult.recipe.recipeName,
+        moneySaved,
+        carbonPrevented,
+      );
     }
 
     return NextResponse.json(

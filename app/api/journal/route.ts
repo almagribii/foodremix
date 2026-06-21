@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { extractToken, verifyToken } from "@/lib/auth";
 import { GoogleGenAI, Type } from "@google/genai";
+import { triggerWellnessNotification } from "@/lib/notifications";
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 
@@ -271,6 +272,9 @@ export async function POST(request: NextRequest) {
         healthScore: aiResult.healthScore,
       },
     });
+
+    // Trigger notifikasi wellness berdasarkan healthScore (fire-and-forget)
+    triggerWellnessNotification(profile.id, aiResult.healthScore, foodEaten);
 
     return NextResponse.json(newJournal);
   } catch (error) {

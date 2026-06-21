@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { extractToken, verifyToken } from "@/lib/auth";
 import { GoogleGenAI } from "@google/genai";
+import { triggerPickerNotification } from "@/lib/notifications";
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const ai = new GoogleGenAI({ apiKey });
@@ -127,6 +128,14 @@ export async function POST(request: NextRequest) {
         },
       });
       savedRecordId = newPickerLog.id;
+
+      // Trigger notifikasi picker jika bahan berbahaya / tidak layak — fire-and-forget
+      triggerPickerNotification(
+        profile.id,
+        aiData.itemName,
+        aiData.verdict,
+        aiData.analysisDetails,
+      );
     }
 
     // 8. Kembalikan Respon Utuh ke Frontend
