@@ -29,13 +29,7 @@ export default function RecipeResultCard({
             {recipe.recipeName}
           </h2>
         </div>
-        <button
-          type="button"
-          onClick={onOpenShareModal}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#1A1A1A] hover:bg-zinc-800 text-white transition text-[10px] font-black uppercase tracking-widest rounded-xl shrink-0 shadow-sm"
-        >
-          🤝 Patungan Bahan
-        </button>
+        
       </div>
 
       {/* Grid Penghitung Target SDGs */}

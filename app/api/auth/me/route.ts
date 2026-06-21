@@ -50,7 +50,6 @@ export async function GET(request: NextRequest) {
           select: {
             nickname: true,
             dailyBudgetTarget: true,
-            generalLocation: true,
           },
         },
       },

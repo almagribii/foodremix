@@ -4,12 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/useAuth";
-import dynamic from "next/dynamic";
-
-// Lazy load map component
-const LocationMap = dynamic(() => import("@/components/LocationMap"), {
-  ssr: false,
-});
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,14 +21,9 @@ export default function RegisterPage() {
   const [dailyBudgetTarget, setDailyBudgetTarget] = useState("30000");
   const [medicalConditions, setMedicalConditions] = useState("");
   const [allergies, setAllergies] = useState("");
-  const [generalLocation, setGeneralLocation] = useState("");
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
 
   // UI states
   const [error, setError] = useState("");
-  const [showMap, setShowMap] = useState(false);
-  const [locatingGeolocation, setLocatingGeolocation] = useState(false);
 
   // Redirect ke dashboard jika sudah login
   useEffect(() => {
@@ -43,148 +32,76 @@ export default function RegisterPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  // Auto-detect lokasi sekarang dengan optimasi string wilayah Foodremix
-  const handleAutoDetectLocation = async () => {
-    setLocatingGeolocation(true);
-    setError("");
+ const handleSubmit = async (e: React.FormEvent) => {
+   e.preventDefault();
+   setError("");
 
-    if (!navigator.geolocation) {
-      setError("Browser Anda tidak mendukung deteksi lokasi GPS.");
-      setLocatingGeolocation(false);
-      return;
-    }
+   if (!email || !password || !name || !nickname) {
+     setError("Nama, email, nickname, dan password harus diisi lengkap.");
+     return;
+   }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude: lat, longitude: lng } = position.coords;
-        setLatitude(lat);
-        setLongitude(lng);
+   if (password.length < 6) {
+     setError("Password minimal harus 6 karakter.");
+     return;
+   }
 
-        try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`,
-          );
-          const data = await response.json();
+   if (password !== confirmPassword) {
+     setError("Konfirmasi password tidak cocok.");
+     return;
+   }
 
-          // Memecah komponen alamat agar menghasilkan format string daerah yang rapi
-          if (data.display_name) {
-            const displayName = data.display_name
-              .split(",")
-              .slice(0, 3)
-              .join(",")
-              .trim();
-            setGeneralLocation(displayName);
-          } else {
-            const locationName =
-              data.address?.suburb ||
-              data.address?.town ||
-              data.address?.city ||
-              `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-            setGeneralLocation(locationName);
-          }
-        } catch (err) {
-          setGeneralLocation(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-        } finally {
-          setLocatingGeolocation(false);
-        }
-      },
-      (err) => {
-        setError(
-          `Gagal mengunci GPS: ${err.message}. Silakan pilih lewat peta.`,
-        );
-        setLocatingGeolocation(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
-  };
+   setLoading(true);
+   try {
+     const res = await fetch("/api/auth/register", {
+       method: "POST",
+       headers: {
+         "Content-Type": "application/json",
+       },
+       body: JSON.stringify({
+         email,
+         password,
+         name,
+         nickname,
+         dailyBudgetTarget: parseFloat(dailyBudgetTarget),
+         medicalConditions: medicalConditions
+           .split(",")
+           .map((c) => c.trim().toLowerCase())
+           .filter(Boolean),
+         allergies: allergies
+           .split(",")
+           .map((a) => a.trim().toLowerCase())
+           .filter(Boolean),
+       }),
+     });
 
-  // Handle map location select
-  const handleMapSelect = (lat: number, lng: number, name: string) => {
-    setLatitude(lat);
-    setLongitude(lng);
-    setGeneralLocation(name);
-    setShowMap(false);
-  };
+     const data = await res.json();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+     if (!res.ok) {
+       throw new Error(data.error || "Registrasi gagal");
+     }
 
-    if (!email || !password || !name || !nickname || !generalLocation) {
-      setError(
-        "Nama, email, nickname, lokasi, dan password harus diisi lengkap.",
-      );
-      return;
-    }
+     localStorage.setItem("token", data.token);
 
-    if (password.length < 6) {
-      setError("Password minimal harus 6 karakter.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Konfirmasi password tidak cocok.");
-      return;
-    }
-
-    // Proteksi Akhir: Validasi ketersediaan data koordinat demi Remix Share
-    if (!latitude || !longitude) {
-      setError(
-        "Harap klik tombol 'Auto' atau 'Peta' untuk mengunci koordinat lokasi Anda.",
-      );
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          name,
-          nickname,
-          dailyBudgetTarget: parseFloat(dailyBudgetTarget),
-          medicalConditions: medicalConditions
-            .split(",")
-            .map((c) => c.trim().toLowerCase())
-            .filter(Boolean),
-          allergies: allergies
-            .split(",")
-            .map((a) => a.trim().toLowerCase())
-            .filter(Boolean),
-          generalLocation,
-          latitude,
-          longitude,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Registrasi gagal");
-      }
-
-      const data = await res.json();
-      localStorage.setItem("token", data.token);
-      router.push("/dashboard");
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Registrasi gagal, silahkan coba lagi",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+     if (data.token) {
+       window.location.href = "/dashboard";
+     } else {
+       router.push("/dashboard");
+     }
+   } catch (err) {
+     setError(
+       err instanceof Error
+         ? err.message
+         : "Registrasi gagal, silahkan coba lagi",
+     );
+   } finally {
+     setLoading(false);
+   }
+ };
 
   return (
     <div className="min-h-screen bg-zinc-50 py-12 px-4 flex flex-col justify-center items-center">
       <div className="max-w-2xl w-full mx-auto">
-        {/* Kontainer Utama Bergaya Minimalis Premium */}
         <div className="bg-white border border-zinc-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
           <div>
             <h1 className="text-2xl font-black tracking-tight text-[#1A1A1A]">
@@ -249,59 +166,6 @@ export default function RegisterPage() {
                   disabled={loading}
                   required
                 />
-              </div>
-
-              {/* Lokasi Terproteksi Validasi */}
-              <div className="md:col-span-2 space-y-1.5">
-                <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400">
-                  Wilayah Tempat Tinggal (Lokasi P2P) *
-                </label>
-
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={generalLocation}
-                    onChange={(e) => setGeneralLocation(e.target.value)}
-                    className="flex-1 px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl outline-none focus:border-zinc-400 transition"
-                    placeholder="Masukkan atau cari lokasi Anda..."
-                    disabled={loading}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAutoDetectLocation}
-                    disabled={loading || locatingGeolocation}
-                    className="px-4 py-2.5 bg-zinc-100 border border-zinc-300 text-zinc-700 text-xs font-bold rounded-xl hover:bg-zinc-200 transition flex items-center gap-1.5 shrink-0 disabled:opacity-50"
-                  >
-                    {locatingGeolocation ? "Mencari..." : "📍 Auto"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowMap(!showMap)}
-                    disabled={loading}
-                    className="px-4 py-2.5 bg-zinc-100 border border-zinc-300 text-zinc-700 text-xs font-bold rounded-xl hover:bg-zinc-200 transition flex items-center gap-1.5 shrink-0"
-                  >
-                    🗺️ Peta
-                  </button>
-                </div>
-
-                {/* Map picker container rendering */}
-                {showMap && (
-                  <div className="mt-3 p-4 border border-zinc-200 rounded-2xl bg-zinc-50 overflow-hidden shadow-inner">
-                    <LocationMap
-                      onSelectLocation={handleMapSelect}
-                      initialLat={latitude}
-                      initialLng={longitude}
-                    />
-                  </div>
-                )}
-
-                {latitude && longitude && (
-                  <p className="text-[10px] font-bold text-emerald-600 mt-1 flex items-center gap-1">
-                    ✓ Koordinat Aktif Terkunci: [{latitude.toFixed(4)},{" "}
-                    {longitude.toFixed(4)}]
-                  </p>
-                )}
               </div>
 
               {/* Password */}

@@ -58,8 +58,8 @@ export default function Sidebar({
       ),
     },
     {
-      name: "Remix Share",
-      path: "/dashboard/share",
+      name: "Remix Picker",
+      path: "/dashboard/picker",
       icon: (
         <svg
           className="h-5 w-5"
@@ -148,7 +148,7 @@ export default function Sidebar({
       <div
         className={`flex items-center shrink-0 ${isOpen ? "justify-between px-6" : "justify-center"}`}
       >
-        <Link href="/dashboard" className="flex items-center gap-3 group">
+        <Link href="/" className="flex items-center gap-3 group">
           <div className="relative h-9 w-9 overflow-hidden rounded-xl transition-transform group-hover:scale-105">
             <Image
               src="/logo-food.png"

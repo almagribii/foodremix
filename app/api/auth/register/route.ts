@@ -12,18 +12,12 @@ export async function POST(request: NextRequest) {
       dailyBudgetTarget,
       medicalConditions,
       allergies,
-      generalLocation,
-      latitude,
-      longitude,
     } = await request.json();
 
-    // 1. Validasi Input Utama Form
-    if (!email || !password || !nickname || !generalLocation) {
+    // 1. Validasi Input Utama Form (generalLocation dihapus)
+    if (!email || !password || !nickname) {
       return NextResponse.json(
-        {
-          error:
-            "Email, password, nickname, dan wilayah lokasi harus diisi lengkap",
-        },
+        { error: "Email, password, dan nickname harus diisi lengkap" },
         { status: 400 },
       );
     }
@@ -60,12 +54,7 @@ export async function POST(request: NextRequest) {
       return [];
     };
 
-    // 5. Ekstraksi Koordinat GPS dengan Fallback Aman (Default Ponorogo jika kosong)
-    // Koordinat pusat Kota Ponorogo: Lat -7.8681, Lng 111.4665
-    const parsedLat = latitude ? parseFloat(String(latitude)) : -7.8681;
-    const parsedLng = longitude ? parseFloat(String(longitude)) : 111.4665;
-
-    // 6. Transaksi Pembuatan User & UserProfile Secara Atomik di Postgres
+    // 5. Transaksi Pembuatan User & UserProfile (Tanpa field spasial/wilayah)
     const user = await prisma.user.create({
       data: {
         email,
@@ -77,9 +66,6 @@ export async function POST(request: NextRequest) {
             dailyBudgetTarget: parseFloat(String(dailyBudgetTarget)) || 30000,
             medicalConditions: sanitizeToArray(medicalConditions),
             allergies: sanitizeToArray(allergies),
-            generalLocation: generalLocation, // Wajib diisi string daerah baku
-            latitude: parsedLat,
-            longitude: parsedLng,
           },
         },
       },
@@ -88,7 +74,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 7. Generate JWT Session Token
+    // 6. Generate JWT Session Token
     const token = generateToken({
       userId: user.id,
       email: user.email,

@@ -9,16 +9,12 @@ interface ProfileData {
   dailyBudgetTarget: number;
   medicalConditions: string[];
   allergies: string[];
-  generalLocation: string;
-  latitude: number | null;
-  longitude: number | null;
 }
 
 export default function ProfilePage() {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [locating, setLocating] = useState(false); // Loading khusus deteksi GPS
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const [formData, setFormData] = useState<ProfileData>({
@@ -26,9 +22,6 @@ export default function ProfilePage() {
     dailyBudgetTarget: 30000,
     medicalConditions: [],
     allergies: [],
-    generalLocation: "",
-    latitude: null,
-    longitude: null,
   });
 
   const [newCondition, setNewCondition] = useState("");
@@ -52,9 +45,6 @@ export default function ProfilePage() {
               dailyBudgetTarget: data.profile.dailyBudgetTarget || 30000,
               medicalConditions: data.profile.medicalConditions || [],
               allergies: data.profile.allergies || [],
-              generalLocation: data.profile.generalLocation || "",
-              latitude: data.profile.latitude || null,
-              longitude: data.profile.longitude || null,
             });
           }
         }
@@ -71,83 +61,8 @@ export default function ProfilePage() {
     };
   }, [token]);
 
-  // Fungsi Proteksi Lokasi: Mengambil GPS Perangkat & Mengubah menjadi Teks Wilayah Baku
-  const handleDetectLocation = () => {
-    if (!navigator.geolocation) {
-      setMessage({
-        type: "error",
-        text: "Browser Anda tidak mendukung deteksi lokasi GPS.",
-      });
-      return;
-    }
-
-    setLocating(true);
-    setMessage({ type: "", text: "" });
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-
-        try {
-          // Reverse Geocoding gratis menggunakan Nominatim OpenStreetMap API
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1`,
-          );
-
-          if (response.ok) {
-            const geoData = await response.json();
-            // Ambil nama kecamatan/kota/desa yang human-readable
-            const displayName = geoData.display_name
-              .split(",")
-              .slice(0, 3)
-              .join(",")
-              .trim();
-
-            setFormData((prev) => ({
-              ...prev,
-              latitude,
-              longitude,
-              generalLocation:
-                displayName ||
-                `Koordinat: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-            }));
-            setMessage({
-              type: "success",
-              text: "Lokasi GPS berhasil disinkronkan!",
-            });
-          } else {
-            // Fallback jika API Geocode sibuk
-            setFormData((prev) => ({ ...prev, latitude, longitude }));
-          }
-        } catch (err) {
-          console.error("Reverse geocode error:", err);
-        } finally {
-          setLocating(false);
-        }
-      },
-      (error) => {
-        setLocating(false);
-        setMessage({
-          type: "error",
-          text: "Gagal mendeteksi lokasi. Pastikan izin GPS di browser Anda aktif.",
-        });
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
-  };
-
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validasi Akhir sebelum dikirim ke database
-    if (!formData.latitude || !formData.longitude) {
-      setMessage({
-        type: "error",
-        text: "Gagal menyimpan. Harap klik tombol deteksi lokasi terlebih dahulu untuk mengunci koordinat Remix Share yang valid!",
-      });
-      return;
-    }
-
     setSubmitting(true);
     setMessage({ type: "", text: "" });
     const activeToken = token || localStorage.getItem("token");
@@ -245,8 +160,7 @@ export default function ProfilePage() {
           Profil Pengguna
         </h1>
         <p className="text-xs text-zinc-500">
-          Konfigurasi batas proteksi medis dan lokasi presisi untuk fitur Remix
-          Share.
+          Konfigurasi batas proteksi medis dan preferensi gizi personal Anda.
         </p>
       </div>
 
@@ -263,22 +177,17 @@ export default function ProfilePage() {
             </div>
             <div>
               <h3 className="text-sm font-black text-[#1A1A1A]">
-                Informasi Dasar & Lokasi
+                Informasi Dasar
               </h3>
               <p className="text-[11px] text-zinc-400">
-                Data koordinat GPS dikunci rapat demi akurasi jarak patungan
-                pangan.
+                Data profil diselaraskan untuk personalisasi akurasi mesin AI.
               </p>
             </div>
           </div>
 
           {message.text && (
             <div
-              className={`p-3 border text-xs font-semibold rounded-xl ${
-                message.type === "success"
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                  : "bg-rose-50 border-rose-200 text-rose-800"
-              }`}
+              className={`p-3 border text-xs font-semibold rounded-xl ${message.type === "success" ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-rose-50 border-rose-200 text-rose-800"}`}
             >
               {message.text}
             </div>
@@ -317,57 +226,6 @@ export default function ProfilePage() {
                 required
               />
             </div>
-          </div>
-
-          {/* DENGAN VALIDASI DETEKSI LOKASI GPS BAKU */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold tracking-wide uppercase text-zinc-400 block">
-              Wilayah Tempat Tinggal (General Location)
-            </label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                value={formData.generalLocation}
-                readOnly
-                placeholder="Klik tombol disamping untuk sinkronisasi lokasi..."
-                className="flex-1 px-4 py-2.5 text-xs bg-zinc-100 border border-zinc-200 text-zinc-600 rounded-xl outline-none cursor-not-allowed"
-                required
-              />
-              <button
-                type="button"
-                onClick={handleDetectLocation}
-                disabled={locating}
-                className="px-4 py-2.5 bg-zinc-100 border border-zinc-300 text-zinc-700 text-xs font-bold rounded-xl hover:bg-zinc-200 transition flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
-              >
-                <svg
-                  className={`h-4 w-4 text-zinc-600 ${locating ? "animate-spin" : ""}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                {locating ? "Mencari GPS..." : "Deteksi Lokasi"}
-              </button>
-            </div>
-
-            {/* Indikator tersembunyi penanda validitas data koordinat */}
-            {formData.latitude && formData.longitude && (
-              <p className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 mt-1">
-                ✓ Koordinat Terkunci: [{formData.latitude.toFixed(5)},{" "}
-                {formData.longitude.toFixed(5)}]
-              </p>
-            )}
           </div>
 
           <div className="space-y-2 border-t border-zinc-100 pt-4">
@@ -457,7 +315,7 @@ export default function ProfilePage() {
           <div className="flex justify-end border-t border-zinc-100 pt-4">
             <button
               type="submit"
-              disabled={submitting || locating}
+              disabled={submitting}
               className="px-5 py-2.5 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl hover:bg-zinc-800 transition disabled:opacity-50"
             >
               {submitting ? "Menyimpan..." : "Simpan Profil"}
@@ -498,23 +356,24 @@ export default function ProfilePage() {
               <span className="font-bold text-zinc-700">
                 {formData.allergies.length} jenis alergi
               </span>{" "}
-              yang telah Anda daftarkan.
+              yang telah didaftarkan.
             </div>
           </div>
 
-          <div className="bg-[#1A1A1A] text-white rounded-3xl p-6 shadow-md relative overflow-hidden">
+          <div className="bg-[#1A1A1A] text-white rounded-3xl p-6 shadow-md">
             <span className="text-[10px] font-black tracking-widest uppercase text-zinc-400 block">
-              Jangkauan Komunitas
+              Proteksi Hulu
             </span>
-            <h4 className="text-sm font-black mt-1 mb-2">Lokasi P2P Aktif</h4>
+            <h4 className="text-sm font-black mt-1 mb-2">
+              Remix Picker Active
+            </h4>
             <p className="text-xs text-zinc-300 leading-relaxed font-normal">
-              Saat ini profil Anda terdaftar di area{" "}
-              <span className="text-amber-400 font-bold">
-                {formData.generalLocation || "Belum ditentukan"}
+              Aplikasi berjalan dalam mode penuh{" "}
+              <span className="font-bold text-white">
+                Single-Player Optimizer
               </span>
-              . Anda dapat berpartisipasi membagikan bahan pangan berlebih atau
-              patungan belanja dengan pengguna lain di sekitar radius wilayah
-              ini.
+              . Fitur analisis pangan akan menyesuaikan parameter rekomendasi
+              penyimpanan langsung dari kecerdasan lokal multimodal AI.
             </p>
           </div>
         </div>
