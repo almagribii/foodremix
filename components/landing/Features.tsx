@@ -27,7 +27,6 @@ export default function Features() {
   return (
     <section id="fitur" className="py-28 bg-[#1C1614] relative overflow-hidden flex flex-col items-center justify-center">
       
-      {/* ─── 1. KEMBALIKAN PATTERN BATIK DI BACKGROUND (FIXED) ─── */}
       <div 
         className="absolute inset-0 pointer-events-none opacity-[0.2] select-none z-0 mix-blend-overlay"
         style={{
@@ -40,7 +39,6 @@ export default function Features() {
       {/* AMBIENT GLOW EMAS */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-amber-500/[0.03] rounded-full blur-[140px] pointer-events-none z-0" />
 
-      {/* ─── 2. RE-DESIGN TYPOGRAPHY JUDUL (LEBIH MENARIK & SINEMATIK) ─── */}
       <div className="text-center max-w-2xl space-y-4 mb-16 px-6 z-10 select-none">
         <motion.span 
           initial={{ opacity: 0, y: -5 }}
