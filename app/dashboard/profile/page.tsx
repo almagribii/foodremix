@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { motion } from "framer-motion";
+import { useToast } from "@/components/ui/Toast";
 
 interface ProfileData {
   nickname: string;
@@ -13,9 +14,9 @@ interface ProfileData {
 
 export default function ProfilePage() {
   const { token } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
 
   const [formData, setFormData] = useState<ProfileData>({
     nickname: "",
@@ -64,7 +65,6 @@ export default function ProfilePage() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setMessage({ type: "", text: "" });
     const activeToken = token || localStorage.getItem("token");
 
     try {
@@ -78,20 +78,14 @@ export default function ProfilePage() {
       });
 
       if (res.ok) {
-        setMessage({
-          type: "success",
-          text: "Profil Foodremix berhasil diperbarui!",
-        });
+        toastSuccess("Profil diperbarui!", "Data profil Foodremix berhasil disimpan.");
       } else {
         const errData = await res.json();
-        setMessage({
-          type: "error",
-          text: errData.error || "Gagal memperbarui profil.",
-        });
+        toastError("Gagal menyimpan", errData.error || "Gagal memperbarui profil.");
       }
     } catch (err) {
       console.error(err);
-      setMessage({ type: "error", text: "Gangguan koneksi server." });
+      toastError("Gangguan koneksi", "Tidak dapat terhubung ke server.");
     } finally {
       setSubmitting(false);
     }
@@ -184,14 +178,6 @@ export default function ProfilePage() {
               </p>
             </div>
           </div>
-
-          {message.text && (
-            <div
-              className={`p-3 border text-xs font-semibold rounded-xl ${message.type === "success" ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-rose-50 border-rose-200 text-rose-800"}`}
-            >
-              {message.text}
-            </div>
-          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">

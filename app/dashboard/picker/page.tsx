@@ -3,14 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { motion } from "framer-motion";
-import {
-  Camera,
-  Upload,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-  Package,
-} from "lucide-react";
+import { Camera, Upload, RefreshCw, CheckCircle2, Package } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 interface ScanResult {
   status: "VALID" | "INVALID";
@@ -23,6 +17,8 @@ interface ScanResult {
 
 export default function RemixPickerPage() {
   const { token } = useAuth();
+  const { error: toastError, warning: toastWarning, success: toastSuccess } =
+    useToast();
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -32,11 +28,9 @@ export default function RemixPickerPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
-  const [errorMsg, setErrorMsg] = useState("");
 
   const startWebcam = async () => {
     setResult(null);
-    setErrorMsg("");
     setImagePreview(null);
     setIsWebcamActive(true);
     try {
@@ -49,19 +43,20 @@ export default function RemixPickerPage() {
         audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+      if (videoRef.current) videoRef.current.srcObject = stream;
     } catch (err) {
       console.error(err);
       setIsWebcamActive(false);
-      setErrorMsg("Izin kamera ditolak atau perangkat tidak mendukung webcam.");
+      toastError(
+        "Kamera tidak dapat diakses",
+        "Izin kamera ditolak atau perangkat tidak mendukung webcam.",
+      );
     }
   };
 
   const stopWebcam = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
     setIsWebcamActive(false);
@@ -69,31 +64,23 @@ export default function RemixPickerPage() {
 
   useEffect(() => {
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
+      if (streamRef.current)
+        streamRef.current.getTracks().forEach((t) => t.stop());
     };
   }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     stopWebcam();
     setResult(null);
-    setErrorMsg("");
-
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
+    reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
   };
 
   const executeAnalysis = async (base64Data: string) => {
     setLoading(true);
-    setErrorMsg("");
-
     try {
       const activeToken = token || localStorage.getItem("token");
       const res = await fetch("/api/picker/scan", {
@@ -110,14 +97,30 @@ export default function RemixPickerPage() {
       if (res.ok) {
         setResult(data);
         if (data.status === "INVALID") {
-          setErrorMsg("Objek tidak dikenali sebagai bahan makanan.");
+          toastWarning(
+            "Objek tidak dikenali",
+            "Input bukan bahan makanan yang valid. Coba foto yang lebih jelas.",
+          );
+        } else if (data.verdict && !data.verdict.includes("FRESH")) {
+          toastWarning(
+            "Bahan kurang layak",
+            `${data.itemName} — ${data.verdict}. Pertimbangkan alternatif lain.`,
+          );
+        } else {
+          toastSuccess(
+            "Analisis selesai",
+            `${data.itemName} berhasil dianalisis.`,
+          );
         }
       } else {
-        setErrorMsg(data.error || "Gagal memproses pemindaian.");
+        toastError(
+          "Analisis gagal",
+          data.error || "Gagal memproses pemindaian.",
+        );
       }
     } catch (err) {
       console.error(err);
-      setErrorMsg("Gangguan koneksi ke server AI.");
+      toastError("Gangguan koneksi", "Tidak dapat terhubung ke server AI.");
     } finally {
       setLoading(false);
     }
@@ -125,21 +128,16 @@ export default function RemixPickerPage() {
 
   const handleCaptureAndScan = async () => {
     if (!videoRef.current || !canvasRef.current || loading) return;
-
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-
     if (ctx) {
       const size = Math.min(video.videoWidth, video.videoHeight) || 480;
       canvas.width = size;
       canvas.height = size;
-
       const sx = (video.videoWidth - size) / 2;
       const sy = (video.videoHeight - size) / 2;
-
       ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
-
       const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
       setImagePreview(dataUrl);
       stopWebcam();
@@ -155,7 +153,6 @@ export default function RemixPickerPage() {
   const handleResetSession = () => {
     setImagePreview(null);
     setResult(null);
-    setErrorMsg("");
     stopWebcam();
   };
 
@@ -166,11 +163,12 @@ export default function RemixPickerPage() {
           Remix Picker
         </h1>
         <p className="text-xs text-zinc-500">
-          AI Smart Grocery Selector & Lifespan Maximizer
+          AI Smart Grocery Selector &amp; Lifespan Maximizer
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* ── Panel Kamera ───────────────────────────────────────── */}
         <div className="lg:col-span-6 bg-white border border-zinc-200/80 rounded-3xl p-5 shadow-sm space-y-4">
           <span className="text-[10px] font-black tracking-wider uppercase text-zinc-400 block">
             Media Selector
@@ -186,19 +184,17 @@ export default function RemixPickerPage() {
                   muted
                   className="w-full h-full object-cover"
                 />
-
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-zinc-900/60 backdrop-blur-md border border-white/20 rounded-full text-[10px] font-bold text-white tracking-widest uppercase flex items-center gap-1.5 z-10">
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-zinc-900/60 backdrop-blur-md border border-white/20 rounded-full text-[10px] font-bold text-white tracking-widest uppercase flex items-center gap-1.5 z-10">
                   <span className="h-2 w-2 rounded-full bg-emerald-500" />
                   Live Feed
                 </div>
-
                 <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2 px-4 z-10">
                   <button
                     type="button"
                     onClick={handleCaptureAndScan}
                     className="px-4 py-2 bg-[#EAB308] hover:bg-[#F3C022] text-[#1A1A1A] text-[10px] font-black uppercase tracking-wider rounded-xl transition shadow-lg flex items-center gap-1.5"
                   >
-                    <Camera size={12} /> Ambil Foto & Pindai
+                    <Camera size={12} /> Ambil Foto &amp; Pindai
                   </button>
                   <button
                     type="button"
@@ -279,8 +275,7 @@ export default function RemixPickerPage() {
           </div>
 
           <p className="text-center text-[11px] font-medium text-zinc-400">
-            Pilih opsi kamera instan atau unggah dokumen foto komoditas pangan
-            pasar.
+            Pilih opsi kamera instan atau unggah foto komoditas pangan pasar.
           </p>
 
           {imagePreview && !result && (
@@ -296,14 +291,8 @@ export default function RemixPickerPage() {
           )}
         </div>
 
+        {/* ── Panel Hasil ────────────────────────────────────────── */}
         <div className="lg:col-span-6 space-y-6">
-          {errorMsg && (
-            <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold rounded-2xl flex items-center gap-2">
-              <AlertCircle size={14} className="text-rose-600 shrink-0" />
-              <span>{errorMsg}</span>
-            </div>
-          )}
-
           <div className="bg-white border border-zinc-200/80 rounded-3xl p-6 shadow-sm space-y-6 min-h-[400px] flex flex-col justify-between">
             {!result && !loading && (
               <div className="flex flex-col items-center justify-center text-center my-auto space-y-3 text-zinc-400 py-12">
@@ -336,7 +325,7 @@ export default function RemixPickerPage() {
               <div className="space-y-6 flex-1">
                 <div>
                   <span className="text-[10px] font-black tracking-wider uppercase text-zinc-400 block mb-1">
-                    AI Verdict & Analysis
+                    AI Verdict &amp; Analysis
                   </span>
                   <h2 className="text-lg font-black text-[#1A1A1A] tracking-tight">
                     {result.itemName}
@@ -344,7 +333,11 @@ export default function RemixPickerPage() {
                 </div>
 
                 <div
-                  className={`p-4 border rounded-2xl shadow-sm space-y-3 ${result.verdict.includes("FRESH") ? "bg-emerald-50/50 border-emerald-200/60" : "bg-rose-50/40 border-rose-200/60"}`}
+                  className={`p-4 border rounded-2xl shadow-sm space-y-3 ${
+                    result.verdict.includes("FRESH")
+                      ? "bg-emerald-50/50 border-emerald-200/60"
+                      : "bg-rose-50/40 border-rose-200/60"
+                  }`}
                 >
                   <div className="flex items-center gap-2 text-xs font-black">
                     <CheckCircle2
@@ -384,7 +377,6 @@ export default function RemixPickerPage() {
                     <Package size={14} />
                     <h3>INSTANT STORAGE BLUEPRINT:</h3>
                   </div>
-
                   <ul className="text-xs text-zinc-600 font-medium list-none space-y-2 pl-1 pt-1">
                     {result.storageBlueprint.map((blueprint, idx) => (
                       <li

@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 // ─── Tipe ─────────────────────────────────────────────────────────
 interface NotifLog {
@@ -90,6 +91,7 @@ function formatDate(iso: string) {
 // Komponen utama
 // ══════════════════════════════════════════════════════════════════
 export default function NotificationsPage() {
+  const { success: toastSuccess, error: toastError } = useToast();
   const [logs, setLogs] = useState<NotifLog[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -97,44 +99,49 @@ export default function NotificationsPage() {
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
-  const [setting, setSetting] = useState<NotifSetting | null>(null);
-  const [settingDraft, setSettingDraft] = useState<NotifSetting>({
+  const [setting, setSetting] = useState<NotifSetting | null>(null);  const [settingDraft, setSettingDraft] = useState<NotifSetting>({
     dinnerReminderTime: "17:30",
     journalReminderTime: "21:00",
   });
   const [settingLoading, setSettingLoading] = useState(false);
-  const [settingSaved, setSettingSaved] = useState(false);
 
   const [showSettings, setShowSettings] = useState(false);
   const [markingAll, setMarkingAll] = useState(false);
+  // Setiap kali nilai ini berubah, logs akan di-refetch
+  const [refreshTick, setRefreshTick] = useState(0);
+
+  const triggerRefresh = useCallback(() => setRefreshTick((n) => n + 1), []);
 
   // ─── Fetch logs ──────────────────────────────────────────────
-  const fetchLogs = useCallback(async () => {
-    setLoadingLogs(true);
-    try {
-      const token = getToken();
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: "15",
-        ...(unreadOnly ? { unreadOnly: "true" } : {}),
-      });
-      const res = await fetch(`/api/notifications/logs?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setLogs(data.logs || []);
-        setTotal(data.total || 0);
-        setTotalPages(data.totalPages || 1);
-      }
-    } finally {
-      setLoadingLogs(false);
-    }
-  }, [page, unreadOnly]);
-
   useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
+    let cancelled = false;
+    const run = async () => {
+      setLoadingLogs(true);
+      try {
+        const token = getToken();
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: "15",
+          ...(unreadOnly ? { unreadOnly: "true" } : {}),
+        });
+        const res = await fetch(`/api/notifications/logs?${params}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          setLogs(data.logs || []);
+          setTotal(data.total || 0);
+          setTotalPages(data.totalPages || 1);
+        }
+      } finally {
+        if (!cancelled) setLoadingLogs(false);
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [page, unreadOnly, refreshTick]);
 
   // ─── Fetch settings ──────────────────────────────────────────
   useEffect(() => {
@@ -168,7 +175,8 @@ export default function NotificationsPage() {
         },
         body: JSON.stringify({ markAll: true }),
       });
-      await fetchLogs();
+      triggerRefresh();
+      toastSuccess("Semua dibaca", "Semua notifikasi telah ditandai sebagai dibaca.");
     } finally {
       setMarkingAll(false);
     }
@@ -206,8 +214,9 @@ export default function NotificationsPage() {
       if (res.ok) {
         const data = await res.json();
         setSetting(data);
-        setSettingSaved(true);
-        setTimeout(() => setSettingSaved(false), 2500);
+        toastSuccess("Pengaturan disimpan", "Jadwal pengingat berhasil diperbarui.");
+      } else {
+        toastError("Gagal menyimpan", "Terjadi kesalahan saat menyimpan pengaturan.");
       }
     } finally {
       setSettingLoading(false);
@@ -259,7 +268,7 @@ export default function NotificationsPage() {
 
             {/* Refresh */}
             <button
-              onClick={fetchLogs}
+              onClick={triggerRefresh}
               disabled={loadingLogs}
               className="p-2.5 bg-white border border-zinc-200 text-zinc-500 rounded-xl hover:bg-zinc-50 transition shadow-sm disabled:opacity-50"
             >
@@ -335,17 +344,9 @@ export default function NotificationsPage() {
               <button
                 onClick={handleSaveSetting}
                 disabled={settingLoading}
-                className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition shadow-sm ${
-                  settingSaved
-                    ? "bg-emerald-500 border-emerald-500 text-white"
-                    : "bg-[#1A1A1A] text-white hover:bg-zinc-800"
-                } disabled:opacity-60`}
+                className="px-4 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition shadow-sm bg-[#1A1A1A] text-white hover:bg-zinc-800 disabled:opacity-60"
               >
-                {settingSaved
-                  ? "✓ Tersimpan"
-                  : settingLoading
-                  ? "Menyimpan..."
-                  : "Simpan Pengaturan"}
+                {settingLoading ? "Menyimpan..." : "Simpan Pengaturan"}
               </button>
             </motion.div>
           )}

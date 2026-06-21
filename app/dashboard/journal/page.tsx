@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/components/ui/Toast";
 
 import JournalCard from "@/components/rekam-gizi/JournalCard";
 import DailyNutrientSummary from "@/components/rekam-gizi/DailyNutrientSummary";
@@ -27,6 +28,7 @@ interface AnalyticsData {
 
 export default function RekamGiziPage() {
   const { token } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   const [journals, setJournals] = useState<JournalLog[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +43,6 @@ export default function RekamGiziPage() {
   const [foodEaten, setFoodEaten] = useState("");
   const [userStory, setUserStory] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [, setMessage] = useState({ type: "", text: "" }); // Dipertahankan untuk internal error handling
 
   const loadData = useCallback(
     async (authToken: string | null, targetDate: string) => {
@@ -86,7 +87,6 @@ export default function RekamGiziPage() {
     e.preventDefault();
     if (!foodEaten || !userStory) return;
     setSubmitting(true);
-    setMessage({ type: "", text: "" });
     const activeToken = token || localStorage.getItem("token");
 
     try {
@@ -101,23 +101,20 @@ export default function RekamGiziPage() {
 
       if (res.ok) {
         const newRecord = await res.json();
-
-        // FIKS: Mutasi state lokal secara langsung untuk mencegah peringatan cascading re-render
         setJournals((prev) => [newRecord, ...prev]);
-
         setFoodEaten("");
         setUserStory("");
         setUserMood("HAPPY");
         setIsFormOpen(false);
-
-        // Trigger pembaruan senyap untuk kalkulasi analitik harian
+        toastSuccess("Jurnal tersimpan!", "Entri gizi baru berhasil direkam.");
         loadData(activeToken, selectedDate);
       } else {
         const data = await res.json();
-        setMessage({ type: "error", text: data.error || "Gagal menyimpan." });
+        toastError("Gagal menyimpan", data.error || "Terjadi kesalahan saat menyimpan.");
       }
     } catch (err) {
       console.error(err);
+      toastError("Gangguan koneksi", "Tidak dapat terhubung ke server.");
     } finally {
       setSubmitting(false);
     }
@@ -170,10 +167,7 @@ export default function RekamGiziPage() {
           </div>
 
           <button
-            onClick={() => {
-              setMessage({ type: "", text: "" });
-              setIsFormOpen(!isFormOpen);
-            }}
+            onClick={() => setIsFormOpen(!isFormOpen)}
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl hover:bg-zinc-800 transition shadow-sm"
           >
             <motion.svg
