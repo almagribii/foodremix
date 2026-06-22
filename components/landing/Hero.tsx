@@ -4,7 +4,6 @@ import { motion, Variants } from "framer-motion";
 import Image from "next/image";
 import { Sparkles, Bot, Layers, Flame } from "lucide-react";
 
-// Efek bahan makanan melayang yang tetap dipertahankan utuh
 const fallingIngredients = [
   { emoji: "🥚", size: "text-3xl", left: "10%", top: "15%", delay: 0, duration: 8, xRange: [0, 15, 0], yRange: [0, -20, 0] },
   { emoji: "🥬", size: "text-4xl", left: "12%", top: "65%", delay: 1.5, duration: 10, xRange: [0, -10, 0], yRange: [0, -30, 0] },
@@ -54,7 +53,7 @@ export default function Hero() {
         {fallingIngredients.map((item, idx) => (
           <motion.div
             key={idx}
-            className={`absolute ${item.size} opacity-[0.18]`}
+            className={`absolute ${item.size} opacity-40`}
             style={{ left: item.left, top: item.top }}
             animate={{ x: item.xRange, y: item.yRange, rotate: [0, 360] }}
             transition={{ type: "tween", duration: item.duration, delay: item.delay, repeat: Infinity, ease: "easeInOut" }}
@@ -106,7 +105,7 @@ export default function Hero() {
         {/* TULISAN TENGAH */}
         <div className="space-y-6 max-w-3xl flex flex-col items-center mt-2">
           
-          {/* Tagline "The Art of Cooking" yang tetap mempertahankan animasi */}
+          {/* Tagline "The Art of Cooking" */}
           <motion.span 
             variants={taglineVariants}
             initial="hidden"
@@ -116,7 +115,7 @@ export default function Hero() {
             ✦ The Art of Cooking ✦
           </motion.span>
 
-          {/* Judul Utama (Sekarang Static) */}
+          {/* Judul Utama */}
           <h1 className="italic text-5xl sm:text-7xl font-normal text-stone-800 tracking-tight leading-[1.02] select-none font-serif text-center">
             Masak <span className="font-extrabold text-[#c29b38] -ml-1 sm:-ml-2 relative">H</span>emat
             <br />
@@ -128,7 +127,7 @@ export default function Hero() {
             </span>
           </h1>
 
-          {/* PEMBATAS GELOMBANG KECIL (Sekarang Static) */}
+          {/* PEMBATAS GELOMBANG KECIL */}
           <div className="w-40 h-8 relative flex items-center justify-center my-1 select-none filter drop-shadow-[0_0_8px_rgba(194,155,56,0.5)]">
             <svg 
               viewBox="0 0 160 30" 
@@ -153,7 +152,7 @@ export default function Hero() {
             <div className="absolute text-[9px] text-[#292524] font-bold bg-[#FBFBFA] px-1 shadow-[0_0_4px_#eab308] rounded-full border border-amber-500/30">✦</div>
           </div>
 
-          {/* Deskripsi (Sekarang Static) */}
+          {/* Deskripsi */}
           <p className="text-xs sm:text-sm text-stone-400 max-w-md mx-auto font-medium leading-relaxed tracking-wide text-center">
             Platform AI premium untuk anak kost, hemat budget harian, dan eco-friendly untuk bumi kita.
           </p>
@@ -267,23 +266,18 @@ export default function Hero() {
           className="w-full h-auto overflow-visible"
           preserveAspectRatio="none"
         >
-          {/* Suntikkan pola batik cokelat langsung ke dalam kurva SVG */}
           <defs>
             <pattern id="batik-pattern-wave" width="240" height="240" patternUnits="userSpaceOnUse">
-              {/* Warna latar belakang solid milik section Features */}
               <rect width="240" height="240" fill="#1C1614" />
-              {/* Tekstur motif batik hiasan */}
               <image href="/bg-pattern2.png" width="240" height="240" className="opacity-[0.2]" style={{ mixBlendMode: 'overlay' }} />
             </pattern>
           </defs>
 
-          {/* Isi struktur ombak menggunakan fill pattern batik */}
           <path 
             d="M0,120 L0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65 L1440,120 Z" 
             fill="url(#batik-pattern-wave)" 
           />
           
-          {/* Garis Outline Gelap */}
           <motion.path 
             d="M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65" 
             stroke="#1C1917" 
@@ -298,7 +292,6 @@ export default function Hero() {
             transition={{ type: "tween", duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
 
-          {/* Garis Inti Berpendar Emas */}
           <motion.path 
             d="M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65" 
             stroke="#eab308" 

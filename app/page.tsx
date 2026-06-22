@@ -1,8 +1,8 @@
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
-import Testimonials from "@/components/landing/Testimonials";
-import Footer from "@/components/landing/Footer"; // Import footer baru
+import Footer from "@/components/landing/Footer"; 
+import Tentang from "@/components/landing/Tentang";
 
 export default function HomePage() {
   return (
@@ -12,7 +12,7 @@ export default function HomePage() {
       <main>
         <Hero />
         <Features />
-        <Testimonials />
+        <Tentang />
       </main>
 
       {/* Footer elegan baru menggantikan susunan footer lama */}
