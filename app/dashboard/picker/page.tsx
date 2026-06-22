@@ -3,23 +3,36 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { motion } from "framer-motion";
-import { Camera, Upload, RefreshCw, CheckCircle2, Package } from "lucide-react";
+import {
+  Camera,
+  Upload,
+  RefreshCw,
+  CheckCircle2,
+  Package,
+  History,
+  Calendar,
+} from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import PageLoader from "@/components/ui/PageLoader";
 
 interface ScanResult {
+  id?: string;
   status: "VALID" | "INVALID";
   itemName: string;
   verdict: string;
   expectedLifespan: string;
   analysisDetails: string[];
   storageBlueprint: string[];
+  scannedAt?: string;
 }
 
 export default function RemixPickerPage() {
   const { token } = useAuth();
-  const { error: toastError, warning: toastWarning, success: toastSuccess } =
-    useToast();
+  const {
+    error: toastError,
+    warning: toastWarning,
+    success: toastSuccess,
+  } = useToast();
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -29,6 +42,64 @@ export default function RemixPickerPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [history, setHistory] = useState<ScanResult[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const fetchHistory = async () => {
+    try {
+      const activeToken = token || localStorage.getItem("token");
+      if (!activeToken) return;
+
+      const res = await fetch("/api/picker/history", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${activeToken}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadData = async () => {
+      if (!token && !localStorage.getItem("token")) return;
+      try {
+        setLoadingHistory(true);
+        const activeToken = token || localStorage.getItem("token");
+        const res = await fetch("/api/picker/history", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${activeToken}` },
+        });
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          setHistory(data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (isMounted) setLoadingHistory(false);
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, []);
 
   const startWebcam = async () => {
     setResult(null);
@@ -63,13 +134,6 @@ export default function RemixPickerPage() {
     setIsWebcamActive(false);
   };
 
-  useEffect(() => {
-    return () => {
-      if (streamRef.current)
-        streamRef.current.getTracks().forEach((t) => t.stop());
-    };
-  }, []);
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -97,6 +161,8 @@ export default function RemixPickerPage() {
 
       if (res.ok) {
         setResult(data);
+        fetchHistory();
+
         if (data.status === "INVALID") {
           toastWarning(
             "Objek tidak dikenali",
@@ -169,7 +235,6 @@ export default function RemixPickerPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* ── Panel Kamera ───────────────────────────────────────── */}
         <div className="lg:col-span-6 bg-white border border-zinc-200/80 rounded-3xl p-5 shadow-sm space-y-4">
           <span className="text-[10px] font-black tracking-wider uppercase text-zinc-400 block">
             Media Selector
@@ -208,7 +273,6 @@ export default function RemixPickerPage() {
               </div>
             ) : imagePreview ? (
               <div className="relative w-full h-full">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imagePreview}
                   alt="Review Target"
@@ -292,7 +356,6 @@ export default function RemixPickerPage() {
           )}
         </div>
 
-        {/* ── Panel Hasil ────────────────────────────────────────── */}
         <div className="lg:col-span-6 space-y-6">
           <div className="bg-white border border-zinc-200/80 rounded-3xl p-6 shadow-sm space-y-6 min-h-[400px] flex flex-col justify-between">
             {!result && !loading && (
@@ -326,11 +389,7 @@ export default function RemixPickerPage() {
                 </div>
 
                 <div
-                  className={`p-4 border rounded-2xl shadow-sm space-y-3 ${
-                    result.verdict.includes("FRESH")
-                      ? "bg-emerald-50/50 border-emerald-200/60"
-                      : "bg-rose-50/40 border-rose-200/60"
-                  }`}
+                  className={`p-4 border rounded-2xl shadow-sm space-y-3 ${result.verdict.includes("FRESH") ? "bg-emerald-50/50 border-emerald-200/60" : "bg-rose-50/40 border-rose-200/60"}`}
                 >
                   <div className="flex items-center gap-2 text-xs font-black">
                     <CheckCircle2
@@ -393,6 +452,60 @@ export default function RemixPickerPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="bg-white border border-zinc-200/80 rounded-3xl p-6 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 border-b border-zinc-100 pb-3">
+          <History size={16} className="text-zinc-700" />
+          <h3 className="text-sm font-black text-[#1A1A1A] uppercase tracking-wider">
+            Riwayat Inspeksi Pangan
+          </h3>
+        </div>
+
+        {loadingHistory ? (
+          <div className="py-6 text-center text-xs text-zinc-400">
+            Memuat riwayat...
+          </div>
+        ) : history.length === 0 ? (
+          <p className="text-xs text-zinc-400 py-4 text-center">
+            Belum ada riwayat pemindaian bahan.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {history.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => setResult(item)}
+                className="p-4 border border-zinc-100 hover:border-zinc-300 rounded-2xl bg-zinc-50/50 hover:bg-zinc-50 transition cursor-pointer flex justify-between items-start group"
+              >
+                <div className="space-y-1">
+                  <h4 className="text-xs font-black text-zinc-800 group-hover:text-amber-600 transition">
+                    {item.itemName}
+                  </h4>
+                  <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-medium">
+                    <Calendar size={10} />
+                    {item.scannedAt
+                      ? new Date(item.scannedAt).toLocaleDateString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : ""}
+                  </div>
+                  <p className="text-[11px] text-zinc-500 line-clamp-1 mt-1">
+                    Blueprint: {item.storageBlueprint[0]}
+                  </p>
+                </div>
+                <span
+                  className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${item.verdict.includes("FRESH") ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"}`}
+                >
+                  {item.verdict.includes("FRESH") ? "FRESH" : "REJECTED"}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
