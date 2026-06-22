@@ -3,7 +3,14 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import {
-  Camera, Plus, Zap, Search, Upload, RefreshCw, X,
+  Camera,
+  Plus,
+  Zap,
+  Search,
+  Upload,
+  RefreshCw,
+  X,
+  Wallet,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -19,7 +26,10 @@ interface IngredientFormProps {
   loading: boolean;
 }
 
-export default function IngredientInputForm({ onGenerate, loading }: IngredientFormProps) {
+export default function IngredientInputForm({
+  onGenerate,
+  loading,
+}: IngredientFormProps) {
   const { error: toastError } = useToast();
   const [mode, setMode] = useState<RemixMode>("remix");
   const [ingredients, setIngredients] = useState<string[]>([]);
@@ -48,14 +58,21 @@ export default function IngredientInputForm({ onGenerate, loading }: IngredientF
     setIsWebcamActive(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 480 }, height: { ideal: 480 } },
+        video: {
+          facingMode: "environment",
+          width: { ideal: 480 },
+          height: { ideal: 480 },
+        },
         audio: false,
       });
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
     } catch {
       setIsWebcamActive(false);
-      toastError("Kamera tidak bisa diakses", "Pastikan izin kamera sudah diberikan.");
+      toastError(
+        "Kamera tidak bisa diakses",
+        "Pastikan izin kamera sudah diberikan.",
+      );
     }
   };
 
@@ -109,126 +126,208 @@ export default function IngredientInputForm({ onGenerate, loading }: IngredientF
     onGenerate(ingredients, imageBase64, budget, mode);
   };
 
+  const handleModeChange = (newMode: RemixMode) => {
+    setMode(newMode);
+    // Reset data opsional saat ganti mode agar bersih
+    setIngredients([]);
+    clearImage();
+  };
+
   const canSubmit = ingredients.length > 0 || !!imageBase64;
 
   return (
-    <div className="bg-[#1A1A1A] text-white rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.18)] border border-white/5">
-      {/* Mode Toggle */}
-      <div className="flex border-b border-zinc-800">
+    <div className="bg-[#121214] text-zinc-100 rounded-3xl overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.4)] border border-zinc-800/80 max-w-md mx-auto transition-all duration-300">
+      {/* Mode Toggle Tab */}
+      <div className="flex p-1.5 bg-zinc-900/50 border-b border-zinc-800/60 gap-1">
         <button
           type="button"
-          onClick={() => setMode("remix")}
-          className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
+          onClick={() => handleModeChange("remix")}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 ${
             mode === "remix"
-              ? "bg-[#EAB308] text-[#1A1A1A]"
-              : "text-zinc-500 hover:text-zinc-300"
+              ? "bg-[#EAB308] text-zinc-950 shadow-md font-black"
+              : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
           }`}
         >
-          <Zap size={11} fill={mode === "remix" ? "currentColor" : "none"} />
+          <Zap size={13} fill={mode === "remix" ? "currentColor" : "none"} />
           Remix Bahan
         </button>
         <button
           type="button"
-          onClick={() => setMode("detect")}
-          className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
+          onClick={() => handleModeChange("detect")}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 ${
             mode === "detect"
-              ? "bg-[#EAB308] text-[#1A1A1A]"
-              : "text-zinc-500 hover:text-zinc-300"
+              ? "bg-[#EAB308] text-zinc-950 shadow-md font-black"
+              : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
           }`}
         >
-          <Search size={11} />
+          <Search size={13} />
           Deteksi Makanan
         </button>
       </div>
 
-      <div className="p-5 space-y-5">
+      <div className="p-6 space-y-6">
         {/* Mode description */}
-        <p className="text-[10px] text-zinc-500 font-medium leading-relaxed">
-          {mode === "remix"
-            ? "Foto atau ketik sisa bahan di kulkasmu, AI akan meracik resep hemat."
-            : "Foto atau ketik nama makanan jadi, AI akan memberikan tutorial cara membuatnya."}
-        </p>
+        <div className="bg-zinc-900/40 border border-zinc-800/40 rounded-xl p-3">
+          <p className="text-xs text-zinc-400 font-medium leading-relaxed">
+            {mode === "remix"
+              ? "Foto atau ketik sisa bahan di kulkasmu, AI akan meracik resep kreatif & hemat!"
+              : "Foto atau ketik nama makanan jadi, AI akan mendeteksi dan memberikan tutorial lengkapnya."}
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Camera/Upload area */}
-          <div className="space-y-2">
-            <label className="text-[9px] font-black tracking-widest uppercase text-zinc-500 block">
-              {mode === "remix" ? "Foto Isi Kulkas" : "Foto Makanan"}
+          <div className="space-y-2.5">
+            <label className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 block">
+              {mode === "remix" ? "Visual Bahan (Opsional)" : "Foto Makanan"}
             </label>
 
             {isWebcamActive ? (
-              <div className="relative w-full aspect-square bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800">
-                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+              <div className="relative w-full aspect-square bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800 shadow-inner">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
                 <canvas ref={canvasRef} className="hidden" />
-                <div className="absolute bottom-3 inset-x-0 flex justify-center gap-2 z-10">
-                  <button type="button" onClick={capturePhoto}
-                    className="px-4 py-2 bg-[#EAB308] text-[#1A1A1A] text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg flex items-center gap-1.5">
-                    <Camera size={11} /> Ambil Foto
+                <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2 z-10 px-4">
+                  <button
+                    type="button"
+                    onClick={capturePhoto}
+                    className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 active:scale-95 text-zinc-950 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
+                  >
+                    <Camera size={14} /> Ambil Foto
                   </button>
-                  <button type="button" onClick={stopWebcam}
-                    className="px-3 py-2 bg-zinc-800 text-white text-[10px] font-bold rounded-xl">
+                  <button
+                    type="button"
+                    onClick={stopWebcam}
+                    className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold rounded-xl transition-colors"
+                  >
                     Batal
                   </button>
                 </div>
               </div>
             ) : imagePreview ? (
               <div className="relative w-full aspect-square bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800">
-                <Image src={imagePreview} alt="Preview" fill className="object-cover" unoptimized />
-                <button type="button" onClick={clearImage}
-                  className="absolute top-2 right-2 p-1.5 bg-zinc-950/80 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white transition">
-                  <X size={12} />
+                <Image
+                  src={imagePreview}
+                  alt="Preview"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+                <button
+                  type="button"
+                  onClick={clearImage}
+                  className="absolute top-3 right-3 p-2 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/50 rounded-xl text-zinc-400 hover:text-white transition shadow-md"
+                >
+                  <X size={14} />
                 </button>
-                <button type="button" onClick={startWebcam}
-                  className="absolute bottom-2 left-2 px-3 py-1.5 bg-zinc-950/80 border border-zinc-800 text-white text-[9px] font-black rounded-lg flex items-center gap-1.5">
-                  <RefreshCw size={10} /> Ulangi
+                <button
+                  type="button"
+                  onClick={startWebcam}
+                  className="absolute bottom-3 left-3 px-3 py-2 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/50 text-zinc-200 text-[10px] font-bold rounded-xl flex items-center gap-1.5 transition shadow-md"
+                >
+                  <RefreshCw size={11} /> Ganti Foto
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
-                <button type="button" onClick={startWebcam} disabled={loading}
-                  className="flex flex-col items-center justify-center gap-2 py-5 border border-dashed border-zinc-800 hover:border-zinc-600 rounded-2xl transition group">
-                  <Camera size={18} className="text-zinc-600 group-hover:text-zinc-400 transition" />
-                  <span className="text-[9px] font-black uppercase tracking-wider text-zinc-600 group-hover:text-zinc-400">Kamera</span>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={startWebcam}
+                  disabled={loading}
+                  className="flex flex-col items-center justify-center gap-2.5 py-6 border border-dashed border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/30 rounded-2xl transition-all duration-200 group disabled:opacity-50"
+                >
+                  <div className="p-2.5 bg-zinc-900 rounded-xl group-hover:bg-zinc-800 transition-colors">
+                    <Camera
+                      size={18}
+                      className="text-zinc-400 group-hover:text-amber-400 transition-colors"
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-zinc-200">
+                    Kamera
+                  </span>
                 </button>
-                <button type="button" onClick={() => fileRef.current?.click()} disabled={loading}
-                  className="flex flex-col items-center justify-center gap-2 py-5 border border-dashed border-zinc-800 hover:border-zinc-600 rounded-2xl transition group">
-                  <Upload size={18} className="text-zinc-600 group-hover:text-zinc-400 transition" />
-                  <span className="text-[9px] font-black uppercase tracking-wider text-zinc-600 group-hover:text-zinc-400">Unggah</span>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={loading}
+                  className="flex flex-col items-center justify-center gap-2.5 py-6 border border-dashed border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/30 rounded-2xl transition-all duration-200 group disabled:opacity-50"
+                >
+                  <div className="p-2.5 bg-zinc-900 rounded-xl group-hover:bg-zinc-800 transition-colors">
+                    <Upload
+                      size={18}
+                      className="text-zinc-400 group-hover:text-amber-400 transition-colors"
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-zinc-200">
+                    Unggah
+                  </span>
                 </button>
-                <input ref={fileRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
               </div>
             )}
           </div>
 
           {/* Text input */}
-          <div className="space-y-2 border-t border-zinc-800/60 pt-4">
-            <label className="text-[9px] font-black tracking-widest uppercase text-zinc-500 block">
-              {mode === "remix" ? "Tambah Bahan Teks" : "Atau Ketik Nama Makanan"}
+          <div className="space-y-2.5 border-t border-zinc-800/60 pt-5">
+            <label className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 block">
+              {mode === "remix"
+                ? "Daftar Bahan Manual"
+                : "Atau Tulis Nama Makanan"}
             </label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={currentInput}
                 onChange={(e) => setCurrentInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addIngredient())}
-                placeholder={mode === "remix" ? "ayam, telur, cabai…" : "nasi goreng, soto ayam…"}
-                className="flex-1 px-3 py-2.5 text-xs bg-zinc-900 border border-zinc-800 text-white rounded-xl focus:border-zinc-600 outline-none placeholder:text-zinc-600 font-medium"
+                onKeyDown={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addIngredient())
+                }
+                placeholder={
+                  mode === "remix"
+                    ? "Contoh: ayam, telur, cabai…"
+                    : "Contoh: nasi goreng, soto…"
+                }
+                className="flex-1 px-4 py-3 text-sm bg-zinc-900/90 border border-zinc-800 text-white rounded-xl focus:border-zinc-600 focus:bg-zinc-900 outline-none placeholder:text-zinc-600 font-medium transition-all"
                 disabled={loading}
               />
-              <button type="button" onClick={addIngredient} disabled={loading}
-                className="px-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition">
-                <Plus size={14} strokeWidth={3} />
+              <button
+                type="button"
+                onClick={addIngredient}
+                disabled={loading}
+                className="px-4 bg-zinc-800 hover:bg-amber-500 hover:text-zinc-950 text-zinc-200 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50"
+              >
+                <Plus size={16} strokeWidth={2.5} />
               </button>
             </div>
+
+            {/* Badges Container */}
             {ingredients.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
+              <div className="flex flex-wrap gap-2 pt-1.5 animate-fadeIn">
                 {ingredients.map((ing, idx) => (
-                  <span key={idx}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-900 border border-zinc-800 text-zinc-300 text-[9px] font-black rounded-lg uppercase tracking-wider">
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-300 text-[10px] font-bold rounded-xl uppercase tracking-wider transition-all hover:border-zinc-700"
+                  >
                     {ing}
-                    <button type="button" onClick={() => setIngredients((p) => p.filter((_, i) => i !== idx))}
-                      className="text-zinc-600 hover:text-zinc-300 transition ml-0.5">
-                      <X size={9} strokeWidth={3} />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setIngredients((p) => p.filter((_, i) => i !== idx))
+                      }
+                      className="p-1 text-zinc-500 hover:text-red-400 hover:bg-zinc-800 rounded-lg transition-all ml-0.5"
+                    >
+                      <X size={10} strokeWidth={3} />
                     </button>
                   </span>
                 ))}
@@ -236,31 +335,20 @@ export default function IngredientInputForm({ onGenerate, loading }: IngredientF
             )}
           </div>
 
-          {/* Budget (remix only) */}
-          {mode === "remix" && (
-            <div className="space-y-2 border-t border-zinc-800/60 pt-4">
-              <div className="flex justify-between text-[9px] font-black tracking-widest uppercase text-zinc-500">
-                <span>Batas Anggaran</span>
-                <span className="text-[#EAB308] tracking-normal text-xs">
-                  Rp {budget.toLocaleString("id-ID")}
-                </span>
-              </div>
-              <input type="range" min="0" max="100000" step="5000" value={budget}
-                onChange={(e) => setBudget(Number(e.target.value))}
-                className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#EAB308]"
-                disabled={loading}
-              />
-            </div>
-          )}
-
-          {/* Submit */}
-          <button type="submit" disabled={loading || !canSubmit}
-            className="w-full bg-[#EAB308] hover:bg-[#F3C022] disabled:opacity-20 text-[#1A1A1A] font-black py-3.5 rounded-xl flex items-center justify-center gap-2 transition text-xs uppercase tracking-widest shadow-lg">
-            {mode === "remix" ? <Zap size={13} fill="currentColor" /> : <Search size={13} />}
+          
+          <button
+            type="submit"
+            disabled={loading || !canSubmit}
+            className="w-full bg-linear-to-r bg-[#EAB308] hover:from-amber-400 hover:to-amber-500 disabled:from-zinc-800 disabled:to-zinc-800 disabled:opacity-40 text-zinc-950 font-black py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-xs uppercase tracking-widest shadow-lg shadow-amber-500/5 disabled:shadow-none active:scale-[0.99]"
+          >
+           
             {loading
-              ? mode === "remix" ? "Meracik..." : "Mendeteksi..."
-              : mode === "remix" ? "Racik Menu" : "Deteksi & Tutorial"
-            }
+              ? mode === "remix"
+                ? "Sedang Meracik..."
+                : "Mendeteksi..."
+              : mode === "remix"
+                ? "Racik Menu Sekarang"
+                : "Cari Tutorial Memasak"}
           </button>
         </form>
       </div>
