@@ -16,16 +16,6 @@ const fallingIngredients = [
   { emoji: "🍄", size: "text-3xl", left: "76%", top: "15%", delay: 1.2, duration: 7.5, xRange: [0, 15, 0], yRange: [0, -30, 0] },
 ];
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15, 
-    },
-  },
-};
-
 const taglineVariants: Variants = {
   hidden: { opacity: 0, letterSpacing: "0.1em", y: -10 },
   visible: {
@@ -38,59 +28,6 @@ const taglineVariants: Variants = {
       times: [0, 0.2, 0.6, 1],
       repeat: Infinity,
       repeatType: "reverse"
-    }
-  }
-};
-
-const titleVariants: Variants = {
-  hidden: { opacity: 0, y: 25, scale: 0.98 },
-  visible: {
-    opacity: 1,
-    y: [25, 0, -6, 0], 
-    scale: 1,
-    transition: { 
-      y: {
-        type: "tween",
-        ease: "easeInOut",
-        duration: 5,
-        repeat: Infinity,
-        repeatType: "mirror",
-      },
-      opacity: { duration: 0.8 },
-      scale: { duration: 0.8 }
-    }
-  }
-};
-
-const waveLineVariants: Variants = {
-  hidden: { opacity: 0, scaleX: 0.3 },
-  visible: {
-    opacity: [0.4, 0.9, 0.6, 0.9],
-    scaleX: [0.9, 1.05, 0.95, 1],
-    transition: { 
-      duration: 6, 
-      ease: "easeInOut",
-      repeat: Infinity,
-      repeatType: "mirror"
-    }
-  }
-};
-
-const descVariants: Variants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: {
-    opacity: 1,
-    y: [15, 0, -3, 0], 
-    transition: { 
-      y: {
-        type: "tween",
-        ease: "easeInOut",
-        duration: 5,
-        repeat: Infinity,
-        repeatType: "mirror",
-        delay: 0.2
-      },
-      opacity: { duration: 0.8 }
     }
   }
 };
@@ -167,23 +104,20 @@ export default function Hero() {
         </motion.div>
 
         {/* TULISAN TENGAH */}
-        <motion.div
-          className="space-y-6 max-w-3xl flex flex-col items-center mt-2"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="space-y-6 max-w-3xl flex flex-col items-center mt-2">
+          
+          {/* Tagline "The Art of Cooking" yang tetap mempertahankan animasi */}
           <motion.span 
             variants={taglineVariants}
+            initial="hidden"
+            animate="visible"
             className="text-[10px] sm:text-xs font-medium uppercase text-[#a17e26] font-sans block select-none mb-1 text-center"
           >
             ✦ The Art of Cooking ✦
           </motion.span>
 
-          <motion.h1 
-            variants={titleVariants}
-            className="italic text-5xl sm:text-7xl font-normal text-stone-800 tracking-tight leading-[1.02] select-none font-serif text-center"
-          >
+          {/* Judul Utama (Sekarang Static) */}
+          <h1 className="italic text-5xl sm:text-7xl font-normal text-stone-800 tracking-tight leading-[1.02] select-none font-serif text-center">
             Masak <span className="font-extrabold text-[#c29b38] -ml-1 sm:-ml-2 relative">H</span>emat
             <br />
             <span className="relative inline-block text-stone-700 font-extrabold tracking-tighter not-italic mt-1">
@@ -192,13 +126,10 @@ export default function Hero() {
                 bingung
               </span>
             </span>
-          </motion.h1>
+          </h1>
 
-          {/* PEMBATAS GELOMBANG KECIL */}
-          <motion.div 
-            variants={waveLineVariants}
-            className="w-40 h-8 relative flex items-center justify-center my-1 select-none filter drop-shadow-[0_0_8px_rgba(194,155,56,0.5)]"
-          >
+          {/* PEMBATAS GELOMBANG KECIL (Sekarang Static) */}
+          <div className="w-40 h-8 relative flex items-center justify-center my-1 select-none filter drop-shadow-[0_0_8px_rgba(194,155,56,0.5)]">
             <svg 
               viewBox="0 0 160 30" 
               fill="none" 
@@ -220,23 +151,20 @@ export default function Hero() {
               />
             </svg>
             <div className="absolute text-[9px] text-[#292524] font-bold bg-[#FBFBFA] px-1 shadow-[0_0_4px_#eab308] rounded-full border border-amber-500/30">✦</div>
-          </motion.div>
+          </div>
 
-          {/* Deskripsi */}
-          <motion.p 
-            variants={descVariants}
-            className="text-xs sm:text-sm text-stone-400 max-w-md mx-auto font-medium leading-relaxed tracking-wide text-center"
-          >
+          {/* Deskripsi (Sekarang Static) */}
+          <p className="text-xs sm:text-sm text-stone-400 max-w-md mx-auto font-medium leading-relaxed tracking-wide text-center">
             Platform AI premium untuk anak kost, hemat budget harian, dan eco-friendly untuk bumi kita.
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
 
         {/* TOMBOL AKSI */}
         <motion.div 
           className="mt-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
           <motion.button 
             whileHover={{ scale: 1.03 }}
@@ -253,7 +181,7 @@ export default function Hero() {
           className="w-full max-w-[320px] mt-16 bg-[#121211] p-3 rounded-[48px] shadow-[0_35px_80px_rgba(161,126,38,0.1)] border border-stone-800 relative flex flex-col overflow-hidden"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
           whileHover={{ y: -6, transition: { duration: 0.3 } }}
         >
           <div className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-3.5 bg-black rounded-full z-20 flex items-center justify-center">

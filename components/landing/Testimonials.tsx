@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 
@@ -22,6 +22,17 @@ const fallingIngredients = [
 
 export default function Testimonials() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Deteksi ukuran layar responsif seperti komponen Features
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const handleNext = () => {
     setActiveIndex((prev) => (prev + 1) % testimonialsData.length);
@@ -62,7 +73,7 @@ export default function Testimonials() {
         ))}
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-6 z-20 w-full flex flex-col items-center">
+      <div className="relative max-w-5xl mx-auto px-4 md:px-12 z-20 w-full flex flex-col items-center">
         
         {/* HEADER SECTION */}
         <div className="text-center max-w-2xl mx-auto space-y-3 mb-10 select-none">
@@ -86,12 +97,13 @@ export default function Testimonials() {
           </motion.h2>
         </div>
 
-        {/* CAROUSEL TIMBUL COVERFLOW BESAR & LEBAR */}
-        <div className="relative w-full max-w-5xl flex items-center justify-center h-[450px] mt-4">
+        {/* CAROUSEL AREA COVERFLOW 3D */}
+        <div className="relative w-full max-w-5xl flex items-center justify-center h-[460px] mt-4">
           
           <button
             onClick={handlePrev}
-            className="absolute left-0 md:left-2 p-3 rounded-2xl border border-amber-500/10 bg-white/80 backdrop-blur-md text-stone-500 hover:text-amber-600 hover:border-amber-500/40 transition-all active:scale-95 z-30 cursor-pointer shadow-md shadow-amber-500/[0.03]"
+            className="absolute left-0 sm:left-4 md:left-12 p-3 rounded-2xl border border-amber-500/10 bg-white/80 backdrop-blur-md text-stone-500 hover:text-amber-600 hover:border-amber-500/40 transition-all active:scale-95 z-30 cursor-pointer shadow-md shadow-amber-500/[0.03]"
+            aria-label="Previous Testimonial"
           >
             <ChevronLeft size={18} />
           </button>
@@ -111,43 +123,42 @@ export default function Testimonials() {
               return (
                 <motion.div
                   key={idx}
-                  // Diubah ke w-[340px] sm:w-[460px] agar kotak jauh lebih lebar dan megah
-                  className="absolute w-[340px] sm:w-[460px] h-[360px] rounded-[44px] bg-white/60 backdrop-blur-xl p-10 flex flex-col justify-between text-center select-none shadow-[0_30px_70px_-15px_rgba(234,179,8,0.07),inset_0_1px_2px_rgba(255,255,255,0.7)] border border-amber-500/20 relative"
+                  // Mengikuti standar layout ukuran kartu dari halaman Features
+                  className="absolute w-[280px] sm:w-[330px] h-[400px] rounded-[36px] bg-white/75 backdrop-blur-xl p-8 flex flex-col justify-between text-center select-none shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_25px_50px_-12px_rgba(234,179,8,0.06)] border border-amber-500/20 relative"
                   animate={{
-                    // X-offset disesuaikan menjadi 340 agar tumpukan kartu tidak saling bertubrukan karena ukurannya membesar
-                    x: offset * 340,
-                    scale: isCenter ? 1.05 : 0.82,
-                    opacity: isCenter ? 1 : 0.3,
+                    // Penyesuaian rentang jarak geser X (offset) dinamis mengikuti gaya komponen Features
+                    x: offset * (isMobile ? 200 : 250),
+                    scale: isCenter ? 1 : 0.82,
+                    opacity: isCenter ? 1 : 0.35,
                     zIndex: isCenter ? 20 : 10,
                     rotateY: offset * -12,
                   }}
                   transition={{
                     type: "spring",
-                    stiffness: 220,
-                    damping: 26,
+                    stiffness: 240,
+                    damping: 24,
                   }}
                 >
-                  {/* Efek kilauan emas ekstra khusus kartu tengah */}
                   {isCenter && (
-                    <div className="absolute inset-0 rounded-[44px] bg-gradient-to-b from-amber-500/[0.03] to-transparent pointer-events-none border-2 border-amber-500/30" />
+                    <div className="absolute inset-0 rounded-[36px] bg-gradient-to-b from-amber-500/[0.04] to-transparent pointer-events-none border border-amber-500/20" />
                   )}
 
-                  <div className="flex flex-col items-center">
-                    <Quote size={26} className="text-amber-500/30 mb-5 fill-amber-500/5" />
-                    <p className={`font-medium leading-relaxed italic text-stone-600 transition-all duration-300 px-2 sm:px-4 ${
-                      isCenter ? "text-xs sm:text-[15px] text-stone-800" : "text-xs"
+                  <div className="flex flex-col items-center flex-1 justify-center">
+                    <Quote size={24} className="text-amber-500/25 mb-4 fill-amber-500/5 shrink-0" />
+                    <p className={`font-medium leading-relaxed italic text-stone-600 transition-all duration-300 ${
+                      isCenter ? "text-xs sm:text-[13px] text-stone-800" : "text-[11px]"
                     }`}>
                       "{item.text}"
                     </p>
                   </div>
 
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-[#a17e26] flex items-center justify-center font-bold text-xs shadow-inner border border-amber-300/30">
+                  <div className="flex flex-col items-center gap-2 shrink-0 mt-4">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-[#a17e26] flex items-center justify-center font-bold text-xs shadow-inner border border-amber-300/30">
                       {item.name[0]}
                     </div>
                     <div>
-                      <h4 className="font-black text-xs text-stone-700 tracking-wide uppercase">{item.name}</h4>
-                      <p className="text-[10px] font-bold text-amber-700/70 mt-0.5">{item.role} • {item.city}</p>
+                      <h4 className="font-black text-[11px] text-stone-700 tracking-wide uppercase">{item.name}</h4>
+                      <p className="text-[9px] font-bold text-amber-700/70 mt-0.5">{item.role} • {item.city}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -157,7 +168,8 @@ export default function Testimonials() {
 
           <button
             onClick={handleNext}
-            className="absolute right-0 md:right-2 p-3 rounded-2xl border border-amber-500/10 bg-white/80 backdrop-blur-md text-stone-500 hover:text-amber-600 hover:border-amber-500/40 transition-all active:scale-95 z-30 cursor-pointer shadow-md shadow-amber-500/[0.03]"
+            className="absolute right-0 sm:right-4 md:right-12 p-3 rounded-2xl border border-amber-500/10 bg-white/80 backdrop-blur-md text-stone-500 hover:text-amber-600 hover:border-amber-500/40 transition-all active:scale-95 z-30 cursor-pointer shadow-md shadow-amber-500/[0.03]"
+            aria-label="Next Testimonial"
           >
             <ChevronRight size={18} />
           </button>
