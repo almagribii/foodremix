@@ -106,6 +106,7 @@ model RemixHistory {
   user            UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
   recipeName      String       
   ingredientsUsed String[]     
+  instructions    String[]     @default([])
   moneySaved      Float        
   carbonPrevented Float        
   cookedAt        DateTime     @default(now())

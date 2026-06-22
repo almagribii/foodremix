@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/ui/Toast";
+import PageLoader from "@/components/ui/PageLoader";
 
 interface ProfileData {
   nickname: string;
@@ -137,14 +138,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-[#1A1A1A]" />
-        <p className="text-xs font-semibold text-zinc-400">
-          Sinkronisasi data profil Foodremix...
-        </p>
-      </div>
-    );
+    return <PageLoader variant="section" message="Memuat profil..." />;
   }
 
   return (

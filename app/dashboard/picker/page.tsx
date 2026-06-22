@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { motion } from "framer-motion";
 import { Camera, Upload, RefreshCw, CheckCircle2, Package } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+import PageLoader from "@/components/ui/PageLoader";
 
 interface ScanResult {
   status: "VALID" | "INVALID";
@@ -310,15 +311,7 @@ export default function RemixPickerPage() {
             )}
 
             {loading && !result && (
-              <div className="space-y-6 animate-pulse my-auto">
-                <div className="h-12 bg-zinc-100 rounded-2xl w-3/4" />
-                <div className="space-y-2">
-                  <div className="h-4 bg-zinc-100 rounded-lg w-full" />
-                  <div className="h-4 bg-zinc-100 rounded-lg w-full" />
-                  <div className="h-4 bg-zinc-100 rounded-lg w-5/6" />
-                </div>
-                <div className="h-24 bg-zinc-50 rounded-2xl w-full" />
-              </div>
+              <PageLoader variant="inline" message="Menganalisis bahan..." />
             )}
 
             {result && (

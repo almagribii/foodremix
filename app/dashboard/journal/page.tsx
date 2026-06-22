@@ -5,6 +5,8 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/components/ui/Toast";
 
+import PageLoader from "@/components/ui/PageLoader";
+
 import JournalCard from "@/components/rekam-gizi/JournalCard";
 import DailyNutrientSummary from "@/components/rekam-gizi/DailyNutrientSummary";
 import NutrientBarChart from "@/components/rekam-gizi/NutrientBarChart";
@@ -121,14 +123,7 @@ export default function RekamGiziPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-[#1A1A1A]" />
-        <p className="text-xs font-semibold text-zinc-400">
-          Sinkronisasi analitik rekam gizi...
-        </p>
-      </div>
-    );
+    return <PageLoader variant="section" message="Memuat data jurnal..." />;
   }
 
   return (

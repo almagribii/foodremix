@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 import { useAuth } from "@/lib/hooks/useAuth";
+import PageLoader from "@/components/ui/PageLoader";
 import {
   Utensils, Leaf, HeartPulse, ScanLine, BookOpen,
   Bell, ArrowRight, ChevronRight, Sparkles, TrendingUp,
@@ -159,29 +160,6 @@ function QuickLink({
   );
 }
 
-// ─── Skeleton Loader ─────────────────────────────────────────────
-function SkeletonPulse({ className }: { className: string }) {
-  return <div className={`animate-pulse bg-zinc-100 rounded-2xl ${className}`} />;
-}
-
-function DashboardSkeleton() {
-  return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <SkeletonPulse className="h-8 w-56" />
-        <SkeletonPulse className="h-4 w-80" />
-      </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => <SkeletonPulse key={i} className="h-32" />)}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <SkeletonPulse className="lg:col-span-8 h-72" />
-        <SkeletonPulse className="lg:col-span-4 h-72" />
-      </div>
-    </div>
-  );
-}
-
 // ════════════════════════════════════════════════════════════════
 // Halaman utama
 // ════════════════════════════════════════════════════════════════
@@ -222,7 +200,7 @@ export default function DashboardPage() {
 
   if (isLoading) return (
     <div className="max-w-7xl mx-auto pb-16">
-      <DashboardSkeleton />
+      <PageLoader variant="section" message="Mengumpulkan data..." />
     </div>
   );
 
