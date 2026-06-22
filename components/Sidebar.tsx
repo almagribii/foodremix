@@ -96,6 +96,30 @@ export default function Sidebar({
       ),
     },
     {
+      name: "Remix Game",
+      path: "/dashboard/game",
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M13.522 11.23a1 1 0 00-1.045 0l-9.544 5.51A1 1 0 003.439 18.5h17.122a1 1 0 00.506-1.76l-7.545-5.51z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 3v8.5m0-8.5L7.5 7M12 3l4.5 4"
+          />
+        </svg>
+      ),
+    },
+    {
       name: "Rekam Gizi",
       path: "/dashboard/journal",
       icon: (
@@ -164,11 +188,16 @@ export default function Sidebar({
           : "w-20 -translate-x-full lg:translate-x-0 px-0"
       }`}
     >
-      <div
-        className={`flex items-center shrink-0 ${isOpen ? "justify-between px-6" : "justify-center"}`}
-      >
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative h-9 w-9 overflow-hidden rounded-xl transition-transform group-hover:scale-105">
+      <div className="relative flex flex-col items-center shrink-0 w-full px-4">
+        <Link
+          href="/"
+          className={`flex items-center transition-all duration-200 group w-full ${
+            isOpen
+              ? "flex-col justify-center text-center gap-2 pt-2"
+              : "justify-center"
+          }`}
+        >
+          <div className="relative h-10 w-10 overflow-hidden rounded-xl transition-transform group-hover:scale-105">
             <Image
               src="/logo-food.png"
               alt="Foodremix Logo"
@@ -178,15 +207,16 @@ export default function Sidebar({
             />
           </div>
           {isOpen && (
-            <h1 className="text-xl font-black tracking-wider text-[#EAB308] animate-in fade-in duration-200">
+            <h1 className="text-xl font-black tracking-wider text-[#EAB308] animate-in fade-in zoom-in-95 duration-200">
               Foodremix
             </h1>
           )}
         </Link>
+
         {isOpen && (
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl hover:bg-zinc-800 text-zinc-400 hover:text-white lg:hidden transition-colors"
+            className="absolute top-2 right-4 p-1.5 rounded-xl hover:bg-zinc-800 text-zinc-400 hover:text-white lg:hidden transition-colors"
           >
             <svg
               className="h-5 w-5"
