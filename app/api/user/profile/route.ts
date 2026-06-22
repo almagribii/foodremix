@@ -12,12 +12,18 @@ export async function GET(request: NextRequest) {
     if (!payload)
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
-    // FIKS: Menggunakan 'userId' untuk mencari UserProfile yang sesuai dengan User ID akun
     const profile = await prisma.userProfile.findUnique({
       where: { userId: payload.userId },
+      select: {
+        id: true,
+        userId: true,
+        nickname: true,
+        dailyBudgetTarget: true,
+        medicalConditions: true,
+        allergies: true,
+      },
     });
 
-    // FIKS: Dibungkus ke dalam properti 'profile' agar sesuai dengan pembacaan data di frontend
     return NextResponse.json({ profile });
   } catch (error) {
     console.error("Fetch profile error:", error);
@@ -39,19 +45,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
     const body = await request.json();
-    const {
-      nickname,
-      dailyBudgetTarget,
-      medicalConditions,
-      allergies,
-      generalLocation,
-      latitude,
-      longitude,
-    } = body;
+    const { nickname, dailyBudgetTarget, medicalConditions, allergies } = body;
 
-    if (!nickname || !generalLocation) {
+    if (!nickname) {
       return NextResponse.json(
-        { error: "Nickname dan lokasi wajib diisi" },
+        { error: "Nickname wajib diisi" },
         { status: 400 },
       );
     }
@@ -71,23 +69,19 @@ export async function PUT(request: NextRequest) {
       return [];
     };
 
-    // FIKS: Menggunakan 'userId' untuk melakukan update pada tabel UserProfile
     const updatedProfile = await prisma.userProfile.update({
       where: { userId: payload.userId },
       data: {
         nickname,
-        dailyBudgetTarget: parseFloat(String(dailyBudgetTarget)) || 30000,
+        dailyBudgetTarget: parseFloat(String(dailyBudgetTarget)) || 30000.0,
         medicalConditions: sanitizeToArray(medicalConditions),
         allergies: sanitizeToArray(allergies),
-        generalLocation,
-        latitude: latitude ? parseFloat(String(latitude)) : null,
-        longitude: longitude ? parseFloat(String(longitude)) : null,
       },
     });
 
     return NextResponse.json({
       message: "Profil berhasil diperbarui",
-      profile: updatedProfile, // FIKS: Menggunakan kunci penamaan 'profile' yang konsisten
+      profile: updatedProfile,
     });
   } catch (error) {
     console.error("Update profile DB error:", error);

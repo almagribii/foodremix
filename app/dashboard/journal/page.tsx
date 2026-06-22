@@ -3,6 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/components/ui/Toast";
+
+import PageLoader from "@/components/ui/PageLoader";
 
 import JournalCard from "@/components/rekam-gizi/JournalCard";
 import DailyNutrientSummary from "@/components/rekam-gizi/DailyNutrientSummary";
@@ -27,11 +30,11 @@ interface AnalyticsData {
 
 export default function RekamGiziPage() {
   const { token } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   const [journals, setJournals] = useState<JournalLog[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // State Filter Tanggal: Default otomatis ke tanggal hari ini (Format YYYY-MM-DD)
   const [selectedDate, setSelectedDate] = useState(() => {
     const tzoffset = new Date().getTimezoneOffset() * 60000;
     return new Date(Date.now() - tzoffset).toISOString().slice(0, 10);
@@ -42,9 +45,7 @@ export default function RekamGiziPage() {
   const [foodEaten, setFoodEaten] = useState("");
   const [userStory, setUserStory] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
 
-  // loadData mendeteksi filter tanggal aktif saat disalurkan ke URL parameter
   const loadData = useCallback(
     async (authToken: string | null, targetDate: string) => {
       try {
@@ -68,23 +69,26 @@ export default function RekamGiziPage() {
     [],
   );
 
-  // Memicu fetch ulang secara otomatis setiap kali pengguna mengubah pilihan tanggal kalender
   useEffect(() => {
     let isMounted = true;
-    const executeFetch = async () => {
-      await loadData(token, selectedDate);
+
+    const fetchData = async () => {
+  
+      if (isMounted) {
+        await loadData(token, selectedDate);
+      }
     };
-    executeFetch();
+
+    fetchData();
+
     return () => {
       isMounted = false;
     };
   }, [token, selectedDate, loadData]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!foodEaten || !userStory) return;
     setSubmitting(true);
-    setMessage({ type: "", text: "" });
     const activeToken = token || localStorage.getItem("token");
 
     try {
@@ -98,37 +102,32 @@ export default function RekamGiziPage() {
       });
 
       if (res.ok) {
+        const newRecord = await res.json();
+        setJournals((prev) => [newRecord, ...prev]);
         setFoodEaten("");
         setUserStory("");
         setUserMood("HAPPY");
         setIsFormOpen(false);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        await loadData(token, selectedDate);
+        toastSuccess("Jurnal tersimpan!", "Entri gizi baru berhasil direkam.");
+        loadData(activeToken, selectedDate);
       } else {
         const data = await res.json();
-        setMessage({ type: "error", text: data.error || "Gagal menyimpan." });
+        toastError("Gagal menyimpan", data.error || "Terjadi kesalahan saat menyimpan.");
       }
     } catch (err) {
       console.error(err);
+      toastError("Gangguan koneksi", "Tidak dapat terhubung ke server.");
     } finally {
       setSubmitting(false);
     }
   };
 
   if (loading) {
-    return (
-      <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-[#1A1A1A]" />
-        <p className="text-xs font-semibold text-zinc-400">
-          Sinkronisasi analitik rekam gizi...
-        </p>
-      </div>
-    );
+    return <PageLoader variant="section" message="Memuat data jurnal..." />;
   }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-16">
-      {/* Header Utama Terintegrasi Elemen Input Tanggal Premium */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-200 pb-5">
         <div className="space-y-0.5">
           <h1 className="text-2xl font-black tracking-tight text-[#1A1A1A]">
@@ -140,7 +139,6 @@ export default function RekamGiziPage() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          {/* Kalender Filter Tanggal Minimalis */}
           <div className="flex items-center bg-white border border-zinc-200 px-3 py-2 rounded-xl shadow-sm gap-2">
             <svg
               className="h-4 w-4 text-zinc-400"
@@ -164,10 +162,7 @@ export default function RekamGiziPage() {
           </div>
 
           <button
-            onClick={() => {
-              setMessage({ type: "", text: "" });
-              setIsFormOpen(!isFormOpen);
-            }}
+            onClick={() => setIsFormOpen(!isFormOpen)}
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl hover:bg-zinc-800 transition shadow-sm"
           >
             <motion.svg
@@ -191,7 +186,6 @@ export default function RekamGiziPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-7 space-y-6">
-          {/* AnimatePresence Inline Input Form */}
           <AnimatePresence initial={false}>
             {isFormOpen && (
               <motion.div
@@ -206,7 +200,6 @@ export default function RekamGiziPage() {
                     Entri Baru Rekam Gizi
                   </h3>
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Input field details tetap aman... */}
                     <input
                       type="text"
                       value={foodEaten}
@@ -257,23 +250,22 @@ export default function RekamGiziPage() {
           <NutrientBarChart />
         </div>
 
+        {/* FIKS: Duplikasi tag kolom sebelah kanan sudah dibersihkan total */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="lg:col-span-5 space-y-6">
-            <DailyNutrientSummary
-              currentCalories={analytics?.daily.calories || 0}
-              currentSugar={analytics?.daily.sugar || 0}
-              currentProtein={analytics?.daily.protein || 0}
-              dateString={selectedDate} // Salurkan state filter kalender ke sini
-            />
-            <DailyMacroDonut
-              macro={
-                analytics?.daily.calories && analytics.daily.calories > 0
-                  ? analytics.macro
-                  : { karbo: 0, lemak: 0, protein: 0 }
-              }
-              dateString={selectedDate}
-            />
-          </div>
+          <DailyNutrientSummary
+            currentCalories={analytics?.daily.calories || 0}
+            currentSugar={analytics?.daily.sugar || 0}
+            currentProtein={analytics?.daily.protein || 0}
+            dateString={selectedDate}
+          />
+          <DailyMacroDonut
+            macro={
+              analytics?.daily.calories && analytics.daily.calories > 0
+                ? analytics.macro
+                : { karbo: 0, lemak: 0, protein: 0 }
+            }
+            dateString={selectedDate}
+          />
         </div>
       </div>
     </div>

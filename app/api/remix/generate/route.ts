@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { extractToken, verifyToken } from "@/lib/auth";
 import { GoogleGenAI, Part } from "@google/genai";
+import { triggerRemixNotification } from "@/lib/notifications";
 
 const apiKey = process.env.GEMINI_API_KEY_CHATBOT || "";
 const ai = new GoogleGenAI({ apiKey });
@@ -24,7 +25,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { ingredients, imageBase64, targetBudget } = body;
+    const { ingredients, imageBase64, targetBudget, mode } = body;
+
+    // mode: "remix" (default) = racik dari bahan sisa
+    //       "detect" = deteksi makanan jadi & berikan tutorial cara membuatnya
+    const isDetectMode = mode === "detect";
 
     if (
       (!ingredients ||
@@ -35,7 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Harap masukkan data (ambil foto kulkas via webcam atau ketik catatan teks bahan sisa)",
+            "Harap masukkan data (ambil foto atau ketik nama/bahan makanan)",
         },
         { status: 400 },
       );
@@ -58,8 +63,28 @@ export async function POST(request: NextRequest) {
     const alergiUser =
       userProfile.allergies.join(", ") || "tidak ada alergi makanan";
 
-    // PROMPT ENGINEERING MULTILAYER VALIDATION (GAMBAR & TEKS)
-    const systemInstruction = `
+    // PROMPT ENGINEERING — berbeda per mode
+    const systemInstruction = isDetectMode
+      ? `
+      Kamu adalah Chef AI & Food Identifier dari aplikasi Foodremix.
+      Tugas utamamu adalah MENDETEKSI nama makanan dari gambar atau teks yang diberikan user, lalu memberikan resep/tutorial lengkap cara membuatnya.
+
+      ATURAN DETEKSI (LANGKAH 1):
+      1. Jika gambar tidak menunjukkan makanan/minuman yang bisa dikenali, status = "INVALID".
+      2. Jika teks tidak menyebutkan nama makanan, status = "INVALID".
+      3. Jika tidak valid, isi "recipe" dengan null, beri "reason" dan "solution" yang jelas.
+
+      ATURAN TUTORIAL (LANGKAH 2 - JIKA VALID):
+      Buat tutorial resep lengkap cara membuat makanan yang terdeteksi, dengan mempertimbangkan:
+      - Penyakit: ${penyakitUser}
+      - Alergi: ${alergiUser}
+      - Field "ingredientsUsed" = daftar bahan yang dibutuhkan untuk membuat makanan ini
+      - Field "instructions" = langkah-langkah detail cara memasaknya
+      - Field "moneySaved" = estimasi penghematan vs beli di luar (dalam Rupiah)
+      - Field "carbonPrevented" = estimasi karbon dicegah (kg CO₂)
+      - Jika ada pantangan medis atau alergi, sebutkan substitusi bahan yang aman
+      `
+      : `
       Kamu adalah Engine Validasi & Chef Nutrisional AI dari aplikasi Foodremix.
       Tugas utamamu sebelum meracik resep adalah memvalidasi apakah input Gambar (dari webcam) atau Teks dari pengguna beneran berkaitan dengan MAKANAN, KULKAS, atau BAHAN BAKU PANGAN SISA.
 
@@ -73,7 +98,7 @@ export async function POST(request: NextRequest) {
       - Penyakit: ${penyakitUser}
       - Alergi: ${alergiUser}
       - Batas Anggaran: Rp ${targetBudget || 30000}
-    `;
+      `;
 
     // Skema JSON yang mendukung struktur Validasi Dinamis
     const jsonSchema = {
@@ -130,7 +155,9 @@ export async function POST(request: NextRequest) {
       ingredients && ingredients.length > 0
         ? ingredients.join(", ")
         : "Tidak ada catatan teks manual.";
-    const userMessage = `Input Teks: ${textCatatan}. Analisis kelayakan input gambar webcam dan teks ini sekarang.`;
+    const userMessage = isDetectMode
+      ? `Deteksi makanan ini dan berikan tutorial cara membuatnya: ${textCatatan}`
+      : `Input Teks: ${textCatatan}. Analisis kelayakan input gambar webcam dan teks ini sekarang.`;
     contentParts.push({ text: userMessage });
 
     const response = await ai.models.generateContent({
@@ -151,17 +178,29 @@ export async function POST(request: NextRequest) {
     // Jika input VALID, baru simpan ke tabel data histori memasak PostgreSQL
     let historyId = null;
     if (parsedResult.status === "VALID" && parsedResult.recipe) {
+      const moneySaved = parseFloat(parsedResult.recipe.moneySaved) || 20000;
+      const carbonPrevented =
+        parseFloat(parsedResult.recipe.carbonPrevented) || 0.4;
+
       const historyLog = await prisma.remixHistory.create({
         data: {
           userId: userProfile.id,
           recipeName: parsedResult.recipe.recipeName,
           ingredientsUsed: parsedResult.recipe.ingredientsUsed,
-          moneySaved: parseFloat(parsedResult.recipe.moneySaved) || 20000,
-          carbonPrevented:
-            parseFloat(parsedResult.recipe.carbonPrevented) || 0.4,
+          instructions: parsedResult.recipe.instructions || [],
+          moneySaved,
+          carbonPrevented,
         },
       });
       historyId = historyLog.id;
+
+      // Trigger notifikasi remix — fire-and-forget
+      triggerRemixNotification(
+        userProfile.id,
+        parsedResult.recipe.recipeName,
+        moneySaved,
+        carbonPrevented,
+      );
     }
 
     return NextResponse.json(
@@ -171,6 +210,7 @@ export async function POST(request: NextRequest) {
         solution: parsedResult.solution,
         recipe: parsedResult.recipe,
         remixHistoryId: historyId,
+        mode: isDetectMode ? "detect" : "remix",
       },
       { status: 200 },
     );

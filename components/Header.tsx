@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
@@ -8,7 +8,9 @@ interface Notification {
   id: string;
   title: string;
   message: string;
+  type: string;
   isRead: boolean;
+  createdAt: string;
 }
 
 interface HeaderProps {
@@ -24,25 +26,70 @@ export default function Header({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => {
-    async function fetchNotifications() {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("/api/notifications", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setNotifications(data);
-        }
-      } catch (err) {
-        console.error("Failed to load notifications", err);
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/notifications", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
       }
+    } catch (err) {
+      console.error("Failed to load notifications", err);
     }
-    fetchNotifications();
   }, []);
 
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  // Re-fetch ketika navigasi halaman berubah agar badge selalu fresh
+  useEffect(() => {
+    fetchNotifications();
+  }, [pathname, fetchNotifications]);
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const handleToggleDropdown = async () => {
+    const next = !showDropdown;
+    setShowDropdown(next);
+    // Saat dropdown dibuka, tandai semua sebagai dibaca
+    if (next && unreadCount > 0) {
+      try {
+        const token = localStorage.getItem("token");
+        await fetch("/api/notifications", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ markAll: true }),
+        });
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      } catch (_) {}
+    }
+  };
+
+  function formatRelativeTime(iso: string) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return "Baru saja";
+    if (minutes < 60) return `${minutes} mnt lalu`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} jam lalu`;
+    return `${Math.floor(hours / 24)} hari lalu`;
+  }
+
+  function typeColor(type: string) {
+    switch (type) {
+      case "WELLNESS": return "border-rose-400";
+      case "PICKER_ALERT": return "border-amber-400";
+      case "REMIX_ALERT": return "border-emerald-400";
+      default: return "border-blue-400";
+    }
+  }
 
   // Fungsi menghasilkan array objek breadcrumb dari URL saat ini
   const generateBreadcrumbs = () => {
@@ -141,9 +188,7 @@ export default function Header({
 
       <div className="relative shrink-0">
         <button
-          onClick={() => {
-            setShowDropdown(!showDropdown);
-          }}
+          onClick={handleToggleDropdown}
           type="button"
           className="relative p-2.5 bg-white border border-zinc-200 text-[#1A1A1A] rounded-xl hover:bg-zinc-50 transition-colors shadow-sm flex items-center justify-center"
         >
@@ -185,18 +230,33 @@ export default function Header({
                 notifications.map((notif) => (
                   <div
                     key={notif.id}
-                    className={`p-3 rounded-xl text-xs transition-colors ${
+                    className={`p-3 rounded-xl text-xs transition-colors border-l-[3px] ${
                       notif.isRead
-                        ? "bg-zinc-50 text-zinc-600"
-                        : "bg-[#EAB308]/10 border-l-4 border-[#EAB308] text-[#1A1A1A]"
+                        ? "bg-zinc-50 text-zinc-600 border-transparent"
+                        : `bg-[#EAB308]/10 text-[#1A1A1A] ${typeColor(notif.type)}`
                     }`}
                   >
-                    <p className="font-bold">{notif.title}</p>
-                    <p className="text-zinc-500 mt-0.5">{notif.message}</p>
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <p className="font-bold line-clamp-1">{notif.title}</p>
+                      <span className="text-[9px] text-zinc-400 font-medium whitespace-nowrap shrink-0">
+                        {formatRelativeTime(notif.createdAt)}
+                      </span>
+                    </div>
+                    <p className="text-zinc-500 mt-0.5 line-clamp-2">
+                      {notif.message}
+                    </p>
                   </div>
                 ))
               )}
             </div>
+
+            <Link
+              href="/dashboard/notifications"
+              onClick={() => setShowDropdown(false)}
+              className="mt-3 block text-center text-[10px] font-black uppercase tracking-wider text-zinc-400 hover:text-[#1A1A1A] transition pt-3 border-t border-zinc-100"
+            >
+              Lihat Semua Notifikasi →
+            </Link>
           </div>
         )}
       </div>

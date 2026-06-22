@@ -4,43 +4,35 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useToast } from "@/components/ui/Toast";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, loading, isAuthenticated } = useAuth();
+  const { error: toastError } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  // Redirect ke dashboard jika sudah login (tapi tunggu loading selesai)
   useEffect(() => {
-    console.log(
-      "🔍 useEffect check - isAuthenticated:",
-      isAuthenticated,
-      "loading:",
-      loading,
-    );
     if (isAuthenticated && !loading) {
-      console.log("✅ Redirecting to dashboard...");
       router.push("/dashboard");
     }
   }, [isAuthenticated, loading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     if (!email || !password) {
-      setError("Email dan password harus diisi");
+      toastError("Form tidak lengkap", "Email dan password harus diisi.");
       return;
     }
 
     try {
       await login(email, password);
-      // Don't manually push here, let useEffect handle it
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Login gagal, silahkan coba lagi",
+      toastError(
+        "Login gagal",
+        err instanceof Error ? err.message : "Silahkan coba lagi.",
       );
     }
   };
@@ -54,11 +46,7 @@ export default function LoginPage() {
             Selamat datang kembali di Foodremix
           </p>
 
-          {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
-            </div>
-          )}
+          {/* form content — error banner removed, replaced by toast */}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

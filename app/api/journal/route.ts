@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { extractToken, verifyToken } from "@/lib/auth";
 import { GoogleGenAI, Type } from "@google/genai";
+import { triggerWellnessNotification } from "@/lib/notifications";
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 
@@ -15,12 +16,20 @@ export async function GET(request: NextRequest) {
     if (!payload)
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
-    // Ambil parameter tanggal dari URL query (?date=YYYY-MM-DD)
     const { searchParams } = new URL(request.url);
     const targetDateParam = searchParams.get("date");
 
+    // DISELARASKAN: Gunakan select eksplisit agar aman dari cache kolom spasial lama
     const profile = await prisma.userProfile.findUnique({
       where: { userId: payload.userId },
+      select: {
+        id: true,
+        userId: true,
+        nickname: true,
+        dailyBudgetTarget: true,
+        medicalConditions: true,
+        allergies: true,
+      },
     });
 
     if (!profile) {
@@ -32,14 +41,10 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    // Tentukan tanggal target untuk filter evaluasi harian
     const targetDateString = targetDateParam
       ? new Date(targetDateParam).toDateString()
       : new Date().toDateString();
 
-    // ==========================================
-    // AGREGASI DATA BERDASARKAN FILTER TANGGAL REAL
-    // ==========================================
     let totalKaloriTargetHari = 0;
     let totalGulaTargetHari = 0;
     let totalProteinTargetHari = 0;
@@ -58,7 +63,6 @@ export async function GET(request: NextRequest) {
         `${j.foodEaten} ${j.aiInsight} ${j.userStory}`.toLowerCase();
       const tanggalJurnal = new Date(j.createdAt).toDateString();
 
-      // 1. Ekstraksi Angka Nutrisi Harian SESUAI TANGGAL FILTER
       if (tanggalJurnal === targetDateString) {
         const kaloriMatch = teksLower.match(/(\d+)\s*(kcal|kalori)/);
         const gulaMatch = teksLower.match(/(\d+)\s*g\s*(gula|glukosa)/);
@@ -69,7 +73,6 @@ export async function GET(request: NextRequest) {
         if (proteinMatch) totalProteinTargetHari += parseInt(proteinMatch[1]);
       }
 
-      // 2. Ekstraksi Mineral Bulanan untuk Barchart (Akumulasi Seluruh Rekam)
       if (
         teksLower.includes("vitamin c") ||
         teksLower.includes("jeruk") ||
@@ -101,7 +104,6 @@ export async function GET(request: NextRequest) {
       )
         hitungVitamin += 15;
 
-      // 3. Ekstraksi Gizi Makro Keseluruhan untuk Donut Chart
       if (
         teksLower.includes("karbo") ||
         teksLower.includes("nasi") ||
@@ -133,10 +135,10 @@ export async function GET(request: NextRequest) {
       totalKarboKeseluruhan > 0
         ? Math.round((totalKarboKeseluruhan / totalSesiMakro) * 100)
         : 55;
-    const persenLemak =
-      totalLemakKeseluruhan > 0
-        ? Math.round((totalLemakKeseluruhan / totalSesiMakro) * 100)
-        : 25;
+  const persenLemak =
+    totalLemakKeseluruhan > 0
+      ? Math.round((totalLemakKeseluruhan / totalSesiMakro) * 100)
+      : 25;
     const persenProtein = 100 - (persenKarbo + persenLemak);
 
     return NextResponse.json({
@@ -203,12 +205,9 @@ export async function POST(request: NextRequest) {
       create: {
         nickname: "User Remix",
         dailyBudgetTarget: 30000,
-        generalLocation: "Belum disetel",
-        medicalConditions: [] as string[],
-        allergies: [] as string[],
-        user: {
-          connect: { id: payload.userId },
-        },
+        medicalConditions: [],
+        allergies: [],
+        user: { connect: { id: payload.userId } },
       },
     });
 
@@ -250,16 +249,8 @@ export async function POST(request: NextRequest) {
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            healthScore: {
-              type: Type.INTEGER,
-              description:
-                "Skala angka 1-100 tingkat kepatuhan asupan gizi terhadap kondisi medis pengguna.",
-            },
-            aiInsight: {
-              type: Type.STRING,
-              description:
-                "Solusi gizi, tips pencegahan, dan estimasi angka kandungan gizi makro tanpa menggunakan emoji.",
-            },
+            healthScore: { type: Type.INTEGER },
+            aiInsight: { type: Type.STRING },
           },
           required: ["healthScore", "aiInsight"],
         },
@@ -281,6 +272,9 @@ export async function POST(request: NextRequest) {
         healthScore: aiResult.healthScore,
       },
     });
+
+    // Trigger notifikasi wellness berdasarkan healthScore (fire-and-forget)
+    triggerWellnessNotification(profile.id, aiResult.healthScore, foodEaten);
 
     return NextResponse.json(newJournal);
   } catch (error) {

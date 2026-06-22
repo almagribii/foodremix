@@ -19,52 +19,80 @@ const WELCOME_MSG: Message = {
 export default function RemixChatPage() {
   const { token } = useAuth();
 
-  // LAZY STATE INITIALIZATION: Membaca localStorage langsung saat state dibuat (Aman dari Eror ESLint)
-  const [messages, setMessages] = useState<Message[]>(() => {
-    if (typeof window !== "undefined") {
-      const savedChat = localStorage.getItem("foodremix_chat_history");
-      if (savedChat) {
-        try {
-          return JSON.parse(savedChat);
-        } catch {
-          return [WELCOME_MSG];
-        }
-      }
-    }
-    return [WELCOME_MSG];
-  });
-
+  // Menggunakan fallback string 'guest' agar chat tetap fungsional sebelum API /api/me merespons
+  const [currentUserId, setCurrentUserId] = useState<string>("guest");
+  const [messages, setMessages] = useState<Message[]>([WELCOME_MSG]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Menyimpan setiap perubahan pesan ke localStorage secara otomatis
+  // 1. Ambil identitas unik user untuk memisahkan localStorage
   useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem("foodremix_chat_history", JSON.stringify(messages));
+    let isMounted = true;
+    const fetchUserIdentity = async () => {
+      const activeToken = token || localStorage.getItem("token");
+      if (!activeToken) return;
+
+      try {
+        const res = await fetch("/api/me", {
+          headers: { Authorization: `Bearer ${activeToken}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.user?.id) {
+            setCurrentUserId(data.user.id);
+
+            // Pindahkan pembacaan riwayat ke sini setelah userId valid didapatkan
+            const storageKey = `foodremix_chat_${data.user.id}`;
+            const savedChat = localStorage.getItem(storageKey);
+            if (savedChat) {
+              try {
+                setMessages(JSON.parse(savedChat));
+              } catch {
+                setMessages([WELCOME_MSG]);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Gagal sinkronisasi sesi chat lokal:", err);
+      }
+    };
+
+    fetchUserIdentity();
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
+
+  // 2. Simpan riwayat obrolan secara dinamis ke localStorage
+  useEffect(() => {
+    if (currentUserId && messages.length > 0) {
+      const storageKey = `foodremix_chat_${currentUserId}`;
+      localStorage.setItem(storageKey, JSON.stringify(messages));
     }
-  }, [messages]);
+  }, [messages, currentUserId]);
 
   // Auto Scroll ke bawah
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // Fungsi Reset / Clear Chat History
   const handleClearChat = () => {
     setIsClearing(true);
     setTimeout(() => {
       setMessages([WELCOME_MSG]);
-      localStorage.removeItem("foodremix_chat_history");
+      const storageKey = `foodremix_chat_${currentUserId}`;
+      localStorage.removeItem(storageKey);
       setIsClearing(false);
     }, 400);
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading) return; // FIKS: Validasi currentUserId yang mengunci tombol dibuang
 
     const userMessageText = input.trim();
     setInput("");
@@ -234,21 +262,12 @@ export default function RemixChatPage() {
                   className={`flex gap-3 max-w-[80%] ${isUser ? "flex-row-reverse" : "flex-row"}`}
                 >
                   <div
-                    className={`h-7 w-7 rounded-lg text-[10px] font-black border tracking-tighter shrink-0 flex items-center justify-center shadow-sm ${
-                      isUser
-                        ? "bg-zinc-100 text-zinc-700 border-zinc-200"
-                        : "bg-[#EAB308]/10 text-[#bc9003] border-[#EAB308]/20"
-                    }`}
+                    className={`h-7 w-7 rounded-lg text-[10px] font-black border tracking-tighter shrink-0 flex items-center justify-center shadow-sm ${isUser ? "bg-zinc-100 text-zinc-700 border-zinc-200" : "bg-white text-zinc-700 border-zinc-200"}`}
                   >
                     {isUser ? "ME" : "AI"}
                   </div>
-
                   <div
-                    className={`px-4 py-3 rounded-2xl text-xs shadow-sm space-y-1.5 leading-relaxed ${
-                      isUser
-                        ? "bg-[#1A1A1A] text-zinc-100 rounded-tr-none border border-zinc-800"
-                        : "bg-white border border-zinc-200/60 text-zinc-700 rounded-tl-none"
-                    }`}
+                    className={`px-4 py-3 rounded-2xl text-xs shadow-sm space-y-1.5 leading-relaxed ${isUser ? "bg-[#1A1A1A] text-zinc-100 rounded-tr-none border border-zinc-800" : "bg-white border border-zinc-200/60 text-zinc-700 rounded-tl-none"}`}
                   >
                     {isUser ? msg.text : renderMessageText(msg.text)}
                   </div>
@@ -271,7 +290,7 @@ export default function RemixChatPage() {
             </div>
           </motion.div>
         )}
-        <div ref={chatEndRef} />
+        <div window-scroll-resolver="true" ref={chatEndRef} />
       </div>
 
       {/* Form Input Sticky Bottom */}
