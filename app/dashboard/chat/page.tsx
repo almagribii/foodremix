@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
+// IMPORT KOMPONEN CHATBOT BARU
+import Chatbot from "./components/chatbot";
 
 interface Message {
   id: string;
@@ -19,7 +21,6 @@ const WELCOME_MSG: Message = {
 export default function RemixChatPage() {
   const { token } = useAuth();
 
-  // Menggunakan fallback string 'guest' agar chat tetap fungsional sebelum API /api/me merespons
   const [currentUserId, setCurrentUserId] = useState<string>("guest");
   const [messages, setMessages] = useState<Message[]>([WELCOME_MSG]);
   const [input, setInput] = useState("");
@@ -28,7 +29,6 @@ export default function RemixChatPage() {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // 1. Ambil identitas unik user untuk memisahkan localStorage
   useEffect(() => {
     let isMounted = true;
     const fetchUserIdentity = async () => {
@@ -44,7 +44,6 @@ export default function RemixChatPage() {
           if (isMounted && data.user?.id) {
             setCurrentUserId(data.user.id);
 
-            // Pindahkan pembacaan riwayat ke sini setelah userId valid didapatkan
             const storageKey = `foodremix_chat_${data.user.id}`;
             const savedChat = localStorage.getItem(storageKey);
             if (savedChat) {
@@ -67,7 +66,6 @@ export default function RemixChatPage() {
     };
   }, [token]);
 
-  // 2. Simpan riwayat obrolan secara dinamis ke localStorage
   useEffect(() => {
     if (currentUserId && messages.length > 0) {
       const storageKey = `foodremix_chat_${currentUserId}`;
@@ -75,7 +73,6 @@ export default function RemixChatPage() {
     }
   }, [messages, currentUserId]);
 
-  // Auto Scroll ke bawah
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
@@ -92,7 +89,7 @@ export default function RemixChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading) return; // FIKS: Validasi currentUserId yang mengunci tombol dibuang
+    if (!input.trim() || loading) return;
 
     const userMessageText = input.trim();
     setInput("");
@@ -246,57 +243,67 @@ export default function RemixChatPage() {
         </button>
       </div>
 
-      {/* Bubble Obrolan Modern */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-zinc-50/30">
-        <AnimatePresence initial={false}>
-          {messages.map((msg) => {
-            const isUser = msg.role === "user";
-            return (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`flex gap-3 max-w-[80%] ${isUser ? "flex-row-reverse" : "flex-row"}`}
+      {/* Bubble Obrolan Container dengan Watermark Lottie */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-zinc-50/30 relative">
+        {/* WATERMARK WATER-DOWN BOT ANIMATION */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 opacity-20">
+          <div className="w-[380px] h-[380px]">
+            <Chatbot loop={true} />
+          </div>
+        </div>
+
+        {/* Konten pesan dinaikkan z-index-nya agar berada di atas watermark */}
+        <div className="relative z-10 space-y-6">
+          <AnimatePresence initial={false}>
+            {messages.map((msg) => {
+              const isUser = msg.role === "user";
+              return (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`h-7 w-7 rounded-lg text-[10px] font-black border tracking-tighter shrink-0 flex items-center justify-center shadow-sm ${isUser ? "bg-zinc-100 text-zinc-700 border-zinc-200" : "bg-white text-zinc-700 border-zinc-200"}`}
+                    className={`flex gap-3 max-w-[80%] ${isUser ? "flex-row-reverse" : "flex-row"}`}
                   >
-                    {isUser ? "ME" : "AI"}
+                    <div
+                      className={`h-7 w-7 rounded-lg text-[10px] font-black border tracking-tighter shrink-0 flex items-center justify-center shadow-sm ${isUser ? "bg-zinc-100 text-zinc-700 border-zinc-200" : "bg-white text-zinc-700 border-zinc-200"}`}
+                    >
+                      {isUser ? "ME" : "AI"}
+                    </div>
+                    <div
+                      className={`px-4 py-3 rounded-2xl text-xs shadow-sm space-y-1.5 leading-relaxed ${isUser ? "bg-[#1A1A1A] text-zinc-100 rounded-tr-none border border-zinc-800" : "bg-white border border-zinc-200/60 text-zinc-700 rounded-tl-none"}`}
+                    >
+                      {isUser ? msg.text : renderMessageText(msg.text)}
+                    </div>
                   </div>
-                  <div
-                    className={`px-4 py-3 rounded-2xl text-xs shadow-sm space-y-1.5 leading-relaxed ${isUser ? "bg-[#1A1A1A] text-zinc-100 rounded-tr-none border border-zinc-800" : "bg-white border border-zinc-200/60 text-zinc-700 rounded-tl-none"}`}
-                  >
-                    {isUser ? msg.text : renderMessageText(msg.text)}
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
 
-        {loading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex justify-start gap-3 pl-10"
-          >
-            <div className="bg-white border border-zinc-200/60 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-              <span className="h-1.5 w-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-              <span className="h-1.5 w-1.5 bg-zinc-400 rounded-full animate-bounce" />
-            </div>
-          </motion.div>
-        )}
-        <div window-scroll-resolver="true" ref={chatEndRef} />
+          {loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-start gap-3 pl-10"
+            >
+              <div className="bg-white border border-zinc-200/60 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <span className="h-1.5 w-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <span className="h-1.5 w-1.5 bg-zinc-400 rounded-full animate-bounce" />
+              </div>
+            </motion.div>
+          )}
+          <div window-scroll-resolver="true" ref={chatEndRef} />
+        </div>
       </div>
 
       {/* Form Input Sticky Bottom */}
       <form
         onSubmit={handleSendMessage}
-        className="p-4 border-t border-zinc-100 bg-white flex items-center gap-3"
+        className="p-4 border-t border-zinc-100 bg-white flex items-center gap-3 relative z-10"
       >
         <input
           type="text"
