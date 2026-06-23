@@ -182,7 +182,7 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-30 flex h-full flex-col justify-between bg-[#1A1A1A] text-white py-6 shadow-xl transition-all duration-300 ease-in-out lg:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-99999 flex h-full flex-col justify-between bg-[#1A1A1A] text-white py-6 shadow-xl transition-all duration-300 ease-in-out lg:translate-x-0 ${
         isOpen
           ? "w-64 translate-x-0 px-0"
           : "w-20 -translate-x-full lg:translate-x-0 px-0"
