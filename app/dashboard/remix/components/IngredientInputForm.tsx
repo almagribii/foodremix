@@ -124,7 +124,7 @@ export default function IngredientInputForm({
   const canSubmit = ingredients.length > 0 || !!imagePreview;
 
   return (
-    <div className="bg-white text-[#1A1A1A] rounded-3xl overflow-hidden shadow-sm border border-zinc-200 max-w-md mx-auto transition-all duration-300">
+    <div className="bg-white text-[#1A1A1A] rounded-2xl overflow-hidden shadow-sm border border-zinc-200 max-w-md mx-auto transition-all duration-300">
       {/* Mode Toggle Tab */}
       <div className="flex p-1.5 bg-zinc-50 border-b border-zinc-200 gap-1">
         <button
@@ -132,23 +132,21 @@ export default function IngredientInputForm({
           onClick={() => handleModeChange("remix")}
           className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
             mode === "remix"
-              ? "bg-[#1A1A1A] text-white shadow-xs"
+              ? "bg-[#eab308] text-black shadow-xs"
               : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100"
           }`}
         >
-          <Zap size={11} fill={mode === "remix" ? "currentColor" : "none"} />
           Remix Bahan
         </button>
         <button
           type="button"
           onClick={() => handleModeChange("detect")}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
+          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
             mode === "detect"
-              ? "bg-[#1A1A1A] text-white shadow-xs"
+              ? "bg-[#eab308] text-black shadow-xs"
               : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100"
           }`}
         >
-          <Search size={11} />
           Deteksi Makanan
         </button>
       </div>
@@ -321,7 +319,7 @@ export default function IngredientInputForm({
           <button
             type="submit"
             disabled={loading || !canSubmit}
-            className="w-full bg-[#1A1A1A] text-white disabled:bg-zinc-100 disabled:text-zinc-400 border border-transparent disabled:border-zinc-200 font-black py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-[10px] uppercase tracking-widest shadow-xs active:scale-[0.99]"
+            className="w-full bg-[#eab308] text-black disabled:bg-zinc-100 disabled:text-zinc-400 border border-transparent disabled:border-zinc-200 font-black py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-[10px] uppercase tracking-widest shadow-xs active:scale-[0.99]"
           >
             {loading
               ? mode === "remix"

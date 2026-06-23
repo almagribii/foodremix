@@ -163,7 +163,7 @@ export default function RekamGiziPage() {
 
           <button
             onClick={() => setIsFormOpen(!isFormOpen)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl hover:bg-zinc-800 transition shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition shadow-sm"
           >
             <motion.svg
               animate={{ rotate: isFormOpen ? 45 : 0 }}
@@ -220,7 +220,7 @@ export default function RekamGiziPage() {
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="px-5 py-2.5 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl"
+                        className="px-5 py-2.5 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition"
                       >
                         {submitting ? "Proses..." : "Simpan"}
                       </button>

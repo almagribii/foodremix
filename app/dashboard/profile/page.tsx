@@ -226,7 +226,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={addCondition}
-                className="px-4 py-2 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl hover:bg-zinc-800"
+                className="px-4 py-2 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition"
               >
                 Tambah
               </button>
@@ -268,7 +268,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={addAllergy}
-                className="px-4 py-2 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl hover:bg-zinc-800"
+                className="px-4 py-2 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition"
               >
                 Tambah
               </button>
@@ -296,7 +296,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-[#1A1A1A] text-white text-xs font-bold rounded-xl hover:bg-zinc-800 transition disabled:opacity-50"
+              className="px-5 py-2.5 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition disabled:opacity-50"
             >
               {submitting ? "Menyimpan..." : "Simpan Profil"}
             </button>

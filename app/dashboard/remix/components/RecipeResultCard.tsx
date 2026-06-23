@@ -1,6 +1,6 @@
 "use client";
 
-import { Leaf, Wallet } from "lucide-react";
+import { Leaf, Wallet,  } from "lucide-react";
 import type { RemixMode } from "./IngredientInputForm";
 
 export interface RecipeData {
