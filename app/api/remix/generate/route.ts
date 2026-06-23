@@ -4,7 +4,7 @@ import { extractToken, verifyToken } from "@/lib/auth";
 import { GoogleGenAI, Part } from "@google/genai";
 import { triggerRemixNotification } from "@/lib/notifications";
 
-const apiKey = process.env.GEMINI_API_KEY_CHATBOT || "";
+const apiKey = process.env.GEMINI_API_KEY_REMIX || "";
 const ai = new GoogleGenAI({ apiKey });
 
 export async function POST(request: NextRequest) {

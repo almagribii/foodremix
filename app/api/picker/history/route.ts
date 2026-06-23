@@ -4,7 +4,6 @@ import { extractToken, verifyToken } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
-    // 1. Proteksi Autentikasi
     const token = extractToken(request.headers.get("Authorization") || "");
     if (!token)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,11 +25,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 3. Ambil data riwayat scan diurutkan dari yang paling baru
     const history = await prisma.remixPicker.findMany({
       where: { userId: profile.id },
       orderBy: { scannedAt: "desc" },
-      take: 10, // Batasi 10 riwayat terakhir (opsional)
+      take: 10, 
     });
 
     return NextResponse.json(history);

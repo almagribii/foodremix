@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const targetDateParam = searchParams.get("date");
 
-    // DISELARASKAN: Gunakan select eksplisit agar aman dari cache kolom spasial lama
     const profile = await prisma.userProfile.findUnique({
       where: { userId: payload.userId },
       select: {
