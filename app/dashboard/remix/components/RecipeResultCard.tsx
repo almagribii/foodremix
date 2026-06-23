@@ -1,6 +1,6 @@
 "use client";
 
-import { Leaf, Wallet, ChefHat, Search } from "lucide-react";
+import { Leaf, Wallet } from "lucide-react";
 import type { RemixMode } from "./IngredientInputForm";
 
 export interface RecipeData {
@@ -22,17 +22,9 @@ export default function RecipeResultCard({ recipe, mode = "remix" }: RecipeResul
 
   return (
     <div className="space-y-5">
-      {/* ── Header ───────────────────────────────────────────── */}
       <div className="flex flex-col gap-3 pb-5 border-b border-zinc-100">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className={`inline-flex items-center gap-1.5 text-[9px] font-black tracking-widest uppercase px-2.5 py-1 rounded-lg border ${
-            isDetect
-              ? "bg-sky-50 border-sky-200 text-sky-700"
-              : "bg-[#EAB308]/10 border-[#EAB308]/20 text-[#7A5E05]"
-          }`}>
-            {isDetect ? <Search size={9} /> : <ChefHat size={9} />}
-            {isDetect ? "Food Detect AI" : "Gemini AI Remix"}
-          </span>
+          
           {isDetect && recipe.detectedFrom && (
             <span className="text-[10px] text-zinc-400 font-medium">
               Terdeteksi: <span className="font-black text-zinc-600">{recipe.detectedFrom}</span>
@@ -44,7 +36,6 @@ export default function RecipeResultCard({ recipe, mode = "remix" }: RecipeResul
         </h2>
       </div>
 
-      {/* ── Stats ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3">
         <div className="p-3.5 bg-zinc-50 border border-zinc-200/60 rounded-2xl space-y-0.5">
           <div className="flex items-center gap-1.5 text-zinc-400">
