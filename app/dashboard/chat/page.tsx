@@ -247,12 +247,10 @@ export default function RemixChatPage() {
       <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-zinc-50/30 relative">
         {/* WATERMARK WATER-DOWN BOT ANIMATION */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 opacity-20">
-          <div className="w-[380px] h-[380px]">
+          <div className="w-40 h-40 lg:w-70 lg:h-70">
             <Chatbot loop={true} />
           </div>
-        </div>
-
-        {/* Konten pesan dinaikkan z-index-nya agar berada di atas watermark */}
+        </div>    
         <div className="relative z-10 space-y-6">
           <AnimatePresence initial={false}>
             {messages.map((msg) => {
