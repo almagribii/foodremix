@@ -73,7 +73,6 @@ export default function RekamGiziPage() {
     let isMounted = true;
 
     const fetchData = async () => {
-  
       if (isMounted) {
         await loadData(token, selectedDate);
       }
@@ -85,6 +84,7 @@ export default function RekamGiziPage() {
       isMounted = false;
     };
   }, [token, selectedDate, loadData]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!foodEaten || !userStory) return;
@@ -112,7 +112,10 @@ export default function RekamGiziPage() {
         loadData(activeToken, selectedDate);
       } else {
         const data = await res.json();
-        toastError("Gagal menyimpan", data.error || "Terjadi kesalahan saat menyimpan.");
+        toastError(
+          "Gagal menyimpan",
+          data.error || "Terjadi kesalahan saat menyimpan.",
+        );
       }
     } catch (err) {
       console.error(err);
@@ -195,37 +198,84 @@ export default function RekamGiziPage() {
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-zinc-200/80 rounded-3xl p-5 shadow-sm space-y-4">
-                  <h3 className="text-sm font-black text-[#1A1A1A]">
-                    Entri Baru Rekam Gizi
-                  </h3>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <input
-                      type="text"
-                      value={foodEaten}
-                      onChange={(e) => setFoodEaten(e.target.value)}
-                      placeholder="Contoh: Nasi padang lauk kikil"
-                      className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-xl outline-none"
-                      required
-                    />
-                    <textarea
-                      value={userStory}
-                      onChange={(e) => setUserStory(e.target.value)}
-                      placeholder="Tulis keluhan..."
-                      rows={3}
-                      className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-xl outline-none resize-none"
-                      required
-                    />
-                    <div className="flex justify-end">
-                      <button
-                        type="submit"
-                        disabled={submitting}
-                        className="px-5 py-2.5 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition"
-                      >
-                        {submitting ? "Proses..." : "Simpan"}
-                      </button>
+                <div className="bg-white border border-zinc-200/80 rounded-3xl p-5 shadow-sm min-h-50 flex flex-col justify-center">
+                  {submitting ? (
+                    <div className="py-12 flex flex-col items-center justify-center text-center">
+                      <PageLoader
+                        variant="inline"
+                        message="Menganalisis Keseharian Anda..."
+                      />
                     </div>
-                  </form>
+                  ) : (
+                    <>
+                      <h3 className="text-sm font-black text-[#1A1A1A] mb-4">
+                        Entri Baru Rekam Gizi
+                      </h3>
+                      <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black tracking-wider uppercase text-zinc-400 block">
+                            Kondisi Mood Saat Ini
+                          </label>
+                          <select
+                            value={userMood}
+                            onChange={(e) => setUserMood(e.target.value)}
+                            className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-xl outline-none cursor-pointer text-zinc-700"
+                          >
+                            <option value="HAPPY">
+                              😊 Senang / Bahagia (HAPPY)
+                            </option>
+                            <option value="SAD">😢 Sedih / Galau (SAD)</option>
+                            <option value="STRESSED">
+                              🤯 Stres / Tertekan (STRESSED)
+                            </option>
+                            <option value="TIRED">
+                              🥱 Lelah / Kurang Energi (TIRED)
+                            </option>
+                            <option value="ANXIOUS">
+                              😰 Cemas / Gelisah (ANXIOUS)
+                            </option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black tracking-wider uppercase text-zinc-400 block">
+                            Makanan yang Dikonsumsi
+                          </label>
+                          <input
+                            type="text"
+                            value={foodEaten}
+                            onChange={(e) => setFoodEaten(e.target.value)}
+                            placeholder="Contoh: Nasi padang lauk kikil"
+                            className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-xl outline-none"
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black tracking-wider uppercase text-zinc-400 block">
+                            Keluhan Fisik & Cerita Mental
+                          </label>
+                          <textarea
+                            value={userStory}
+                            onChange={(e) => setUserStory(e.target.value)}
+                            placeholder="Tulis keluhan atau kondisi fisikmu saat ini..."
+                            rows={3}
+                            className="w-full px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-xl outline-none resize-none"
+                            required
+                          />
+                        </div>
+
+                        <div className="flex justify-end">
+                          <button
+                            type="submit"
+                            className="px-5 py-2.5 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition"
+                          >
+                            Simpan Jurnal
+                          </button>
+                        </div>
+                      </form>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}
