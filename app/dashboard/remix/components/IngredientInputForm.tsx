@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Camera, Plus, Zap, Search, Upload, X } from "lucide-react";
+import { Camera, Plus, Upload, X } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 export type RemixMode = "remix" | "detect";

@@ -58,17 +58,12 @@ export default function RemixAreaPage() {
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(
     null,
   );
-  const [currentPhotoReview, setCurrentPhotoReview] = useState<string | null>(
-    null,
-  );
 
-  // State Terintegrasi untuk Preview Gambar dari Form Kiri maupun Drag & Drop
   const [inputImagePreview, setInputImagePreview] = useState<string | null>(
     null,
   );
   const [inputImageBase64, setInputImageBase64] = useState<string | null>(null);
 
-  // State tambahan untuk mendeteksi apakah file sedang berada di atas area drop
   const [isDragging, setIsDragging] = useState(false);
 
   const getToken = useCallback(
@@ -134,9 +129,6 @@ export default function RemixAreaPage() {
     setRecipe(null);
     setSelectedHistoryId(null);
     setActiveMode(mode);
-    setCurrentPhotoReview(
-      imageBase64 ? `data:image/jpeg;base64,${imageBase64}` : null,
-    );
 
     try {
       const res = await fetch("/api/remix/generate", {
@@ -196,7 +188,6 @@ export default function RemixAreaPage() {
     });
   };
 
-  // ── Fungsi Handler Drag & Drop ─────────────────────────────
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     if (!loading && !recipe) {
@@ -254,7 +245,6 @@ export default function RemixAreaPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Kiri: Input Panel */}
         <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-6">
           <IngredientInputForm
             onGenerate={handleGenerate}
@@ -267,61 +257,10 @@ export default function RemixAreaPage() {
           />
         </div>
 
-        {/* Kanan: Result/Zero State Panel */}
         <div className="lg:col-span-7 xl:col-span-8">
           <div className="w-full min-h-130 bg-white border border-zinc-200 rounded-3xl overflow-hidden relative shadow-sm flex flex-col">
             <AnimatePresence mode="wait">
-              {loading && currentPhotoReview && (
-                <motion.div
-                  key="loading-photo"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-[#1A1A1A] flex flex-col"
-                >
-                  <Image
-                    src={currentPhotoReview}
-                    alt="Preview"
-                    fill
-                    className="object-cover opacity-30 scale-105"
-                    unoptimized
-                  />
-                  <motion.div
-                    className="absolute inset-x-0 h-0.5 bg-linear-to-r from-transparent via-[#EAB308] to-transparent shadow-[0_0_12px_#EAB308] z-10"
-                    animate={{ top: ["4%", "94%", "4%"] }}
-                    transition={{
-                      duration: 2,
-                      ease: "easeInOut",
-                      repeat: Infinity,
-                    }}
-                  />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-4 p-6 text-center bg-black/30 backdrop-blur-[2px]">
-                    <motion.div
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                      className="p-3 bg-[#EAB308]/10 border border-[#EAB308]/30 rounded-2xl text-[#EAB308]"
-                    >
-                      {activeMode === "detect" ? (
-                        <Search size={22} />
-                      ) : (
-                        <Sparkles size={22} />
-                      )}
-                    </motion.div>
-                    <p className="text-white text-xs font-black uppercase tracking-widest">
-                      {activeMode === "detect"
-                        ? "Mendeteksi Makanan..."
-                        : "Gemini AI Meracik..."}
-                    </p>
-                    <p className="text-zinc-400 text-[10px] font-medium max-w-55 leading-relaxed">
-                      {activeMode === "detect"
-                        ? "Mengidentifikasi makanan & menyusun tutorial"
-                        : "Menganalisis bahan & merancang menu hemat"}
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-
-              {loading && !currentPhotoReview && (
+              {loading && !inputImagePreview && (
                 <motion.div
                   key="loading-text"
                   initial={{ opacity: 0 }}
@@ -361,8 +300,7 @@ export default function RemixAreaPage() {
                 </motion.div>
               )}
 
-              {/* TAMPILAN ZERO STATE: Sekarang Mendukung Event Drag & Drop Aktif */}
-              {!loading && !recipe && (
+              {(!recipe || loading) && (inputImagePreview || !loading) && (
                 <motion.div
                   key="zero-state"
                   initial={{ opacity: 0, y: 10 }}
@@ -375,7 +313,6 @@ export default function RemixAreaPage() {
                     isDragging ? "bg-zinc-50/80" : ""
                   }`}
                 >
-                  {/* Bingkai Garis Putus-Putus yang berubah warna saat mendeteksi drag */}
                   <div
                     className={`absolute inset-4 border-2 border-dashed rounded-2xl pointer-events-none z-10 transition-colors ${
                       isDragging ? "border-[#1A1A1A]" : "border-zinc-200"
@@ -383,32 +320,66 @@ export default function RemixAreaPage() {
                   />
 
                   {inputImagePreview ? (
-                    <div className="w-full max-w-xs sm:max-w-sm aspect-square relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xs z-20">
+                    <div className="w-full max-w-xl relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xs z-20 p-2 bg-zinc-50/50 flex items-center justify-center">
                       <Image
                         src={inputImagePreview}
                         alt="Preview Foto Kuliner"
-                        fill
-                        className="object-cover"
+                        width={640}
+                        height={480}
+                        className="w-full h-auto max-h-[450px] object-contain rounded-xl"
                         unoptimized
                       />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setInputImagePreview(null);
-                          setInputImageBase64(null);
-                        }}
-                        className="absolute top-3 right-3 p-2 bg-white/95 backdrop-blur-xs hover:bg-white border border-zinc-200 text-zinc-500 hover:text-red-500 rounded-xl transition-all shadow-md cursor-pointer"
-                      >
-                        <X size={14} strokeWidth={2.5} />
-                      </button>
-                      <div className="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl text-left flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-700">
-                          Gambar Siap Dirajang AI
-                        </span>
-                        <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
-                          1:1 Ready
-                        </span>
-                      </div>
+
+                      {loading && (
+                        <>
+                          <motion.div
+                            className="absolute inset-x-2 h-0.5 bg-linear-to-r from-transparent via-[#EAB308] to-transparent shadow-[0_0_12px_#EAB308] z-30"
+                            animate={{ top: ["4%", "94%", "4%"] }}
+                            transition={{
+                              duration: 2,
+                              ease: "easeInOut",
+                              repeat: Infinity,
+                            }}
+                          />
+                          <div className="absolute inset-2 bg-black/40 backdrop-blur-[1px] rounded-xl flex flex-col items-center justify-center gap-2 z-20">
+                            <div className="p-2.5 bg-[#EAB308]/10 border border-[#EAB308]/30 rounded-xl text-[#EAB308]">
+                              {activeMode === "detect" ? (
+                                <Search size={18} />
+                              ) : (
+                                <Sparkles size={18} />
+                              )}
+                            </div>
+                            <p className="text-white text-[10px] font-black uppercase tracking-widest">
+                              {activeMode === "detect"
+                                ? "Mendeteksi Makanan..."
+                                : "Gemini AI Meracik..."}
+                            </p>
+                          </div>
+                        </>
+                      )}
+
+                      {!loading && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setInputImagePreview(null);
+                              setInputImageBase64(null);
+                            }}
+                            className="absolute top-5 right-5 p-2 bg-white/95 backdrop-blur-xs hover:bg-white border border-zinc-200 text-zinc-500 hover:text-red-500 rounded-xl transition-all shadow-md cursor-pointer z-30"
+                          >
+                            <X size={14} strokeWidth={2.5} />
+                          </button>
+                          <div className="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl text-left flex items-center justify-between z-30">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-zinc-700">
+                              Gambar Siap Dirajang AI
+                            </span>
+                            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                              Asli Bersih
+                            </span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-4">
@@ -434,7 +405,7 @@ export default function RemixAreaPage() {
                             : "Tarik & Jatuhkan Foto Kulinermu"}
                         </h3>
                         <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
-                          Mendukung PNG, JPG, atau WebP
+                          Semua Format Gambar Didukung (JPEG, PNG, WebP, dll)
                         </p>
                       </div>
                     </div>
@@ -446,7 +417,6 @@ export default function RemixAreaPage() {
         </div>
       </div>
 
-      {/* Riwayat Kreasi */}
       <div className="space-y-4 pt-8 border-t border-zinc-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
