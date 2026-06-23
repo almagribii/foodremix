@@ -25,29 +25,37 @@ export default function Header({
   const pathname = usePathname();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [currentTime, setCurrentTime] = useState<number>(() => Date.now());
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (signal?: AbortSignal) => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch("/api/notifications", {
         headers: { Authorization: `Bearer ${token}` },
+        signal,
       });
       if (res.ok) {
         const data = await res.json();
         setNotifications(data);
       }
-    } catch (err) {
-      console.error("Failed to load notifications", err);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== "AbortError") {
+        console.error("Failed to load notifications", err);
+      }
     }
   }, []);
 
   useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+    const controller = new AbortController();
+    const triggerFetch = async () => {
+      await fetchNotifications(controller.signal);
+    };
 
-  // Re-fetch ketika navigasi halaman berubah agar badge selalu fresh
-  useEffect(() => {
-    fetchNotifications();
+    triggerFetch();
+
+    return () => {
+      controller.abort();
+    };
   }, [pathname, fetchNotifications]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -55,7 +63,11 @@ export default function Header({
   const handleToggleDropdown = async () => {
     const next = !showDropdown;
     setShowDropdown(next);
-    // Saat dropdown dibuka, tandai semua sebagai dibaca
+
+    if (next) {
+      setCurrentTime(Date.now());
+    }
+
     if (next && unreadCount > 0) {
       try {
         const token = localStorage.getItem("token");
@@ -72,8 +84,9 @@ export default function Header({
     }
   };
 
-  function formatRelativeTime(iso: string) {
-    const diff = Date.now() - new Date(iso).getTime();
+  function formatRelativeTime(iso: string, now: number) {
+    if (!now) return "...";
+    const diff = now - new Date(iso).getTime();
     const minutes = Math.floor(diff / 60000);
     if (minutes < 1) return "Baru saja";
     if (minutes < 60) return `${minutes} mnt lalu`;
@@ -84,22 +97,23 @@ export default function Header({
 
   function typeColor(type: string) {
     switch (type) {
-      case "WELLNESS": return "border-rose-400";
-      case "PICKER_ALERT": return "border-amber-400";
-      case "REMIX_ALERT": return "border-emerald-400";
-      default: return "border-blue-400";
+      case "WELLNESS":
+        return "border-rose-400";
+      case "PICKER_ALERT":
+        return "border-amber-400";
+      case "REMIX_ALERT":
+        return "border-emerald-400";
+      default:
+        return "border-blue-400";
     }
   }
 
-  // Fungsi menghasilkan array objek breadcrumb dari URL saat ini
   const generateBreadcrumbs = () => {
     if (!pathname) return [];
 
     const paths = pathname.split("/").filter((path) => path);
     return paths.map((path, index) => {
       const url = `/${paths.slice(0, index + 1).join("/")}`;
-
-      // Formatting nama folder: kebab-case / snake_case -> Kapital Kata Biasa
       const label = path
         .replace(/[-_]/g, " ")
         .replace(/\b\w/g, (char) => char.toUpperCase());
@@ -112,7 +126,7 @@ export default function Header({
 
   return (
     <header
-      className={`fixed top-0 right-0 z-10 flex h-20 items-center justify-between bg-[#F5F5F3]/80 backdrop-blur-md px-4 sm:px-6 lg:px-8 border-b border-zinc-200 transition-all duration-300 ease-in-out ${
+      className={`fixed top-0 right-0 z-9999 flex h-20 items-center justify-between bg-[#F5F5F3]/80 backdrop-blur-md px-4 sm:px-6 lg:px-8 border-b border-zinc-200 transition-all duration-300 ease-in-out ${
         isSidebarOpen ? "left-0 lg:left-64" : "left-0 lg:left-20"
       }`}
     >
@@ -137,7 +151,6 @@ export default function Header({
           </svg>
         </button>
 
-        {/* Komponen Breadcrumb Dinamis Premium */}
         <nav className="flex items-center space-x-2 text-xs font-semibold overflow-x-auto no-scrollbar py-1">
           <Link
             href="/dashboard"
@@ -146,8 +159,7 @@ export default function Header({
             Home
           </Link>
 
-          {breadcrumbs.map((crumb, idx) => {
-            // Kita lewati render jika foldernya bernama "Dashboard" agar tidak duplikat dengan Home
+          {breadcrumbs.map((crumb) => {
             if (crumb.label.toLowerCase() === "dashboard") return null;
 
             return (
@@ -169,7 +181,7 @@ export default function Header({
                   />
                 </svg>
                 {crumb.isLast ? (
-                  <span className="text-[#1A1A1A] font-black truncate max-w-[140px] sm:max-w-[200px]">
+                  <span className="text-[#1A1A1A] font-black truncate max-w-35 sm:max-w-50">
                     {crumb.label}
                   </span>
                 ) : (
@@ -239,7 +251,7 @@ export default function Header({
                     <div className="flex items-center justify-between gap-2 mb-0.5">
                       <p className="font-bold line-clamp-1">{notif.title}</p>
                       <span className="text-[9px] text-zinc-400 font-medium whitespace-nowrap shrink-0">
-                        {formatRelativeTime(notif.createdAt)}
+                        {formatRelativeTime(notif.createdAt, currentTime)}
                       </span>
                     </div>
                     <p className="text-zinc-500 mt-0.5 line-clamp-2">

@@ -42,13 +42,13 @@ export default function PageLoader({
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          className="absolute w-12 h-12 rounded-full border-[2px] border-transparent border-t-[#EAB308]/40 border-r-[#EAB308]/20"
+          className="absolute w-12 h-12 rounded-full border-2 border-transparent border-t-[#EAB308]/40 border-r-[#EAB308]/20"
         />
         {/* Inner fast ring */}
         <motion.div
           animate={{ rotate: -360 }}
           transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}
-          className="absolute w-8 h-8 rounded-full border-[2px] border-transparent border-t-[#1A1A1A] border-r-[#1A1A1A]/30"
+          className="absolute w-8 h-8 rounded-full border-2 border-transparent border-t-[#1A1A1A] border-r-[#1A1A1A]/30"
         />
         {/* Center logo dot */}
         <motion.div
