@@ -57,75 +57,82 @@ export async function GET(request: NextRequest) {
       totalLemakKeseluruhan = 0,
       totalProteinKeseluruhan = 0;
 
-    journals.forEach((j) => {
-      const teksLower =
-        `${j.foodEaten} ${j.aiInsight} ${j.userStory}`.toLowerCase();
-      const tanggalJurnal = new Date(j.createdAt).toDateString();
+    journals.forEach(
+      (j: {
+        foodEaten: string;
+        aiInsight: string;
+        userStory: string;
+        createdAt: Date | string;
+      }) => {
+        const teksLower =
+          `${j.foodEaten} ${j.aiInsight} ${j.userStory}`.toLowerCase();
+        const tanggalJurnal = new Date(j.createdAt).toDateString();
 
-      if (tanggalJurnal === targetDateString) {
-        const kaloriMatch = teksLower.match(/(\d+)\s*(kcal|kalori)/);
-        const gulaMatch = teksLower.match(/(\d+)\s*g\s*(gula|glukosa)/);
-        const proteinMatch = teksLower.match(/(\d+)\s*g\s*protein/);
+        if (tanggalJurnal === targetDateString) {
+          const kaloriMatch = teksLower.match(/(\d+)\s*(kcal|kalori)/);
+          const gulaMatch = teksLower.match(/(\d+)\s*g\s*(gula|glukosa)/);
+          const proteinMatch = teksLower.match(/(\d+)\s*g\s*protein/);
 
-        if (kaloriMatch) totalKaloriTargetHari += parseInt(kaloriMatch[1]);
-        if (gulaMatch) totalGulaTargetHari += parseInt(gulaMatch[1]);
-        if (proteinMatch) totalProteinTargetHari += parseInt(proteinMatch[1]);
-      }
+          if (kaloriMatch) totalKaloriTargetHari += parseInt(kaloriMatch[1]);
+          if (gulaMatch) totalGulaTargetHari += parseInt(gulaMatch[1]);
+          if (proteinMatch) totalProteinTargetHari += parseInt(proteinMatch[1]);
+        }
 
-      if (
-        teksLower.includes("vitamin c") ||
-        teksLower.includes("jeruk") ||
-        teksLower.includes("buah")
-      )
-        hitungVitC += 25;
-      if (
-        teksLower.includes("zat besi") ||
-        teksLower.includes("daging") ||
-        teksLower.includes("bayam")
-      )
-        hitungZatBesi += 20;
-      if (
-        teksLower.includes("kalsium") ||
-        teksLower.includes("susu") ||
-        teksLower.includes("keju")
-      )
-        hitungKalsium += 20;
-      if (
-        teksLower.includes("kalium") ||
-        teksLower.includes("pisang") ||
-        teksLower.includes("kentang")
-      )
-        hitungKalium += 25;
-      if (
-        teksLower.includes("vitamin b") ||
-        teksLower.includes("telur") ||
-        teksLower.includes("hati")
-      )
-        hitungVitamin += 15;
+        if (
+          teksLower.includes("vitamin c") ||
+          teksLower.includes("jeruk") ||
+          teksLower.includes("buah")
+        )
+          hitungVitC += 25;
+        if (
+          teksLower.includes("zat besi") ||
+          teksLower.includes("daging") ||
+          teksLower.includes("bayam")
+        )
+          hitungZatBesi += 20;
+        if (
+          teksLower.includes("kalsium") ||
+          teksLower.includes("susu") ||
+          teksLower.includes("keju")
+        )
+          hitungKalsium += 20;
+        if (
+          teksLower.includes("kalium") ||
+          teksLower.includes("pisang") ||
+          teksLower.includes("kentang")
+        )
+          hitungKalium += 25;
+        if (
+          teksLower.includes("vitamin b") ||
+          teksLower.includes("telur") ||
+          teksLower.includes("hati")
+        )
+          hitungVitamin += 15;
 
-      if (
-        teksLower.includes("karbo") ||
-        teksLower.includes("nasi") ||
-        teksLower.includes("mie") ||
-        teksLower.includes("roti")
-      )
-        totalKarboKeseluruhan += 1;
-      if (
-        teksLower.includes("lemak") ||
-        teksLower.includes("gorengan") ||
-        teksLower.includes("santan") ||
-        teksLower.includes("minyak")
-      )
-        totalLemakKeseluruhan += 1;
-      if (
-        teksLower.includes("protein") ||
-        teksLower.includes("ayam") ||
-        teksLower.includes("ikan") ||
-        teksLower.includes("tahu") ||
-        teksLower.includes("tempe")
-      )
-        totalProteinKeseluruhan += 1;
-    });
+        if (
+          teksLower.includes("karbo") ||
+          teksLower.includes("nasi") ||
+          teksLower.includes("mie") ||
+          teksLower.includes("roti")
+        )
+          totalKarboKeseluruhan += 1;
+        if (
+          teksLower.includes("lemak") ||
+          teksLower.includes("gorengan") ||
+          teksLower.includes("santan") ||
+          teksLower.includes("minyak")
+        )
+          totalLemakKeseluruhan += 1;
+        if (
+          teksLower.includes("protein") ||
+          teksLower.includes("ayam") ||
+          teksLower.includes("ikan") ||
+          teksLower.includes("tahu") ||
+          teksLower.includes("tempe")
+        )
+          totalProteinKeseluruhan += 1;
+      },
+    );
 
     const totalSesiMakro =
       totalKarboKeseluruhan + totalLemakKeseluruhan + totalProteinKeseluruhan ||
@@ -272,7 +279,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Trigger notifikasi wellness berdasarkan healthScore (fire-and-forget)
     triggerWellnessNotification(profile.id, aiResult.healthScore, foodEaten);
 
     return NextResponse.json(newJournal);
