@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import PageLoader from "@/components/ui/PageLoader";
+import Footer from "@/components/Footer";
 
 export default function DashboardLayout({
   children,
@@ -68,6 +69,7 @@ export default function DashboardLayout({
           isSidebarOpen={isSidebarOpen}
         />
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+        <Footer/>
       </div>
     </div>
   );

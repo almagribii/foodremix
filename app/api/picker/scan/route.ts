@@ -4,12 +4,11 @@ import { extractToken, verifyToken } from "@/lib/auth";
 import { GoogleGenAI } from "@google/genai";
 import { triggerPickerNotification } from "@/lib/notifications";
 
-const apiKey = process.env.GEMINI_API_KEY || "";
+const apiKey = process.env.GEMINI_API_KEY_PICKER || "";
 const ai = new GoogleGenAI({ apiKey });
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Proteksi Autentikasi Sesi Token
     const token = extractToken(request.headers.get("Authorization") || "");
     if (!token)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,7 +24,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Ekstraksi Payload Gambar Base64 dari Frontend
     const body = await request.json();
     const { imageBase64 } = body;
     if (!imageBase64) {
@@ -35,7 +33,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Tarik Riwayat Medis & Alergi Aktif User dari Database
     const profile = await prisma.userProfile.findUnique({
       where: { userId: payload.userId },
       select: {
@@ -62,8 +59,6 @@ export async function POST(request: NextRequest) {
       
       ATURAN PROTEKSI MUTLAK: Jika bahan makanan pada gambar secara jelas memicu/membahayakan kondisi medis atau alergi pengguna di atas, Anda WAJIB memberikan nilai verdict: "CARI YANG LAIN", status: "VALID", dan jelaskan risikonya secara eksplisit pada poin pertama array analysisDetails.
     `;
-
-    // 4. Sanitasi String Base64 untuk Kebutuhan InlineData Google Gen AI SDK
     const base64Clean = imageBase64.replace(/^data:image\/\w+;base64,/, "");
     const imagePart = {
       inlineData: {
@@ -72,7 +67,6 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // 5. Prompt Engineering dengan Keluaran Terstruktur JSON
     const systemInstruction = `
       Anda adalah Pakar Inspeksi Kesegaran Komoditas Pangan dan Konsultan Penyimpanan Zero-Waste untuk aplikasi Foodremix.
       Tugas Anda adalah memindai gambar bahan pangan mentah (sayur, buah, lauk-pauk) yang difoto pengguna langsung dari etalase pasar/supermarket.
@@ -95,7 +89,6 @@ export async function POST(request: NextRequest) {
       }
     `;
 
-    // 6. Eksekusi Panggilan AI Multimodal Gemini 2.5 Flash
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
@@ -113,7 +106,6 @@ export async function POST(request: NextRequest) {
 
     const aiData = JSON.parse(aiText);
 
-    // 7. Simpan Riwayat Inspeksi secara Atomik ke Postgres via Prisma jika Status "VALID"
     let savedRecordId = null;
     if (aiData.status === "VALID") {
       const newPickerLog = await prisma.remixPicker.create({
@@ -129,7 +121,6 @@ export async function POST(request: NextRequest) {
       });
       savedRecordId = newPickerLog.id;
 
-      // Trigger notifikasi picker jika bahan berbahaya / tidak layak — fire-and-forget
       triggerPickerNotification(
         profile.id,
         aiData.itemName,
@@ -138,7 +129,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 8. Kembalikan Respon Utuh ke Frontend
     return NextResponse.json({
       ...aiData,
       pickerHistoryId: savedRecordId,

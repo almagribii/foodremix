@@ -1,18 +1,5 @@
 "use client";
 
-/**
- * components/ui/PageLoader.tsx
- *
- * ONE loader untuk seluruh project.
- * Varian:
- *   "page"     — full viewport, dipakai di layout.tsx & auth gate
- *   "section"  — 60vh, dipakai di page-level data fetch
- *   "inline"   — center di dalam container, dipakai di panel / card
- *
- * Tambahan optional:
- *   message    — teks di bawah spinner (default ada per varian)
- */
-
 import { motion } from "framer-motion";
 
 interface PageLoaderProps {
@@ -23,12 +10,12 @@ interface PageLoaderProps {
 export default function PageLoader({
   variant = "section",
   message,
-}: PageLoaderProps) {
+}: PageLoaderProps) {  
   const containerClass =
     variant === "page"
       ? "fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#F5F5F3]"
       : variant === "section"
-        ? "flex flex-col items-center justify-center h-[60vh] w-full"
+        ? "flex flex-col items-center justify-center h-[calc(100vh-160px)] w-full"
         : "flex flex-col items-center justify-center py-12 w-full";
 
   const defaultMsg =
@@ -36,21 +23,17 @@ export default function PageLoader({
 
   return (
     <div className={containerClass}>
-      {/* Orbiting ring */}
-      <div className="relative flex items-center justify-center mb-5">
-        {/* Outer slow ring */}
+      <div className="relative flex flex-col items-center justify-center h-20 w-full mb-5">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          className="absolute w-12 h-12 rounded-full border-[2px] border-transparent border-t-[#EAB308]/40 border-r-[#EAB308]/20"
+          className="absolute w-12 h-12 rounded-full border-2 border-transparent border-t-[#EAB308]/40 border-r-[#EAB308]/20"
         />
-        {/* Inner fast ring */}
         <motion.div
           animate={{ rotate: -360 }}
           transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}
-          className="absolute w-8 h-8 rounded-full border-[2px] border-transparent border-t-[#1A1A1A] border-r-[#1A1A1A]/30"
+          className="absolute w-8 h-8 rounded-full border-2 border-transparent border-t-[#1A1A1A] border-r-[#1A1A1A]/30"
         />
-        {/* Center logo dot */}
         <motion.div
           animate={{ scale: [1, 1.15, 1] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
@@ -58,7 +41,6 @@ export default function PageLoader({
         />
       </div>
 
-      {/* Message */}
       <motion.p
         initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
