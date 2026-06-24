@@ -267,7 +267,7 @@ export default function RemixChatPage() {
                       {isUser ? "ME" : "AI"}
                     </div>
                     <div
-                      className={`px-4 py-3 rounded-2xl text-xs shadow-sm space-y-1.5 leading-relaxed ${isUser ? "bg-[#1A1A1A] text-zinc-100 rounded-tr-none border border-zinc-800" : "bg-white border border-zinc-200/60 text-zinc-700 rounded-tl-none"}`}
+                      className={`px-4 py-3 rounded-2xl text-xs shadow-sm space-y-1.5 leading-relaxed ${isUser ? "bg-[#eab308] text-black rounded-tr-none border border-zinc-200" : "bg-white border border-zinc-200/60 text-zinc-700 rounded-tl-none"}`}
                     >
                       {isUser ? msg.text : renderMessageText(msg.text)}
                     </div>

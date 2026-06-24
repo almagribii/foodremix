@@ -451,7 +451,7 @@ export default function RemixPickerPage() {
                 {imagePreview && !loading && (
                   <button
                     onClick={handleProcessUploadedImage}
-                    className="w-full max-w-md mt-5 bg-[#1A1A1A] text-white font-black py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all text-[10px] uppercase tracking-widest shadow-xs active:scale-99"
+                    className="w-full max-w-md mt-5 bg-[#eab308] text-black font-black py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all text-[10px] uppercase tracking-widest shadow-xs active:scale-99"
                   >
                     <Upload size={13} /> Jalankan Inspeksi Bahan
                   </button>

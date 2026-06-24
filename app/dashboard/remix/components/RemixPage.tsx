@@ -341,20 +341,7 @@ export default function RemixAreaPage() {
                               repeat: Infinity,
                             }}
                           />
-                          <div className="absolute inset-2 bg-black/40 backdrop-blur-[1px] rounded-xl flex flex-col items-center justify-center gap-2 z-20">
-                            <div className="p-2.5 bg-[#EAB308]/10 border border-[#EAB308]/30 rounded-xl text-[#EAB308]">
-                              {activeMode === "detect" ? (
-                                <Search size={18} />
-                              ) : (
-                                <Sparkles size={18} />
-                              )}
-                            </div>
-                            <p className="text-white text-[10px] font-black uppercase tracking-widest">
-                              {activeMode === "detect"
-                                ? "Mendeteksi Makanan..."
-                                : "Gemini AI Meracik..."}
-                            </p>
-                          </div>
+                        
                         </>
                       )}
 
