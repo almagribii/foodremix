@@ -3,6 +3,18 @@ import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
 import Footer from "@/components/landing/Footer"; 
 import Tentang from "@/components/landing/Tentang";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Beranda - Foodremix",
+  description:
+    "Foodremix adalah platform penyelamatan pangan berbasis AI Multimodal. Pindai isi kulkas lewat webcam, racik menu gizi hemat anggaran, tekan emisi karbon.",
+  openGraph: {
+    title: "Foodremix — Racik Bahan Sisa Kulkas via AI",
+    description:
+      "Foodremix adalah platform penyelamatan pangan berbasis AI Multimodal. Pindai isi kulkas lewat webcam, racik menu gizi hemat anggaran, tekan emisi karbon.",
+  },
+};
 
 export default function HomePage() {
   return (
@@ -15,7 +27,6 @@ export default function HomePage() {
         <Tentang />
       </main>
 
-      {/* Footer elegan baru menggantikan susunan footer lama */}
       <Footer />
     </div>
   );
