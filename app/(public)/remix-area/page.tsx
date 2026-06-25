@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import RemixAreaPage from "./components/TestPage";
 
 export const metadata: Metadata = {
-  title: "Notifikasi - Foodremix",
+  title: "Remix Area Test - Foodremix",
   description:
-    "Halaman ini berisi informasi tentang notifikasi yang diperoleh oleh para pengguna",
+    "Halaman ini berisi informasi tentang remix area test yang akan dilakukakan oleh para pengguna",
 };
 
 export default function NotifPage() {
