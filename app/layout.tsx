@@ -75,7 +75,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
-          <ToastProvider>{children}</ToastProvider>
+              <ToastProvider>{children}</ToastProvider>
         </AuthProvider>
       </body>
     </html>
