@@ -1,7 +1,5 @@
-import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
-import Footer from "@/components/landing/Footer"; 
 import Tentang from "@/components/landing/Tentang";
 import { Metadata } from "next";
 
@@ -19,7 +17,6 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#F5F5F3] font-sans antialiased text-[#1A1A1A]">
-      <Navbar />
       
       <main>
         <Hero />
@@ -27,7 +24,6 @@ export default function HomePage() {
         <Tentang />
       </main>
 
-      <Footer />
     </div>
   );
 }
