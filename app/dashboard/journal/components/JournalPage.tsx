@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/components/ui/Toast";
 
 import PageLoader from "@/components/ui/PageLoader";
+import { Button } from "@/components/ui/Button";
 
 import JournalCard from "@/components/rekam-gizi/JournalCard";
 import DailyNutrientSummary from "@/components/rekam-gizi/DailyNutrientSummary";
@@ -266,12 +267,9 @@ export default function RekamGiziPage() {
                         </div>
 
                         <div className="flex justify-end">
-                          <button
-                            type="submit"
-                            className="px-5 py-2.5 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition"
-                          >
+                          <Button type="submit" variant="accent" size="md">
                             Simpan Jurnal
-                          </button>
+                          </Button>
                         </div>
                       </form>
                     </>

@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/ui/Toast";
 import PageLoader from "@/components/ui/PageLoader";
+import { Button } from "@/components/ui/Button";
 
 interface ProfileData {
   nickname: string;
@@ -79,10 +80,16 @@ export default function ProfilePage() {
       });
 
       if (res.ok) {
-        toastSuccess("Profil diperbarui!", "Data profil Foodremix berhasil disimpan.");
+        toastSuccess(
+          "Profil diperbarui!",
+          "Data profil Foodremix berhasil disimpan.",
+        );
       } else {
         const errData = await res.json();
-        toastError("Gagal menyimpan", errData.error || "Gagal memperbarui profil.");
+        toastError(
+          "Gagal menyimpan",
+          errData.error || "Gagal memperbarui profil.",
+        );
       }
     } catch (err) {
       console.error(err);
@@ -223,13 +230,14 @@ export default function ProfilePage() {
                   e.key === "Enter" && (e.preventDefault(), addCondition())
                 }
               />
-              <button
+              <Button
                 type="button"
                 onClick={addCondition}
-                className="px-4 py-2 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition"
+                variant="accent"
+                size="sm"
               >
                 Tambah
-              </button>
+              </Button>
             </div>
             <div className="flex flex-wrap gap-1.5 pt-1">
               {formData.medicalConditions.map((condition, index) => (
@@ -238,13 +246,14 @@ export default function ProfilePage() {
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 border border-sky-100 text-sky-800 text-[11px] font-bold rounded-lg uppercase"
                 >
                   {condition}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => removeCondition(index)}
-                    className="text-sky-400 hover:text-sky-700 font-bold"
+                    variant="ghost"
+                    className="!px-1 !py-0.5 text-sky-400 hover:text-sky-700 !shadow-none !uppercase-normal"
                   >
                     ×
-                  </button>
+                  </Button>
                 </span>
               ))}
             </div>
@@ -265,13 +274,14 @@ export default function ProfilePage() {
                   e.key === "Enter" && (e.preventDefault(), addAllergy())
                 }
               />
-              <button
+              <Button
                 type="button"
                 onClick={addAllergy}
-                className="px-4 py-2 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition"
+                variant="accent"
+                size="sm"
               >
                 Tambah
-              </button>
+              </Button>
             </div>
             <div className="flex flex-wrap gap-1.5 pt-1">
               {formData.allergies.map((allergy, index) => (
@@ -280,26 +290,23 @@ export default function ProfilePage() {
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-100 text-amber-800 text-[11px] font-bold rounded-lg uppercase"
                 >
                   {allergy}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => removeAllergy(index)}
-                    className="text-amber-400 hover:text-amber-700 font-bold"
+                    variant="ghost"
+                    className="!px-1 !py-0.5 text-amber-400 hover:text-amber-700 !shadow-none !uppercase-normal"
                   >
                     ×
-                  </button>
+                  </Button>
                 </span>
               ))}
             </div>
           </div>
 
           <div className="flex justify-end border-t border-zinc-100 pt-4">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-5 py-2.5 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition disabled:opacity-50"
-            >
+            <Button type="submit" loading={submitting} variant="accent">
               {submitting ? "Menyimpan..." : "Simpan Profil"}
-            </button>
+            </Button>
           </div>
         </form>
 

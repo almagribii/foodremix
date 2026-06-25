@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/Button";
 import {
   Camera,
   Upload,
@@ -369,13 +370,14 @@ export default function RemixPickerPage() {
 
                     {!loading && (
                       <>
-                        <button
+                        <Button
                           type="button"
                           onClick={handleResetSession}
-                          className="absolute top-5 right-5 p-2 bg-white/95 backdrop-blur-xs hover:bg-white border border-zinc-200 text-zinc-500 hover:text-red-500 rounded-xl transition-all shadow-md cursor-pointer z-30"
+                          variant="secondary"
+                          className="absolute top-5 right-5 p-2 !px-2 !py-2 shadow-md cursor-pointer z-30"
                         >
                           <X size={14} strokeWidth={2.5} />
-                        </button>
+                        </Button>
                         <div className="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl text-left flex items-center justify-between z-30">
                           <span className="text-[10px] font-black uppercase tracking-wider text-zinc-700">
                             File Siap
@@ -398,20 +400,22 @@ export default function RemixPickerPage() {
                         className="w-120 h-120 object-contain"
                       />
                       <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2 px-4 z-10">
-                        <button
+                        <Button
                           type="button"
                           onClick={handleCaptureAndScan}
-                          className="flex-1 py-3 bg-[#EAB308] text-zinc-950 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-98"
+                          variant="accent"
+                          className="flex-1 py-3"
                         >
                           <Camera size={14} /> Ambil Foto &amp; Periksa
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
                           onClick={stopWebcam}
-                          className="px-4 py-3 bg-white border border-zinc-200 text-zinc-700 text-xs font-bold rounded-xl transition shadow-xs"
+                          variant="secondary"
+                          className="px-4 py-3"
                         >
                           Mati
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )

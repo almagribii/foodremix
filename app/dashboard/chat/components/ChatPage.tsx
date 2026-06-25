@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import Chatbot from "./chatbot";
+import { Button } from "@/components/ui/Button";
 
 interface Message {
   id: string;
@@ -218,12 +219,13 @@ export default function RemixChatPage() {
           </div>
         </div>
 
-        <button
+        <Button
           onClick={handleClearChat}
           disabled={loading || isClearing || messages.length <= 1}
           title="Bersihkan Obrolan"
           type="button"
-          className="p-2 bg-white border border-zinc-200 text-zinc-400 hover:text-rose-500 hover:border-rose-200 rounded-xl transition-all shadow-sm shrink-0 flex items-center justify-center disabled:opacity-40 disabled:hover:text-zinc-400 disabled:hover:border-zinc-200"
+          variant="secondary"
+          className="p-2 !px-2 !py-2 shrink-0"
         >
           <svg
             className={`h-4 w-4 ${isClearing ? "animate-spin" : ""}`}
@@ -238,7 +240,7 @@ export default function RemixChatPage() {
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
           </svg>
-        </button>
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-zinc-50/30 relative">
@@ -246,7 +248,7 @@ export default function RemixChatPage() {
           <div className="w-40 h-40 lg:w-70 lg:h-70">
             <Chatbot loop={true} />
           </div>
-        </div>    
+        </div>
         <div className="relative z-10 space-y-6">
           <AnimatePresence initial={false}>
             {messages.map((msg) => {
@@ -307,10 +309,12 @@ export default function RemixChatPage() {
           disabled={loading || isClearing}
           required
         />
-        <button
+        <Button
           type="submit"
-          disabled={loading || isClearing || !input.trim()}
-          className="p-3 bg-[#1A1A1A] hover:bg-zinc-800 border border-zinc-800 text-white rounded-xl transition shadow-sm disabled:opacity-40 flex items-center justify-center shrink-0"
+          loading={loading}
+          disabled={!input.trim()}
+          variant="primary"
+          className="p-3 !px-3 !py-3 shrink-0"
         >
           <svg
             className="h-4 w-4 transform rotate-90 text-[#EAB308]"
@@ -325,7 +329,7 @@ export default function RemixChatPage() {
               d="M12 19l9-7-9-7v14z"
             />
           </svg>
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 
 interface Notification {
   id: string;
@@ -131,10 +132,11 @@ export default function Header({
       }`}
     >
       <div className="flex items-center gap-4 overflow-hidden flex-1 mr-4">
-        <button
+        <Button
           onClick={onToggleSidebar}
           type="button"
-          className="p-2.5 bg-white border border-zinc-200 text-[#1A1A1A] rounded-xl hover:bg-zinc-50 transition-colors shadow-sm shrink-0 flex items-center justify-center"
+          className="p-2.5 !px-2.5 !py-2.5 shrink-0"
+          variant="secondary"
         >
           <svg
             className="h-5 w-5"
@@ -149,7 +151,7 @@ export default function Header({
               d="M4 6h16M4 12h16M4 18h7"
             />
           </svg>
-        </button>
+        </Button>
 
         <nav className="flex items-center space-x-2 text-xs font-semibold overflow-x-auto no-scrollbar py-1">
           <Link
@@ -199,10 +201,11 @@ export default function Header({
       </div>
 
       <div className="relative shrink-0">
-        <button
+        <Button
           onClick={handleToggleDropdown}
           type="button"
-          className="relative p-2.5 bg-white border border-zinc-200 text-[#1A1A1A] rounded-xl hover:bg-zinc-50 transition-colors shadow-sm flex items-center justify-center"
+          className="relative p-2.5 !px-2.5 !py-2.5"
+          variant="secondary"
         >
           <svg
             className="h-5 w-5"
@@ -222,7 +225,7 @@ export default function Header({
               {unreadCount}
             </span>
           )}
-        </button>
+        </Button>
 
         {showDropdown && (
           <div className="absolute right-0 mt-3 w-72 sm:w-80 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 border border-zinc-100 animate-in fade-in slide-in-from-top-2 duration-200">

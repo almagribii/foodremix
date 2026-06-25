@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Plus, Upload, X, ChefHat } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import Lottie from "lottie-react";
+import { Button } from "@/components/ui/Button";
 import bot from "../../../dashboard/remix/components/food.json"; // Sesuaikan path json Anda
 
 type RemixMode = "remix" | "detect";
@@ -348,14 +349,11 @@ export default function PublicRemixPreviewPage() {
                 </div>
 
                 {/* CTA BUTTON: Menuju Ke Dashboard */}
-                <button
-                  type="submit"
-                  className="w-full bg-[#eab308] text-black font-black py-4 rounded-xl flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest transition-transform active:scale-[0.99] shadow-md"
-                >
+                <Button type="submit" variant="accent" className="w-full">
                   {mode === "remix"
                     ? "Racik Menu Sekarang (Via AI)"
                     : "Cari Tutorial Memasak"}
-                </button>
+                </Button>
               </form>
             </div>
           </div>

@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Camera, Plus, Upload, X } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
 
 export type RemixMode = "remix" | "detect";
 
@@ -316,10 +317,12 @@ export default function IngredientInputForm({
             )}
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={loading || !canSubmit}
-            className="w-full bg-[#eab308] text-black disabled:bg-zinc-100 disabled:text-zinc-400 border border-transparent disabled:border-zinc-200 font-black py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-[10px] uppercase tracking-widest shadow-xs active:scale-[0.99]"
+            loading={loading}
+            disabled={!canSubmit}
+            variant="accent"
+            className="w-full"
           >
             {loading
               ? mode === "remix"
@@ -328,7 +331,7 @@ export default function IngredientInputForm({
               : mode === "remix"
                 ? "Racik Menu Sekarang"
                 : "Cari Tutorial Memasak"}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

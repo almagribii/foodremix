@@ -16,6 +16,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 export default function RegisterPage() {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -229,17 +230,18 @@ export default function RegisterPage() {
                   placeholder="••••••••"
                   className="w-full bg-stone-100/70 border border-stone-200 rounded-xl py-2.5 pl-10 pr-10 text-xs font-bold text-[#1C1614] placeholder-stone-400 focus:outline-none focus:border-amber-500/50 focus:bg-white transition-all"
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors !px-1 !py-1 !shadow-none !uppercase-normal"
+                  variant="ghost"
                 >
                   {showPassword ? (
                     <EyeOff className="w-3.5 h-3.5" />
                   ) : (
                     <Eye className="w-3.5 h-3.5" />
                   )}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -258,17 +260,18 @@ export default function RegisterPage() {
                   placeholder="••••••••"
                   className="w-full bg-stone-100/70 border border-stone-200 rounded-xl py-2.5 pl-10 pr-10 text-xs font-bold text-[#1C1614] placeholder-stone-400 focus:outline-none focus:border-amber-500/50 focus:bg-white transition-all"
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors !px-1 !py-1 !shadow-none !uppercase-normal"
+                  variant="ghost"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="w-3.5 h-3.5" />
                   ) : (
                     <Eye className="w-3.5 h-3.5" />
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -313,22 +316,15 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+          <Button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-[#eab308] hover:bg-[#d9a406] text-black font-extrabold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors mt-4 shadow-[0_10px_20px_rgba(28,22,20,0.12)] group/btn text-xs uppercase tracking-wider disabled:opacity-50"
+            loading={isLoading}
+            variant="accent"
+            className="w-full mt-4"
           >
-            {isLoading ? (
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                Daftar Sekarang
-                <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-              </>
-            )}
-          </motion.button>
+            Daftar Sekarang
+            <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+          </Button>
         </form>
 
         <p className="text-center text-stone-400 text-xs font-medium">

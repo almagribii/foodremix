@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -162,36 +163,30 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 className="w-full bg-stone-100/70 border border-stone-200 rounded-xl py-3 pl-11 pr-12 text-sm font-bold text-[#1C1614] placeholder-stone-400 focus:outline-none focus:border-amber-500/50 focus:bg-white transition-all"
               />
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors !px-1 !py-1 !shadow-none !uppercase-normal"
+                variant="ghost"
               >
                 {showPassword ? (
                   <EyeOff className="w-4 h-4" />
                 ) : (
                   <Eye className="w-4 h-4" />
                 )}
-              </button>
+              </Button>
             </div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+          <Button
             type="submit"
-            disabled={loading}
-            className="w-full bg-[#eab308] hover:bg-[#d9a406] text-black font-extrabold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors mt-4 shadow-[0_12px_24px_rgba(28,22,20,0.12)] group/btn text-xs uppercase tracking-wider disabled:opacity-50"
+            loading={loading}
+            variant="accent"
+            className="w-full mt-4"
           >
-            {loading ? (
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                Masuk Sekarang
-                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </>
-            )}
-          </motion.button>
+            Masuk Sekarang
+            <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+          </Button>
         </form>
 
         <p className="text-center text-stone-400 text-xs font-medium">

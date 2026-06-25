@@ -6,10 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useToast } from "@/components/ui/Toast";
 import PageLoader from "@/components/ui/PageLoader";
-import IngredientInputForm, {
-  RemixMode,
-} from "./IngredientInputForm";
+import IngredientInputForm, { RemixMode } from "./IngredientInputForm";
 import RecipeResultCard, { RecipeData } from "./RecipeResultCard";
+import { Button } from "@/components/ui/Button";
 import {
   CheckCircle2,
   Leaf,
@@ -341,22 +340,22 @@ export default function RemixAreaPage() {
                               repeat: Infinity,
                             }}
                           />
-                        
                         </>
                       )}
 
                       {!loading && (
                         <>
-                          <button
+                          <Button
                             type="button"
                             onClick={() => {
                               setInputImagePreview(null);
                               setInputImageBase64(null);
                             }}
-                            className="absolute top-5 right-5 p-2 bg-white/95 backdrop-blur-xs hover:bg-white border border-zinc-200 text-zinc-500 hover:text-red-500 rounded-xl transition-all shadow-md cursor-pointer z-30"
+                            variant="secondary"
+                            className="absolute top-5 right-5 p-2 !px-2 !py-2 shadow-md cursor-pointer z-30"
                           >
                             <X size={14} strokeWidth={2.5} />
-                          </button>
+                          </Button>
                           <div className="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl text-left flex items-center justify-between z-30">
                             <span className="text-[10px] font-black uppercase tracking-wider text-zinc-700">
                               Gambar Siap Dirajang AI
