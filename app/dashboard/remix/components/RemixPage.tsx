@@ -12,10 +12,8 @@ import { Button } from "@/components/ui/Button";
 import {
   CheckCircle2,
   Leaf,
-  Sparkles,
   ArrowRight,
   ChefHat,
-  Search,
   Wallet,
   Clock,
   X,

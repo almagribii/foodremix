@@ -167,7 +167,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors !px-1 !py-1 !shadow-none !uppercase-normal"
-                variant="ghost"
+                variant="primary"
               >
                 {showPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -184,8 +184,10 @@ export default function LoginPage() {
             variant="accent"
             className="w-full mt-4"
           >
-            Masuk Sekarang
-            <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+            <span className="flex items-center justify-center gap-2 w-full">
+              Masuk Sekarang
+              <ArrowRight className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover/btn:translate-x-1" />
+            </span>
           </Button>
         </form>
 
