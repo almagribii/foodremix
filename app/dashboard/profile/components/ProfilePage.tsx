@@ -250,7 +250,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={() => removeCondition(index)}
                     variant="primary"
-                    className="!px-1 !py-0.5 text-sky-400 hover:text-sky-700 !shadow-none !uppercase-normal"
+                    className="px-1! py-0.5! text-sky-400 hover:text-sky-700 shadow-none !uppercase-normal"
                   >
                     ×
                   </Button>
@@ -294,7 +294,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={() => removeAllergy(index)}
                     variant="primary"
-                    className="!px-1 !py-0.5 text-amber-400 hover:text-amber-700 !shadow-none !uppercase-normal"
+                    className="px-1! py-0.5! text-amber-400 hover:text-amber-700 shadow-none !uppercase-normal"
                   >
                     ×
                   </Button>

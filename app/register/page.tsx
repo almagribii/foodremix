@@ -233,7 +233,7 @@ export default function RegisterPage() {
                 <Button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors !px-1 !py-1 !shadow-none !uppercase-normal"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors px-1! py-1! shadow-none !uppercase-normal"
                   variant="primary"
                 >
                   {showPassword ? (
@@ -263,7 +263,7 @@ export default function RegisterPage() {
                 <Button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors !px-1 !py-1 !shadow-none !uppercase-normal"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors px-1! py-1! shadow-none !uppercase-normal"
                   variant="primary"
                 >
                   {showConfirmPassword ? (
@@ -322,8 +322,10 @@ export default function RegisterPage() {
             variant="accent"
             className="w-full mt-4"
           >
-            Daftar Sekarang
-            <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+            <span className="flex items-center justify-center gap-2 w-full">
+              Daftar Sekarang
+              <ArrowRight className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover/btn:translate-x-1" />
+            </span>
           </Button>
         </form>
 

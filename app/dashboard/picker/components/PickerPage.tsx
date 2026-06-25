@@ -374,7 +374,7 @@ export default function RemixPickerPage() {
                           type="button"
                           onClick={handleResetSession}
                           variant="secondary"
-                          className="absolute top-5 right-5 p-2 !px-2 !py-2 shadow-md cursor-pointer z-30"
+                          className="absolute top-5 right-5 p-2 px-2! py-2! shadow-md cursor-pointer z-30"
                         >
                           <X size={14} strokeWidth={2.5} />
                         </Button>
@@ -403,16 +403,20 @@ export default function RemixPickerPage() {
                         <Button
                           type="button"
                           onClick={handleCaptureAndScan}
-                          variant="accent"
+                          variant="primary"
                           className="flex-1 py-3"
+                          size="sm"
                         >
-                          <Camera size={14} /> Ambil Foto &amp; Periksa
+                          <span className="flex items-center justify-center gap-2 w-full">
+                            <Camera size={14} /> Ambil Foto &amp; Periksa
+                          </span>
                         </Button>
                         <Button
                           type="button"
                           onClick={stopWebcam}
                           variant="secondary"
                           className="px-4 py-3"
+                          size="sm"
                         >
                           Mati
                         </Button>

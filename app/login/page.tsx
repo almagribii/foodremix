@@ -166,7 +166,7 @@ export default function LoginPage() {
               <Button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors !px-1 !py-1 !shadow-none !uppercase-normal"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors px-1! py-1! shadow-none !uppercase-normal"
                 variant="primary"
               >
                 {showPassword ? (

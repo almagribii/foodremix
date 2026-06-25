@@ -165,26 +165,25 @@ export default function RekamGiziPage() {
             />
           </div>
 
-          <button
-            onClick={() => setIsFormOpen(!isFormOpen)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#eab308] text-black text-xs font-bold rounded-xl hover:bg-[#d9a607] transition shadow-sm"
-          >
-            <motion.svg
-              animate={{ rotate: isFormOpen ? 45 : 0 }}
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4v16m8-8H4"
-              />
-            </motion.svg>
-            {isFormOpen ? "Tutup Form" : "Rekam Baru"}
-          </button>
+          <Button onClick={() => setIsFormOpen(!isFormOpen)} variant="accent" size="sm">
+            <span className="flex items-center justify-center gap-2 w-full">
+              <motion.svg
+                animate={{ rotate: isFormOpen ? 45 : 0 }}
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4v16m8-8H4"
+                />
+              </motion.svg>
+              {isFormOpen ? "Tutup Form" : "Rekam Baru"}
+            </span>
+          </Button>
         </div>
       </div>
 
@@ -267,7 +266,7 @@ export default function RekamGiziPage() {
                         </div>
 
                         <div className="flex justify-end">
-                          <Button type="submit" variant="accent" size="md">
+                          <Button type="submit" variant="accent" size="sm">
                             Simpan Jurnal
                           </Button>
                         </div>

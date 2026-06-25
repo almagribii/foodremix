@@ -135,7 +135,7 @@ export default function Header({
         <Button
           onClick={onToggleSidebar}
           type="button"
-          className="p-2.5 !px-2.5 !py-2.5 shrink-0"
+          className="p-2.5 px-2.5! py-2.5! shrink-0"
           variant="secondary"
         >
           <svg
@@ -204,7 +204,7 @@ export default function Header({
         <Button
           onClick={handleToggleDropdown}
           type="button"
-          className="relative p-2.5 !px-2.5 !py-2.5"
+          className="relative p-2.5 px-2.5! py-2.5!"
           variant="secondary"
         >
           <svg

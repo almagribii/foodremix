@@ -350,7 +350,7 @@ export default function RemixAreaPage() {
                               setInputImageBase64(null);
                             }}
                             variant="secondary"
-                            className="absolute top-5 right-5 p-2 !px-2 !py-2 shadow-md cursor-pointer z-30"
+                            className="absolute top-5 right-5 p-2 px-2! py-2! shadow-md cursor-pointer z-30"
                           >
                             <X size={14} strokeWidth={2.5} />
                           </Button>

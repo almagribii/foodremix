@@ -225,7 +225,7 @@ export default function RemixChatPage() {
           title="Bersihkan Obrolan"
           type="button"
           variant="secondary"
-          className="p-2 !px-2 !py-2 shrink-0"
+          className="p-2 px-2 py-2 shrink-0"
         >
           <svg
             className={`h-4 w-4 ${isClearing ? "animate-spin" : ""}`}
@@ -314,7 +314,7 @@ export default function RemixChatPage() {
           loading={loading}
           disabled={!input.trim()}
           variant="primary"
-          className="p-3 !px-3 !py-3 shrink-0"
+          className="p-3 px-3! py-3! shrink-0"
         >
           <svg
             className="h-4 w-4 transform rotate-90 text-[#EAB308]"
