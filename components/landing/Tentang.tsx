@@ -2,28 +2,28 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Bot, Wallet, Heart, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Bot, Leaf, Wallet, Heart } from "lucide-react";
 
 const aboutData = [
   { 
     icon: <Bot size={24} />, 
-    title: "Solusi Anti-Mubazir", 
-    desc: "Foodremix berkomitmen mengatasi masalah bahan makanan yang terbuang. Kami membantu Anda memanfaatkan sisa logistik dapur menjadi hidangan lezat berkelas." 
+    title: "Platform Penyelamatan Pangan", 
+    desc: "Foodremix adalah aplikasi inovatif yang membantu Anda mengurangi limbah makanan dengan menciptakan resep kreatif dari bahan sisa di kulkas." 
   },
   { 
-    icon: <Sparkles size={24} />, 
-    title: "Teknologi RemixAI", 
-    desc: "Melalui algoritma cerdas, sistem kami merancang rekomendasi resep unik yang disesuaikan secara instan dengan kombinasi bahan apa pun yang Anda miliki." 
+    icon: <Leaf size={24} />, 
+    title: "AI Multimodal", 
+    desc: "Dengan teknologi AI multimodal, platform ini dapat memindai isi kulkas melalui webcam, meracik menu gizi yang hemat anggaran, dan berkontribusi untuk lingkungan." 
   },
   { 
     icon: <Wallet size={24} />, 
-    title: "Hemat Budget Kos", 
-    desc: "Dirancang ramah di kantong dengan pelacakan cerdas, menjadikannya opsi paling praktis bagi anak kos maupun siapa saja yang ingin menekan pengeluaran bulanan." 
+    title: "Hemat Budget", 
+    desc: "Fitur smart tracking finansial membantu menjadikan Foodremix opsi paling praktis bagi anak kos maupun siapa saja yang ingin menekan pengeluaran bulanan." 
   },
   { 
     icon: <Heart size={24} />, 
-    title: "Misi Utama Kami", 
-    desc: "Bukan hanya sekadar memberikan resep biasa, melainkan membangun kebiasaan baru untuk menghargai setiap bahan pangan dengan dukungan teknologi masa kini." 
+    title: "Kelestarian Lingkungan", 
+    desc: "Bukan hanya sekadar memberikan resep, melainkan membangun kebiasaan baru untuk menghargai setiap bahan pangan demi bumi yang lebih hijau." 
   },
 ];
 

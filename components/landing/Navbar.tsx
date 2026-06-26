@@ -4,75 +4,68 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation"; // AMBIL PATHNAME SAAT INI
+import { usePathname } from "next/navigation";
 import { useAuth } from "../../lib/hooks/useAuth";
-import { Sparkles, Menu, X } from "lucide-react";
+import { Sparkles, Menu, X, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/Button"; 
 
 export default function Navbar() {
   const { isAuthenticated, loading, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname(); // Deklarasi untuk tracking halaman aktif
+  const pathname = usePathname();
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
-  // PEMBARUAN: Target diubah menjadi URL path halaman Anda
   const navLinks = [
     { name: "Beranda", path: "/" },
-    { name: "Remix Area", path: "/remix-area" }, // Sesuaikan dengan folder page Anda (misal: app/remix-area/page.tsx)
-    { name: "Tentang", path: "/tentang" }, // Sesuaikan dengan folder page Anda (misal: app/tentang/page.tsx)
+    { name: "Remix Area", path: "/remix-area" },
+    { name: "Tentang", path: "/tentang" },
   ];
 
   return (
     <>
       <motion.nav
-        className="sticky top-0 z-50 backdrop-blur-md bg-[#FBFBFA]/80 border-b border-stone-200/40"
-        initial={{ opacity: 0, y: -20 }}
+        className="sticky top-0 z-50 backdrop-blur-md bg-[#FBFBFA]/85 border-b border-stone-200/40"
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
-          {/* BRAND LOGO */}
-          <Link
-            href="/"
-            className="flex gap-2.5 items-center group select-none"
-          >
-            <div className="w-8 h-8 relative rounded-xl overflow-hidden border border-stone-200 shadow-xs group-hover:scale-105 transition-transform duration-300">
+          <Link href="/" className="flex gap-3 items-center group select-none">
+            <div className="w-8 h-8 relative rounded-xl overflow-hidden border border-stone-200/60 shadow-sm group-hover:scale-105 transition-transform duration-300 ease-out">
               <Image
-                src="/favicon.ico"
+                src="/logo-trans.png"
                 alt="Foodremix Logo"
                 fill
                 className="object-cover"
               />
             </div>
-            <span className="font-serif italic font-normal text-lg tracking-tight text-stone-700">
+            <span className="font-serif italic font-normal text-lg tracking-tight text-stone-800">
               Food
-              <span className="font-extrabold text-[#a17e26] not-italic">
+              <span className="font-extrabold text-[#a17e26] not-italic ml-0.5">
                 remix
               </span>
             </span>
           </Link>
 
-          {/* LINK NAVIGASI TENGAH (DESKTOP) */}
-          <div className="hidden md:flex items-center gap-10 text-[10px] font-bold tracking-widest">
+          <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => {
-              // Cek apakah link ini sedang aktif/dibuka user
               const isActive = pathname === link.path;
 
               return (
                 <Link
                   key={link.name}
                   href={link.path}
-                  className={`transition-colors duration-200 uppercase cursor-pointer relative py-1 group ${
+                  className={`transition-colors duration-300 text-sm font-medium relative py-1.5 cursor-pointer group ${
                     isActive
                       ? "text-[#a17e26]"
-                      : "text-stone-400 hover:text-[#a17e26]"
+                      : "text-stone-400 hover:text-stone-800"
                   }`}
                 >
                   {link.name}
-                  {/* Garis bawah akan otomatis penuh jika aktif, atau muncul saat hover jika tidak aktif */}
                   <span
-                    className={`absolute bottom-0 left-0 h-[1.5px] bg-[#a17e26] transition-all duration-300 ${
+                    className={`absolute bottom-0 left-0 h-[2px] bg-[#a17e26] transition-all duration-300 ease-out rounded-full ${
                       isActive ? "w-full" : "w-0 group-hover:w-full"
                     }`}
                   />
@@ -81,31 +74,48 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* TOMBOL AUTENTIKASI KANAN (DESKTOP) */}
-          <div className="hidden md:flex items-center gap-3 text-xs font-bold tracking-tight">
+          <div className="hidden md:flex items-center gap-3">
             {!loading && (
               <>
                 {isAuthenticated ? (
-                  <Link
-                    href="/dashboard"
-                    className="px-5 py-2.5 bg-white text-amber-950 border border-amber-500/20 rounded-full font-extrabold shadow-xs hover:bg-amber-50 hover:border-amber-500/50 transition-all flex items-center gap-1.5"
-                  >
-                    <Sparkles size={12} className="text-amber-500" />
-                    Dashboard
+                  <Link href="/dashboard">
+                    <Button
+                      variant="accent"
+                      size="sm"
+                    >
+                      <span className="flex items-center justify-center gap-2 w-full">
+                        <svg
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                          />
+                        </svg>{" "}
+                        Dashboard
+                      </span>
+                    </Button>
                   </Link>
                 ) : (
                   <>
-                    <Link
-                      href="/login"
-                      className="px-5 py-2.5 text-stone-500 hover:text-[#a17e26] transition-colors duration-200 flex items-center cursor-pointer"
-                    >
-                      Login
+                    <Link href="/login">
+                      <Button variant="accent" size="sm">
+                        Login
+                      </Button>
                     </Link>
-                    <Link
-                      href="/register"
-                      className="px-5 py-2 bg-stone-100 text-stone-600 rounded-full hover:bg-stone-200/70 transition-all cursor-pointer"
-                    >
-                      Daftar
+                    <Link href="/register">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="bg-stone-900 text-white hover:bg-stone-800 text-xs px-4 py-2 font-semibold"
+                      >
+                        Daftar
+                      </Button>
                     </Link>
                   </>
                 )}
@@ -113,10 +123,9 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* TOMBOL MENU MOBILE */}
           <button
             onClick={toggleMenu}
-            className="md:hidden p-2 text-stone-500 hover:text-stone-800 transition-colors cursor-pointer"
+            className="md:hidden p-2 text-stone-500 hover:text-stone-800 transition-colors cursor-pointer rounded-lg hover:bg-stone-100"
             aria-label="Toggle Menu"
           >
             {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -128,13 +137,13 @@ export default function Navbar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 top-16 bg-[#FBFBFA] z-40 md:hidden flex flex-col justify-between border-t border-stone-200/50"
-            initial={{ opacity: 0, y: -10 }}
+            className="fixed inset-0 top-16 bg-[#FBFBFA]/95 backdrop-blur-lg z-40 md:hidden flex flex-col justify-between border-t border-stone-200/50 p-6"
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
           >
-            <div className="p-6 flex flex-col gap-6 text-sm font-bold tracking-widest uppercase">
+            <div className="flex flex-col gap-4">
               {navLinks.map((link) => {
                 const isActive = pathname === link.path;
 
@@ -143,61 +152,79 @@ export default function Navbar() {
                     key={link.name}
                     href={link.path}
                     onClick={closeMenu}
-                    className={`py-2 border-b border-stone-100 transition-colors flex items-center cursor-pointer ${
+                    className={`py-3 px-4 rounded-xl transition-all font-medium text-base flex items-center justify-between ${
                       isActive
-                        ? "text-[#a17e26]"
-                        : "text-stone-500 hover:text-[#a17e26]"
+                        ? "bg-[#a17e26]/5 text-[#a17e26] font-semibold"
+                        : "text-stone-600 hover:bg-stone-100"
                     }`}
                   >
                     {link.name}
+                    {isActive && (
+                      <ArrowRight size={16} className="text-[#a17e26]" />
+                    )}
                   </Link>
                 );
               })}
+            </div>
 
-              <div className="flex flex-col gap-3 pt-6 text-xs tracking-tight normal-case">
-                {!loading && (
-                  <>
-                    {isAuthenticated ? (
-                      <>
-                        <Link
-                          href="/dashboard"
-                          onClick={closeMenu}
-                          className="w-full text-center py-3 bg-white text-amber-950 border border-amber-500/20 rounded-full font-extrabold shadow-xs flex items-center justify-center gap-1.5"
+            <div className="flex flex-col gap-3 border-t border-stone-200/40 pt-6">
+              {!loading && (
+                <>
+                  {isAuthenticated ? (
+                    <>
+                      <Link
+                        href="/dashboard"
+                        onClick={closeMenu}
+                        className="w-full"
+                      >
+                        <Button
+                          variant="accent"
+                          className="w-full bg-[#eab30b] text-black py-3"
                         >
-                          <Sparkles size={12} className="text-amber-500" />
+                          <Sparkles size={14} />
                           Dashboard
-                        </Link>
-                        <button
-                          onClick={() => {
-                            logout();
-                            closeMenu();
-                          }}
-                          className="w-full py-2.5 text-stone-400 hover:text-red-600 transition-colors"
-                        >
-                          Logout
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <Link
-                          href="/login"
-                          onClick={closeMenu}
-                          className="w-full text-center py-2.5 text-stone-500 hover:text-[#a17e26] transition-colors"
+                        </Button>
+                      </Link>
+                      <button
+                        onClick={() => {
+                          logout();
+                          closeMenu();
+                        }}
+                        className="w-full py-3 text-center text-sm font-medium text-stone-400 hover:text-red-500 transition-colors"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/login"
+                        onClick={closeMenu}
+                        className="w-full"
+                      >
+                        <Button
+                          variant="accent"
+                          className="w-full text-stone-600 py-3 font-semibold"
                         >
                           Login
-                        </Link>
-                        <Link
-                          href="/register"
-                          onClick={closeMenu}
-                          className="w-full text-center py-3 bg-stone-100 text-stone-600 rounded-full hover:bg-stone-200/70 transition-all"
+                        </Button>
+                      </Link>
+                      <Link
+                        href="/register"
+                        onClick={closeMenu}
+                        className="w-full"
+                      >
+                        <Button
+                          variant="primary"
+                          className="w-full bg-stone-900 text-white py-3 font-semibold"
                         >
                           Daftar
-                        </Link>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
+                        </Button>
+                      </Link>
+                    </>
+                  )}
+                </>
+              )}
             </div>
           </motion.div>
         )}

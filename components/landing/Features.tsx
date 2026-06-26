@@ -2,15 +2,17 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Bot, Wallet, Leaf, Heart, Users, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const featuresData = [
-  { icon: <Bot size={24} />, title: "AI Menu", desc: "Ciptakan resep premium kreatif dari sisa bahan makanan." },
-  { icon: <Wallet size={24} />, title: "Hemat Budget", desc: "Smart tracking finansial harian khusus anak kost." },
-  { icon: <Leaf size={24} />, title: "Eco Friendly", desc: "Kurangi limbah makanan dan ikut berkontribusi untuk bumi." },
-  { icon: <Heart size={24} />, title: "Wellness AI", desc: "Pantau jurnal nutrisi berkala yang adaptif dengan tubuhmu." },
-  { icon: <Users size={24} />, title: "Komunitas", desc: "Temukan partner patungan bahan terdekat di sekitarmu." },
-  { icon: <Sparkles size={24} />, title: "Smart Recipe", desc: "Rekomendasi takaran memasak yang pas agar anti-mubazir." },
+  { emoji: "📊", title: "Dashboard", desc: "Halaman utama yang menampilkan statistik penggunaan, total uang yang dihemat, carbon footprint yang dicegah, dan riwayat aktivitas terbaru." },
+  { emoji: "🎨", title: "Remix Area", desc: "Membuat resep kreatif dari bahan yang dimiliki di kulkas atau mendeteksi makanan dari foto dengan tutorial memasak lengkap." },
+  { emoji: "📸", title: "Remix Picker", desc: "Pemindai makanan dengan dukungan webcam dan upload file. Mengidentifikasi bahan makanan, nutrisi, dan memberikan informasi detail secara otomatis menggunakan AI vision." },
+  { emoji: "💬", title: "Remix Chat", desc: "Asisten AI untuk konsultasi resep, alternatif makanan alergi, dan tips hemat memasak dengan dukungan chat history context." },
+  { emoji: "🎮", title: "Remix Game", desc: "Game edukatif yang mengajarkan pentingnya mengurangi limbah makanan melalui gameplay yang menyenangkan dengan puzzle, audio, dan joystick control." },
+  { emoji: "📈", title: "Rekam Gizi", desc: "Pencatatan asupan harian dengan visualisasi nutrisi melalui Daily Macro Donut Chart, Nutrient Bar Chart, dan Journal Card." },
+  { emoji: "🔔", title: "Notifikasi", desc: "Sistem notifikasi untuk mengingatkan jurnal nutrisi harian, update resep, dan aktivitas komunitas." },
+  { emoji: "👤", title: "Profil", desc: "Manajemen profil pengguna termasuk nickname, target budget, medical conditions, allergies, dan statistik penghematan yang dapat dilihat." },
 ];
 
 export default function Features() {
@@ -111,16 +113,16 @@ export default function Features() {
                   damping: 24,
                 }}
               >
-                {isCenter && (
-                  <div className="absolute inset-0 rounded-[36px] bg-gradient-to-b from-amber-500/[0.05] to-transparent pointer-events-none border border-amber-500/20" />
-                )}
+{isCenter && (
+                   <div className="absolute inset-0 rounded-[36px] bg-gradient-to-b from-amber-500/[0.05] to-transparent pointer-events-none border border-amber-500/20" />
+                 )}
 
-                <div className={`p-4 rounded-2xl mb-6 transition-all duration-500 ${
+                <div className={`w-16 h-16 rounded-2xl mb-4 flex items-center justify-center text-4xl transition-all duration-500 ${
                   isCenter 
-                    ? "bg-amber-500/10 text-amber-400 scale-110 shadow-[0_0_20px_rgba(245,158,11,0.15)]" 
-                    : "bg-white/5 text-stone-500"
+                    ? "scale-110 shadow-[0_0_20px_rgba(245,158,11,0.15)]" 
+                    : "opacity-70"
                 }`}>
-                  {feature.icon}
+                  {feature.emoji}
                 </div>
 
                 <h3 className={`text-base font-extrabold tracking-tight mb-3 transition-colors duration-500 uppercase ${
