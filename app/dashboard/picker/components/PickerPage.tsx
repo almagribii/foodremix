@@ -318,28 +318,31 @@ export default function RemixPickerPage() {
               }`}
             >
               {!loading && (
-                <div className="flex p-1.5 bg-zinc-50 border border-zinc-200 rounded-2xl gap-1 max-w-md mx-auto w-full mb-8 z-20">
+                <div className="flex bg-transparent p-1 gap-2 max-w-md mx-auto w-full mb-8 z-20">
                   <button
                     type="button"
                     onClick={() => handleTabChange("upload")}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 select-none ${
                       activeTab === "upload"
-                        ? "bg-[#eab308] text-black shadow-xs"
-                        : "text-zinc-400 hover:text-zinc-600"
+                        ? "bg-[#eab30b] text-black shadow-md scale-[1.02]"
+                        : "text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 bg-transparent"
                     }`}
                   >
-                    <Upload size={12} /> Unggah File
+                    <Upload size={16} className="shrink-0" />
+                    <span>Unggah File</span>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => handleTabChange("camera")}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 select-none ${
                       activeTab === "camera"
-                        ? "bg-[#eab308] text-black shadow-xs"
-                        : "text-zinc-400 hover:text-zinc-600"
+                        ? "bg-[#eab30b] text-black shadow-md scale-[1.02]"
+                        : "text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 bg-transparent"
                     }`}
                   >
-                    <Camera size={12} /> Kamera Live
+                    <Camera size={16} className="shrink-0" />
+                    <span>Kamera Live</span>
                   </button>
                 </div>
               )}
@@ -457,12 +460,11 @@ export default function RemixPickerPage() {
                 )}
 
                 {imagePreview && !loading && (
-                  <button
-                    onClick={handleProcessUploadedImage}
-                    className="w-full max-w-md mt-5 bg-[#eab308] text-black font-black py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all text-[10px] uppercase tracking-widest shadow-xs active:scale-99"
-                  >
-                    <Upload size={13} /> Jalankan Inspeksi Bahan
-                  </button>
+                  <Button onClick={handleProcessUploadedImage} variant="accent">
+                    <span className="flex items-center justify-center gap-2 w-full">
+                      <Upload size={13} /> Jalankan Inspeksi Bahan
+                    </span>
+                  </Button>
                 )}
               </div>
             </motion.div>

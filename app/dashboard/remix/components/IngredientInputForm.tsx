@@ -126,26 +126,26 @@ export default function IngredientInputForm({
 
   return (
     <div className="bg-white text-[#1A1A1A] rounded-2xl overflow-hidden shadow-sm border border-zinc-200 max-w-md mx-auto transition-all duration-300">
-      {/* Mode Toggle Tab */}
-      <div className="flex p-1.5 bg-zinc-50 border-b border-zinc-200 gap-1">
+      <div className="flex w-full bg-transparent p-1 gap-2">
         <button
           type="button"
           onClick={() => handleModeChange("remix")}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
+          className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 select-none ${
             mode === "remix"
-              ? "bg-[#eab308] text-black shadow-xs"
-              : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100"
+              ? "bg-zinc-900 text-white shadow-md scale-[1.02] dark:bg-zinc-100 dark:text-zinc-900"
+              : "text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 bg-transparent"
           }`}
         >
           Remix Bahan
         </button>
+
         <button
           type="button"
           onClick={() => handleModeChange("detect")}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
+          className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 select-none ${
             mode === "detect"
-              ? "bg-[#eab308] text-black shadow-xs"
-              : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100"
+              ? "bg-zinc-900 text-white shadow-md scale-[1.02] dark:bg-zinc-100 dark:text-zinc-900"
+              : "text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 bg-transparent"
           }`}
         >
           Deteksi Makanan
@@ -162,7 +162,6 @@ export default function IngredientInputForm({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Kamera / Area Unggah File */}
           <div className="space-y-2">
             <label className="text-[10px] font-black tracking-widest uppercase text-zinc-400 block">
               {mode === "remix" ? "Visual Bahan (Opsional)" : "Foto Makanan"}
@@ -179,20 +178,24 @@ export default function IngredientInputForm({
                 />
                 <canvas ref={canvasRef} className="hidden" />
                 <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2 z-10 px-4">
-                  <button
-                    type="button"
-                    onClick={capturePhoto}
-                    className="flex-1 py-3 bg-[#EAB308] text-zinc-950 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
-                  >
+                    <Button
+                          type="button"
+                          onClick={capturePhoto}
+                          variant="primary"
+                          className="flex-1 py-3"
+                          size="sm"
+                        >
                     Bidik Foto
-                  </button>
-                  <button
-                    type="button"
-                    onClick={stopWebcam}
-                    className="px-4 py-3 bg-white border border-zinc-200 text-zinc-700 text-xs font-bold rounded-xl transition-colors shadow-xs"
-                  >
+                  </Button>
+                 <Button
+                          type="button"
+                          onClick={stopWebcam}
+                          variant="secondary"
+                          className="px-4 py-3"
+                          size="sm"
+                        >
                     Batal
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
