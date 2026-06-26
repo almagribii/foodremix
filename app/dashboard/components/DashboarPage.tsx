@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Wallet,
 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface DashboardStats {
   totalMoneySaved: number;
@@ -274,16 +275,16 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <Link
-          href="/dashboard/remix"
-          className="group inline-flex items-center gap-2.5 px-5 py-3 bg-[#1A1A1A] text-white text-xs font-black uppercase tracking-wider rounded-2xl hover:bg-zinc-800 transition shadow-md shrink-0"
-        >
-          <Sparkles size={13} className="text-[#EAB308]" />
-          Racik Sekarang
-          <ArrowRight
-            size={13}
-            className="group-hover:translate-x-0.5 transition-transform"
-          />
+        <Link href="/dashboard/remix">
+          <Button variant="accent" size="sm" className="group">
+            <span className="flex items-center justify-center gap-2 w-full">
+              Racik Sekarang
+              <ArrowRight
+                size={13}
+                className="group-hover:translate-x-0.5 transition-transform"
+              />
+            </span>
+          </Button>
         </Link>
       </motion.div>
 
