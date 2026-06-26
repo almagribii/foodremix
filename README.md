@@ -8,30 +8,26 @@ Foodremix adalah aplikasi inovatif yang membantu Anda mengurangi limbah makanan 
 
 ## ✨ Fitur Utama
 
-### 🤖 Remix AI
+### 🏠 Dashboard
+
+Halaman utama yang menampilkan statistik penggunaan, total uang yang dihemat, carbon footprint yang dicegah, dan riwayat aktivitas terbaru.
+
+### 🎨 Remix Area
 
 Modul utama untuk menciptakan resep dari bahan sisa. Mendukung dua mode:
 
 - **Remix Mode**: Membuat resep kreatif dari bahan yang dimiliki di kulkas
 - **Detect Mode**: Mendeteksi makanan dari foto dan memberikan tutorial memasak lengkap
 
-### 📸 Picker
+### 📸 Remix Picker
 
 Pemindai makanan dengan dukungan webcam dan upload file. Mengidentifikasi bahan makanan, nutrisi, dan memberikan informasi detail secara otomatis menggunakan AI vision.
 
-### 📊 Journal
-
-Pencatatan asupan harian dengan visualisasi nutrisi melalui:
-
-- Daily Macro Donut Chart - Visualisasi makronutrien harian
-- Nutrient Bar Chart - Grafik nutrisi terperinci
-- Journal Card untuk tracking makanan dan mood harian
-
-### 💬 Chat AI
+### 💬 Remix Chat
 
 Asisten AI untuk konsultasi resep, alternatif makanan alergi, dan tips hemat memasak. Dukungan chat dengan history context untuk percakapan yang lebih natural.
 
-### 🎮 Monster Junk Game
+### 🎮 Remix Game
 
 Game edukatif yang mengajarkan pentingnya mengurangi limbah makanan melalui gameplay yang menyenangkan. Pemain mengendalikan karakter untuk mengumpulkan sampah makanan dengan fitur:
 
@@ -39,6 +35,18 @@ Game edukatif yang mengajarkan pentingnya mengurangi limbah makanan melalui game
 - Audio aktif (backsound, sound effects)
 - Kontrol joystick untuk perangkat mobile
 - Full screen mode
+
+### 📊 Rekam Gizi
+
+Pencatatan asupan harian dengan visualisasi nutrisi melalui:
+
+- Daily Macro Donut Chart - Visualisasi makronutrien harian
+- Nutrient Bar Chart - Grafik nutrisi terperinci
+- Journal Card untuk tracking makanan dan mood harian
+
+### 🔔 Notifikasi
+
+Sistem notifikasi untuk mengingatkan jurnal nutrisi harian, update resep, dan aktivitas komunitas.
 
 ### 👤 Profil
 
@@ -182,7 +190,7 @@ import { Button } from "@/components/ui/Button";
 - `disabled`: boolean - menonaktifkan button
 - `className`: string - custom styling tambahan
 
-## 🔌 API Endpoints
+<!-- ## 🔌 API Endpoints
 
 | Endpoint               | Method   | Description               |
 | ---------------------- | -------- | ------------------------- |
@@ -198,7 +206,7 @@ import { Button } from "@/components/ui/Button";
 | `/api/chat`            | POST     | Chat dengan AI            |
 | `/api/user/profile`    | GET/PUT  | Profil pengguna           |
 | `/api/dashboard/stats` | GET      | Statistik dashboard       |
-| `/api/notifications/*` | GET/POST | Notifikasi sistem         |
+| `/api/notifications/*` | GET/POST | Notifikasi sistem         | -->
 
 ## 🤝 Kontribusi
 
