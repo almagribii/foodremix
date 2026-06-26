@@ -318,32 +318,26 @@ export default function RemixPickerPage() {
               }`}
             >
               {!loading && (
-                <div className="flex bg-transparent p-1 gap-2 max-w-md mx-auto w-full mb-8 z-20">
-                  <button
-                    type="button"
+                <div className="flex bg-transparent p-1 gap-2 max-w-md mx-auto justify-center w-full mb-8 z-20">
+                  <Button
+                    variant="accent"
                     onClick={() => handleTabChange("upload")}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 select-none ${
-                      activeTab === "upload"
-                        ? "bg-[#eab30b] text-black shadow-md scale-[1.02]"
-                        : "text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 bg-transparent"
-                    }`}
                   >
-                    <Upload size={16} className="shrink-0" />
-                    <span>Unggah File</span>
-                  </button>
+                    <span className="flex items-center justify-center gap-2 w-full">
+                      <Upload size={16} className="shrink-0" />
+                      <span>Unggah File</span>
+                    </span>
+                  </Button>
 
-                  <button
-                    type="button"
+                  <Button
+                    variant="accent"
                     onClick={() => handleTabChange("camera")}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300 select-none ${
-                      activeTab === "camera"
-                        ? "bg-[#eab30b] text-black shadow-md scale-[1.02]"
-                        : "text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 bg-transparent"
-                    }`}
                   >
-                    <Camera size={16} className="shrink-0" />
-                    <span>Kamera Live</span>
-                  </button>
+                    <span className="flex items-center justify-center gap-2 w-full">
+                      <Camera size={16} className="shrink-0" />
+                      <span>Kamera Live</span>
+                    </span>
+                  </Button>
                 </div>
               )}
 
