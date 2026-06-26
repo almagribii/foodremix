@@ -1,430 +1,515 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Plus, Upload, X, ChefHat } from "lucide-react";
-import { useToast } from "@/components/ui/Toast";
-import Lottie from "lottie-react";
 import { Button } from "@/components/ui/Button";
-import bot from "../../../dashboard/remix/components/food.json"; // Sesuaikan path json Anda
+import {
+  Camera,
+  Upload,
+  RefreshCw,
+  CheckCircle2,
+  Package,
+  X,
+  FileImage,
+  Info,
+  AlertTriangle,
+} from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
-type RemixMode = "remix" | "detect";
+interface ScanResult {
+  status: "VALID" | "INVALID";
+  itemName: string;
+  verdict: string;
+  expectedLifespan: string;
+  analysisDetails: string[];
+  storageBlueprint: string[];
+}
 
-export default function PublicRemixPreviewPage() {
-  const router = useRouter();
-  const { error: toastError, success: toastSuccess } = useToast();
+type InputTab = "camera" | "upload";
 
-  // State Form & UI
-  const [mode, setMode] = useState<RemixMode>("remix");
-  const [ingredients, setIngredients] = useState<string[]>([]);
-  const [currentInput, setCurrentInput] = useState("");
-  const [isWebcamActive, setIsWebcamActive] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+export default function RemixPickerPage() {
+  const {
+    error: toastError,
+    warning: toastWarning,
+    success: toastSuccess,
+  } = useToast();
 
-  // State Image Preview
-  const [inputImagePreview, setInputImagePreview] = useState<string | null>(
-    null,
-  );
-
-  // Refs untuk Kamera/File
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Fungsi Alihkan/Redirect ke Dashboard
-  const redirectToDashboard = () => {
-    // Middleware Anda yang akan mengurus apakah dia ke login atau langsung ke dashboard
-    router.push("/dashboard/remix");
-  };
+  const [activeTab, setActiveTab] = useState<InputTab>("upload");
+  const [isWebcamActive, setIsWebcamActive] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<ScanResult | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const addIngredient = () => {
-    const val = currentInput.trim().toLowerCase();
-    if (val && !ingredients.includes(val)) {
-      setIngredients((p) => [...p, val]);
-      setCurrentInput("");
+  const stopWebcam = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
     }
+    setIsWebcamActive(false);
   };
 
   const startWebcam = async () => {
-    setInputImagePreview(null);
+    setResult(null);
+    setImagePreview(null);
+    setImageBase64(null);
     setIsWebcamActive(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "environment",
-          width: { ideal: 480 },
-          height: { ideal: 480 },
+          width: { ideal: 640 },
+          height: { ideal: 640 },
         },
         audio: false,
       });
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
-    } catch {
+    } catch (err) {
+      console.error(err);
       setIsWebcamActive(false);
       toastError(
-        "Kamera tidak bisa diakses",
+        "Kamera tidak dapat diakses",
         "Pastikan izin kamera sudah diberikan.",
       );
     }
-  };
-
-  const stopWebcam = () => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
-    setIsWebcamActive(false);
-  };
-
-  const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const size = Math.min(video.videoWidth, video.videoHeight) || 480;
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      const sx = (video.videoWidth - size) / 2;
-      const sy = (video.videoHeight - size) / 2;
-      ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-      setInputImagePreview(dataUrl);
-    }
-    stopWebcam();
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     stopWebcam();
+    setResult(null);
     const reader = new FileReader();
     reader.onloadend = () => {
-      setInputImagePreview(reader.result as string);
+      const b64 = reader.result as string;
+      setImagePreview(b64);
+      setImageBase64(b64.split(",")[1]);
     };
     reader.readAsDataURL(file);
-    e.target.value = "";
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
+  const executeAnalysis = async (base64Data: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/picker/scan-guest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageBase64: base64Data }),
+      });
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setInputImagePreview(reader.result as string);
-        toastSuccess("Gambar berhasil dimuat", "Foto siap diracik bersama AI.");
-      };
-      reader.readAsDataURL(file);
+      const data = await res.json();
+
+      if (res.ok) {
+        setResult(data);
+
+        if (data.status === "INVALID") {
+          toastWarning(
+            "Objek tidak dikenali",
+            "Pastikan Anda memotret bahan makanan yang jelas.",
+          );
+        } else if (data.verdict && data.verdict.includes("CARI YANG LAIN")) {
+          toastWarning(
+            "Bahan kurang layak",
+            `${data.itemName} — Periksa kembali kondisinya.`,
+          );
+        } else {
+          toastSuccess(
+            "Analisis selesai",
+            `${data.itemName} berhasil diperiksa.`,
+          );
+        }
+      } else {
+        toastError(
+          "Analisis gagal",
+          data.error || "Gagal memproses pemindaian.",
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      toastError("Gangguan koneksi", "Tidak dapat terhubung ke server AI.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleModeChange = (newMode: RemixMode) => {
-    setMode(newMode);
-    setIngredients([]);
-    setInputImagePreview(null);
+  const handleCaptureAndScan = async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    if (loading) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    if (ctx) {
+      const width = video.videoWidth || 640;
+      const height = video.videoHeight || 480;
+
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(video, 0, 0, width, height);
+
+      try {
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        if (!dataUrl || !dataUrl.includes(",")) return;
+
+        const cleanBase64 = dataUrl.split(",")[1];
+        setImagePreview(dataUrl);
+        setImageBase64(cleanBase64);
+        stopWebcam();
+
+        await executeAnalysis(cleanBase64);
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
+  const handleProcessUploadedImage = async () => {
+    if (!imageBase64 || loading) return;
+    await executeAnalysis(imageBase64);
+  };
+
+  const handleResetSession = () => {
+    setImagePreview(null);
+    setImageBase64(null);
+    setResult(null);
+    stopWebcam();
+  };
+
+  const handleTabChange = (tab: InputTab) => {
+    setActiveTab(tab);
+    handleResetSession();
+    if (tab === "camera") {
+      startWebcam();
+    }
+  };
+
+  useEffect(() => {
+    return () => stopWebcam();
+  }, []);
+
   return (
-    <div className="max-w-7xl mx-auto pb-20 pt-6 px-4 space-y-8">
-      {/* Header Promo */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-zinc-200">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">
-            Fitur Unggulan
-          </p>
-          <h1 className="text-3xl font-black tracking-tight text-[#1A1A1A]">
-            Dapur Kreasi AI Preview
-          </h1>
-          <p className="text-xs text-zinc-500 mt-1 font-medium">
-            Coba simulasi input sisa bahan kulkas Anda dan lihat kehebatan
-            Multimodal AI.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-amber-500 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full font-bold">
-          <ChefHat size={12} />
-          <span>Eksklusif Anggota</span>
-        </div>
+    <div className="w-full max-w-6xl mx-auto space-y-6 pb-24 animate-fadeIn px-4 sm:px-6">
+      <div className="border-b border-zinc-200 pb-5 text-center space-y-2">
+       
+        <h1 className="text-3xl font-black tracking-tight text-[#1A1A1A]">
+          Penyortir Pangan AI (Guest Mode)
+        </h1>
+        <p className="text-xs text-zinc-500 max-w-2xl mx-auto font-medium leading-relaxed">
+          Gunakan kamera atau unggah foto belanjaan yang akan Anda beli untuk mencoba teknologi
+          pemindaian Foodremix. Foto yang Anda kirimkan langsung diproses oleh
+          AI namun{" "}
+          <strong>
+            tidak akan disimpan ke dalam riwayat akun atau database
+          </strong>
+          .
+        </p>
       </div>
 
-      {/* Main Container Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* SISI KIRI: INPUT FORM */}
-        <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-6">
-          <div className="bg-white text-[#1A1A1A] rounded-2xl overflow-hidden shadow-sm border border-zinc-200 w-full transition-all duration-300">
-            <div className="flex p-1.5 bg-zinc-50 border-b border-zinc-200 gap-1">
-              <button
-                type="button"
-                onClick={() => handleModeChange("remix")}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
-                  mode === "remix"
-                    ? "bg-[#eab308] text-black shadow-xs"
-                    : "text-zinc-400 hover:text-zinc-600"
-                }`}
-              >
-                Remix Bahan
-              </button>
-              <button
-                type="button"
-                onClick={() => handleModeChange("detect")}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
-                  mode === "detect"
-                    ? "bg-[#eab308] text-black shadow-xs"
-                    : "text-zinc-400 hover:text-zinc-600"
-                }`}
-              >
-                Deteksi Makanan
-              </button>
-            </div>
+      <div className="w-full bg-white border border-zinc-200 rounded-3xl overflow-hidden relative shadow-xs flex flex-col justify-between">
+        <AnimatePresence mode="wait">
+          {!result && (
+            <motion.div
+              key="input-and-loading-state"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (!loading && activeTab === "upload") setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                if (loading || activeTab !== "upload") return;
+                const file = e.dataTransfer.files?.[0];
+                if (file?.type.startsWith("image/")) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    const b64 = reader.result as string;
+                    setImagePreview(b64);
+                    setImageBase64(b64.split(",")[1]);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+              className="w-full flex-1 flex flex-col p-6 sm:p-10 relative transition-colors duration-200"
+            >
+              {!loading && (
+                <div className="flex bg-transparent p-1 gap-2 max-w-md mx-auto justify-center w-full mb-8 z-20">
+                  <Button
+                    variant="accent"
+                    onClick={() => handleTabChange("upload")}
+                    className="flex-1"
+                  >
+                    <span className="flex items-center justify-center gap-2 w-full">
+                      <Upload size={16} className="shrink-0" />
+                      <span>Unggah Foto</span>
+                    </span>
+                  </Button>
+                  <Button
+                    variant="accent"
+                    onClick={() => handleTabChange("camera")}
+                    className="flex-1"
+                  >
+                    <span className="flex items-center justify-center gap-2 w-full">
+                      <Camera size={16} className="shrink-0" />
+                      <span>Ambil Foto</span>
+                    </span>
+                  </Button>
+                </div>
+              )}
 
-            <div className="p-6 space-y-6">
-              <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-3.5">
-                <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">
-                  {mode === "remix"
-                    ? "Foto atau ketik sisa bahan di kulkasmu, AI akan meracik resep kreatif & hemat!"
-                    : "Foto atau ketik nama makanan jadi, AI akan mendeteksi dan memberikan tutorial lengkapnya."}
-                </p>
-              </div>
+              <div className="w-full flex-1 flex flex-col items-center justify-center relative">
+                {imagePreview ? (
+                  <div className="w-full max-w-3xl relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xs z-20 flex flex-col items-center justify-center bg-zinc-50/50 p-2 min-h-75 gap-4">
+                    <Image
+                      src={imagePreview}
+                      alt="Target Analisis"
+                      width={640}
+                      height={450}
+                      className="w-full h-auto max-h-112.5 object-contain rounded-xl mx-auto"
+                      unoptimized
+                    />
 
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  redirectToDashboard();
-                }}
-                className="space-y-5"
-              >
-                {/* Kamera & Upload Area */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black tracking-widest uppercase text-zinc-400 block">
-                    {mode === "remix"
-                      ? "Visual Bahan (Opsional)"
-                      : "Foto Makanan"}
-                  </label>
+                    {loading && (
+                      <motion.div
+                        className="absolute inset-x-2 h-0.5 bg-linear-to-r from-transparent via-[#EAB308] to-transparent shadow-[0_0_12px_#EAB308] z-30"
+                        animate={{ top: ["4%", "94%", "4%"] }}
+                        transition={{
+                          duration: 2,
+                          ease: "easeInOut",
+                          repeat: Infinity,
+                        }}
+                      />
+                    )}
 
-                  {isWebcamActive ? (
-                    <div className="relative w-full aspect-square bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-200">
+                    {!loading && (
+                      <>
+                        <Button
+                          type="button"
+                          onClick={handleResetSession}
+                          variant="secondary"
+                          className="absolute top-5 right-5 p-2 px-2! py-2! shadow-md cursor-pointer z-30"
+                        >
+                          <X size={14} strokeWidth={2.5} />
+                        </Button>
+                        <div className="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl flex items-center justify-between z-30">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-zinc-700">
+                            Pratinjau Gambar
+                          </span>
+                          <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                            Mode Uji Coba
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : activeTab === "camera" ? (
+                  isWebcamActive && (
+                    <div className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm bg-zinc-950 h-auto mx-auto flex flex-col items-center">
                       <video
                         ref={videoRef}
                         autoPlay
                         playsInline
                         muted
-                        className="w-full h-full object-cover"
+                        className="w-120 h-120 object-contain"
                       />
-                      <canvas ref={canvasRef} className="hidden" />
-                      <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2 z-10 px-4">
-                        <button
+                      <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2 px-4 z-10 max-w-sm mx-auto">
+                        <Button
                           type="button"
-                          onClick={capturePhoto}
-                          className="flex-1 py-3 bg-[#EAB308] text-zinc-950 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2"
+                          onClick={handleCaptureAndScan}
+                          variant="primary"
+                          className="flex-1 py-3"
+                          size="sm"
                         >
-                          Bidik Foto
-                        </button>
-                        <button
+                          <span className="flex items-center justify-center gap-2 w-full">
+                            <Camera size={14} /> Ambil Foto &amp; Periksa
+                          </span>
+                        </Button>
+                        <Button
                           type="button"
                           onClick={stopWebcam}
-                          className="px-4 py-3 bg-white border border-zinc-200 text-zinc-700 text-xs font-bold rounded-xl"
+                          variant="secondary"
+                          className="px-4 py-3"
+                          size="sm"
                         >
-                          Batal
-                        </button>
+                          Mati
+                        </Button>
                       </div>
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={startWebcam}
-                        className={`flex flex-col items-center justify-center gap-2.5 py-6 border border-dashed rounded-2xl transition-all group ${
-                          inputImagePreview
-                            ? "border-emerald-200 bg-emerald-50/20"
-                            : "border-zinc-200 hover:bg-zinc-50"
-                        }`}
-                      >
-                        <Camera
-                          size={16}
-                          className={
-                            inputImagePreview
-                              ? "text-emerald-600"
-                              : "text-zinc-400"
-                          }
-                        />
-                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
-                          {inputImagePreview ? "Terkunci" : "Kamera"}
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => fileRef.current?.click()}
-                        className={`flex flex-col items-center justify-center gap-2.5 py-6 border border-dashed rounded-2xl transition-all group ${
-                          inputImagePreview
-                            ? "border-emerald-200 bg-emerald-50/20"
-                            : "border-zinc-200 hover:bg-zinc-50"
-                        }`}
-                      >
-                        <Upload
-                          size={16}
-                          className={
-                            inputImagePreview
-                              ? "text-emerald-600"
-                              : "text-zinc-400"
-                          }
-                        />
-                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
-                          Unggah
-                        </span>
-                      </button>
-                      <input
-                        ref={fileRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Manual Text Input */}
-                <div className="space-y-2 border-t border-zinc-100 pt-5">
-                  <label className="text-[10px] font-black tracking-widest uppercase text-zinc-400 block">
-                    {mode === "remix"
-                      ? "Daftar Bahan Manual"
-                      : "Atau Tulis Nama Makanan"}
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={currentInput}
-                      onChange={(e) => setCurrentInput(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" &&
-                        (e.preventDefault(), addIngredient())
-                      }
-                      placeholder={
-                        mode === "remix"
-                          ? "Contoh: ayam, telur..."
-                          : "Contoh: nasi goreng..."
-                      }
-                      className="flex-1 px-4 py-3 text-xs bg-zinc-50 border border-zinc-200 rounded-xl outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={addIngredient}
-                      className="px-4 bg-zinc-100 border border-zinc-200 text-zinc-600 hover:bg-[#1A1A1A] hover:text-white rounded-xl transition-all"
-                    >
-                      <Plus size={14} strokeWidth={3} />
-                    </button>
-                  </div>
-
-                  {/* Badges Display */}
-                  {ingredients.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-2">
-                      {ingredients.map((ing, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 bg-zinc-50 border border-zinc-200 text-zinc-600 text-[10px] font-bold rounded-lg uppercase"
-                        >
-                          {ing}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setIngredients((p) =>
-                                p.filter((_, i) => i !== idx),
-                              )
-                            }
-                            className="p-1 text-zinc-400 hover:text-red-500"
-                          >
-                            <X size={10} strokeWidth={3} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* CTA BUTTON: Menuju Ke Dashboard */}
-                <Button type="submit" variant="accent" className="w-full">
-                  {mode === "remix"
-                    ? "Racik Menu Sekarang (Via AI)"
-                    : "Cari Tutorial Memasak"}
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        {/* SISI KANAN: LIVE VISUAL PREVIEW AREA */}
-        <div className="lg:col-span-7 xl:col-span-8">
-          <div className="w-full min-h-130 bg-white border border-zinc-200 rounded-3xl overflow-hidden relative shadow-sm flex flex-col">
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              className={`flex-1 flex flex-col items-center justify-center text-center p-8 relative transition-colors duration-200 ${
-                isDragging ? "bg-zinc-50/80" : ""
-              }`}
-            >
-              <div
-                className={`absolute inset-4 border-2 border-dashed rounded-2xl pointer-events-none transition-colors ${
-                  isDragging ? "border-[#1A1A1A]" : "border-zinc-200"
-                }`}
-              />
-
-              {inputImagePreview ? (
-                <div className="w-full max-w-xl relative rounded-2xl overflow-hidden border border-zinc-200 p-2 bg-zinc-50/50 flex items-center justify-center z-20">
-                  <Image
-                    src={inputImagePreview}
-                    alt="Preview Foto Kuliner"
-                    width={640}
-                    height={480}
-                    className="w-full h-auto max-h-112.5 object-contain rounded-xl"
-                    unoptimized
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setInputImagePreview(null)}
-                    className="absolute top-5 right-5 p-2 bg-white/95 text-zinc-500 hover:text-red-500 rounded-xl shadow-md"
-                  >
-                    <X size={14} strokeWidth={2.5} />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-4">
+                  )
+                ) : (
                   <div
-                    className={`w-40 h-40 lg:w-56 lg:h-56 flex items-center justify-center opacity-25 mix-blend-multiply transition-transform ${
-                      isDragging ? "scale-105" : ""
+                    onClick={() => fileRef.current?.click()}
+                    className={`w-full border-2 border-dashed rounded-3xl p-8 py-20 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all ${
+                      isDragging
+                        ? "border-[#1A1A1A] bg-zinc-50"
+                        : "border-zinc-200 hover:border-zinc-300 bg-zinc-50/30"
                     }`}
                   >
-                    <Lottie
-                      animationData={bot}
-                      loop={true}
-                      className="w-full h-full"
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
                     />
+                    <div className="h-14 w-14 bg-white border border-zinc-200 rounded-2xl flex items-center justify-center text-zinc-400 shadow-xs shadow-zinc-100">
+                      <FileImage size={20} />
+                    </div>
+                    <div className="space-y-1 text-center">
+                      <h3 className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider">
+                        Pilih atau Seret Foto
+                      </h3>
+                      <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+                        Mendukung format gambar JPEG, PNG, maupun WebP
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-1 max-w-xs relative z-10">
-                    <h3
-                      className={`text-xs font-black uppercase tracking-wider ${isDragging ? "text-emerald-600" : "text-[#1A1A1A]"}`}
+                )}
+
+                {imagePreview && !loading && (
+                  <div className="mt-4 w-full flex justify-center">
+                    <Button
+                      onClick={handleProcessUploadedImage}
+                      variant="accent"
                     >
-                      {isDragging
-                        ? "Lepaskan Gambar Sekarang!"
-                        : "Tarik & Jatuhkan Foto Kulinermu"}
-                    </h3>
-                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
-                      Interaktif Simulator Pra-Rilis
-                    </p>
+                      <span className="flex items-center justify-center gap-2 w-full">
+                        <Upload size={13} /> Mulai Periksa Bahan
+                      </span>
+                    </Button>
                   </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {result && !loading && (
+            <div className="space-y-6 flex-1 p-6 sm:p-10 animate-fadeIn w-full flex flex-col items-center text-center">
+              <div className="flex flex-col items-center gap-3 w-full">
+                <div>
+                  <span className="text-[10px] font-black tracking-wider uppercase text-zinc-400 block mb-1">
+                    Hasil Analisis Kamera AI
+                  </span>
+                  <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tight">
+                    {result.itemName}
+                  </h2>
                 </div>
-              )}
+                <button
+                  onClick={handleResetSession}
+                  className="px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-zinc-100 transition flex items-center gap-1.5 text-zinc-600 shadow-xs mx-auto"
+                >
+                  <RefreshCw size={11} /> Periksa Gambar Lain
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start w-full mt-4">
+                <div
+                  className={`md:col-span-5 p-6 border rounded-2xl shadow-xs space-y-4 flex flex-col items-center text-center w-full h-full justify-center ${
+                    result.status === "VALID" &&
+                    result.verdict.includes("FRESH")
+                      ? "bg-emerald-50/40 border-emerald-200/60"
+                      : "bg-rose-50/40 border-rose-200/60"
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2 text-sm font-black mx-auto">
+                    <CheckCircle2
+                      size={16}
+                      className={
+                        result.status === "VALID" &&
+                        result.verdict.includes("FRESH")
+                          ? "text-emerald-600"
+                          : "text-rose-600"
+                      }
+                    />
+                    <span
+                      className={
+                        result.status === "VALID" &&
+                        result.verdict.includes("FRESH")
+                          ? "text-emerald-800"
+                          : "text-rose-800"
+                      }
+                    >
+                      REKOMENDASI: {result.verdict}
+                    </span>
+                  </div>
+                  <ul className="text-xs text-zinc-600 font-medium space-y-2 text-left w-full pl-2">
+                    {result.analysisDetails.map((detail, idx) => (
+                      <li key={idx} className="block mb-1">
+                        • {detail}
+                      </li>
+                    ))}
+                    {result.status === "VALID" && (
+                      <li className="pt-3 text-[12px] font-bold text-zinc-500 block text-center border-t border-zinc-200/60 mt-2">
+                        Rentang Kesegaran:{" "}
+                        <span className="text-[#1A1A1A] font-black block text-sm mt-0.5">
+                          {result.expectedLifespan}
+                        </span>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+
+                <div className="md:col-span-7 space-y-4 border border-zinc-100 rounded-2xl p-6 bg-zinc-50/20 w-full text-left">
+                  <div className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-black text-[#1A1A1A] mb-2">
+                    <Package size={14} />
+                    <h3>PANDUAN PENYIMPANAN BIJAK:</h3>
+                  </div>
+                  <ul className="text-xs text-zinc-600 font-medium space-y-3 pl-1 w-full">
+                    {result.storageBlueprint.map((blueprint, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-start gap-3 leading-relaxed"
+                      >
+                        <span className="h-5 w-5 rounded-md bg-white border border-zinc-200 text-[10px] font-black flex items-center justify-center text-zinc-500 shrink-0 mt-0.5 shadow-2xs">
+                          {idx + 1}
+                        </span>
+                        <span>{blueprint}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-5 space-y-2 text-xs text-zinc-600">
+        <div className="flex items-center gap-2 text-[#1A1A1A] font-black uppercase tracking-wider text-[11px]">
+          <Info size={14} className="text-amber-500" />
+          <span>Bagaimana Cara Kerja Fitur Ini?</span>
+        </div>
+        <p className="leading-relaxed">
+          Kamera pintar Foodremix dirancang untuk mengenali kondisi fisik bahan
+          pangan mentah seperti buah, sayur, atau lauk-pauk. Sistem akan
+          meneliti kelayakan bahan belanjaan Anda secara instan dan memberikan 3
+          tips penyimpanan mandiri di rumah agar bahan makanan tetap awet serta
+          mengurangi sampah makanan keluarga.
+        </p>
+        <div className="flex items-start gap-1.5 text-rose-700 font-medium pt-1">
+          <AlertTriangle size={13} className="shrink-0 mt-0.5" />
+          <span>
+            Penting: Jika kamera menangkap objek selain makanan (seperti benda
+            mati atau foto buram), sistem otomatis akan menolak hasil analisis
+            demi menjaga ketepatan informasi belanja Anda.
+          </span>
         </div>
       </div>
+
+      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 }

@@ -5,10 +5,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: {
-    default: "Foodremix | Multimodal AI Kitchen & P2P Zero-Waste Network",
-    template: "%s | Foodremix",
-  },
+ 
 
   description:
     "Foodremix adalah platform penyelamatan pangan berbasis Gemini AI Multimodal dan sirkuit logistik P2P terdekat. Pindai isi kulkas lewat webcam, racik menu gizi hemat anggaran, tekan emisi karbon, dan bagikan surplus pangan ke warga sekitar.",
