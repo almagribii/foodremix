@@ -1,73 +1,107 @@
-"use client";
-
 import Image from "next/image";
+import Link from "next/link";
+import {
+  AtSign,
+  ChefHat,
+  Gamepad2,
+  House,
+  Info,
+  Mail,
+  Phone,
+} from "lucide-react";
 
-export default function Footer() {
-  // Fungsi smooth scroll yang diselaraskan dengan Navbar
-  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
-    e.preventDefault();
-    const element = document.getElementById(targetId);
-    if (element) {
-      const offset = 64; // Menyesuaikan tinggi sticky navbar
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
+const quickLinks = [
+  { href: "/", label: "Beranda", icon: House },
+  { href: "/tentang", label: "Tentang", icon: Info },
+  { href: "/remix-area", label: "Remix Area", icon: ChefHat },
+  { href: "/dashboard/game", label: "Game", icon: Gamepad2 },
+];
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
-    }
-  };
+export function Footer() {
+  const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#FBFBFA] border-t border-stone-200/50 py-12 px-6 select-none">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-        
-        {/* KIRI: BRAND LOGO & TEXT */}
-        <div className="flex gap-2.5 items-center">
-          <div className="w-6 h-6 relative rounded-lg overflow-hidden border border-stone-200/80 shadow-xs">
-            <Image 
-              src="/favicon.ico" 
-              alt="Foodremix Logo" 
-              fill
-              className="object-cover"
-            />
+    <footer className="mt-20 bg-[#1a1a1a] text-slate-100">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/logo-food.png"
+                alt="Foodremix Logo"
+                width={44}
+                height={44}
+                className="h-11 w-11 rounded-xl bg-white/10 p-1 object-contain"
+              />
+              <h3 className="text-2xl font-bold text-white tracking-tight">
+                Foodremix
+              </h3>
+            </div>
+
+            <p className="max-w-md text-sm leading-relaxed text-slate-400 sm:text-base">
+              Platform penyelamatan pangan berbasis AI Multimodal untuk membantu
+              Anda mengurangi limbah makanan dapur dengan meracik menu kreatif
+              dari bahan sisa kulkas.
+            </p>
           </div>
-          <span className="font-serif italic font-normal text-base tracking-tight text-stone-700">
-            Food<span className="font-extrabold text-[#a17e26] not-italic">remix</span>
-          </span>
+
+          <div>
+            <h4 className="text-xl font-semibold text-white tracking-wide">
+              Quick Links
+            </h4>
+            <ul className="mt-5 space-y-3">
+              {quickLinks.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className="inline-flex items-center gap-3 rounded-lg px-2 py-1 text-slate-400 transition duration-200 hover:text-[#eab308]"
+                    >
+                      <Icon className="h-4 w-4 text-[#eab308]/80" />
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xl font-semibold text-white tracking-wide">
+              Kontak
+            </h4>
+            <ul className="mt-5 space-y-4 text-slate-400">
+              <li className="flex items-center gap-3">
+                <AtSign className="h-5 w-5 text-[#eab308]" />
+                <span className="hover:text-white transition duration-200 cursor-pointer">
+                  foodremix.xyz
+                </span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-[#eab308]" />
+                <span className="hover:text-white transition duration-200 cursor-pointer">
+                  fooderemix@foodremix.xyz
+                </span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone className="h-5 w-5 text-[#eab308]" />
+                <span className="hover:text-white transition duration-200 cursor-pointer">
+                  +62 822-1098-0898
+                </span>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        {/* TENGAH: LINK NAVIGASI MINIMALIS */}
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-[10px] font-bold tracking-widest text-stone-400">
-          <a 
-            href="#fitur" 
-            onClick={(e) => handleScroll(e, "fitur")}
-            className="hover:text-[#a17e26] transition-colors duration-200 uppercase cursor-pointer"
-          >
-            Beranda
-          </a>
-          <a 
-            href="#cara-kerja" 
-            onClick={(e) => handleScroll(e, "cara-kerja")}
-            className="hover:text-[#a17e26] transition-colors duration-200 uppercase cursor-pointer"
-          >
-            RemixAI
-          </a>
-          <a 
-            href="#testimoni" 
-            onClick={(e) => handleScroll(e, "testimoni")}
-            className="hover:text-[#a17e26] transition-colors duration-200 uppercase cursor-pointer"
-          >
-            Tentang
-          </a>
+        <div className="mt-10 flex flex-col gap-4 border-t border-slate-900/80 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {year} Foodremix. All rights reserved.</p>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-slate-500">
+            <span className="py-1 text-xs sm:text-sm font-medium">
+              Made with ❤️ for reducing food waste and saving the planet.
+            </span>
+          </div>
         </div>
-
-        {/* KANAN: COPYRIGHT */}
-        <p className="text-[11px] text-stone-400 font-medium tracking-tight">
-          &copy; {new Date().getFullYear()} Foodremix. All rights reserved.
-        </p>
-
       </div>
     </footer>
   );

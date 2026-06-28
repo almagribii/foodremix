@@ -52,11 +52,10 @@ export default function AboutSection() {
   return (
     <section 
       id="testimoni" 
-      className="py-24 bg-[#FBFBFA] relative z-20 -mt-1 overflow-hidden flex flex-col items-center justify-center min-h-[580px] select-none"
+      className="py-24 bg-[#FBFBFA] relative z-20 -mt-1 overflow-hidden flex flex-col items-center justify-center min-h-145 select-none"
     >
       
-      {/* EFFECT BAHAN MAKANAN MELAYANG */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+      <div className="absolute inset-0 pointer-events-none hidden sm:block overflow-hidden z-20">
         {fallingIngredients.map((ing, index) => (
           <motion.div
             key={index}

@@ -3,6 +3,7 @@
 import { motion, Variants } from "framer-motion";
 import Image from "next/image";
 import { Sparkles, Bot, Layers, Flame } from "lucide-react";
+import { Button } from "../ui";
 
 const fallingIngredients = [
   { emoji: "🥚", size: "text-3xl", left: "10%", top: "15%", delay: 0, duration: 8, xRange: [0, 15, 0], yRange: [0, -20, 0] },
@@ -102,10 +103,8 @@ export default function Hero() {
           </span>
         </motion.div>
 
-        {/* TULISAN TENGAH */}
         <div className="space-y-6 max-w-3xl flex flex-col items-center mt-2">
           
-          {/* Tagline "The Art of Cooking" */}
           <motion.span 
             variants={taglineVariants}
             initial="hidden"
@@ -115,7 +114,6 @@ export default function Hero() {
             ✦ The Art of Cooking ✦
           </motion.span>
 
-          {/* Judul Utama */}
           <h1 className="italic text-5xl sm:text-7xl font-normal text-stone-800 tracking-tight leading-[1.02] select-none font-serif text-center">
             Masak <span className="font-extrabold text-[#c29b38] -ml-1 sm:-ml-2 relative">H</span>emat
             <br />
@@ -127,7 +125,6 @@ export default function Hero() {
             </span>
           </h1>
 
-          {/* PEMBATAS GELOMBANG KECIL */}
           <div className="w-40 h-8 relative flex items-center justify-center my-1 select-none filter drop-shadow-[0_0_8px_rgba(194,155,56,0.5)]">
             <svg 
               viewBox="0 0 160 30" 
@@ -165,14 +162,11 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <motion.button 
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            className="bg-white text-amber-900 border border-amber-500/20 px-8 py-3 rounded-full font-bold shadow-md shadow-amber-500/[0.03] hover:bg-amber-50 hover:border-amber-400/60 transition-colors text-xs tracking-wide flex items-center gap-2 cursor-pointer"
+          <Button 
+
           >
-            <Sparkles size={13} className="text-amber-500" />
             Mulai Gratis Sekarang
-          </motion.button>
+          </Button>
         </motion.div>
 
         {/* MOCKUP HP SMARTPHONE INTERAKTIF */}
