@@ -429,7 +429,7 @@ export default function Page() {
       });
 
       close?.addEventListener("click", () => {
-        window.location.href = "/dashboard/game";
+        window.location.href = "/game";
       });
 
       function gameLoop() {

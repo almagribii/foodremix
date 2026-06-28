@@ -199,7 +199,7 @@ export default function RemixPickerPage() {
   }, []);
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 pb-24 animate-fadeIn px-4 sm:px-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 pt-4 lg:pt-0 animate-fadeIn px-4 sm:px-6">
       <div className="border-b border-zinc-200 pb-5 text-center space-y-2">
        
         <h1 className="text-3xl font-black tracking-tight text-[#1A1A1A]">
