@@ -8,17 +8,14 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ==========================================
-// 0. AUTENTIKASI & SISTEM AKUN
-// ==========================================
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
   emailVerified DateTime?
-  password      String    // bcryptjs hashed password
+  password      String    
   name          String?
   
-  // Relasi ke profile dan data lainnya
   userProfile   UserProfile?
   accounts      Account[]
   sessions      Session[]
@@ -54,7 +51,7 @@ model Session {
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  token        String   @unique // JWT token
+  token        String   @unique 
   expires      DateTime
   userAgent    String?
   ipAddress    String?
@@ -69,7 +66,7 @@ model VerificationToken {
   id        String   @id @default(cuid())
   email     String
   token     String   @unique
-  type      String   // "EMAIL_VERIFY" atau "PASSWORD_RESET"
+  type      String   
   expires   DateTime
   
   createdAt DateTime @default(now())
@@ -98,9 +95,7 @@ model UserProfile {
   @@index([userId])
 }
 
-// ==========================================
-// 2. LOG MASAK AI (DASHBOARD STATS & MENU HISTORY)
-// ==========================================
+
 model RemixHistory {
   id              String       @id @default(cuid())
   userId          String
@@ -115,32 +110,25 @@ model RemixHistory {
   @@index([userId])
 }
 
-// ==========================================
-// 3. BARU: FITUR HULU - ASISTEN BELANJA PINTAR (REMIX PICKER)
-// ==========================================
+
 model RemixPicker {
   id               String       @id @default(cuid())
   userId           String
   user             UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // Data Hasil Ekstraksi & Inspeksi AI
-  itemName         String       // Nama bahan pangan hasil scan, e.g., "Mangga Arumanis"
-  status           String       // Status Engine Validasi Kuliner, e.g., "VALID" atau "INVALID"
-  verdict          String       // Ringkasan keputusan kelayakan, e.g., "LAYAK BELI (FRESH)" atau "CARI YANG LAIN"
-  expectedLifespan String       // Estimasi daya tahan, e.g., "4-5 Days"
+  itemName         String       
+  status           String       
+  verdict          String       
+  expectedLifespan String       
   
-  // Data Detail Konten Struktural (Disimpan dalam Array Teks)
-  analysisDetails  String[]     // Poin-poin visual analisis kesegaran kulit/tekstur dari AI
-  storageBlueprint String[]     // Poin-poin instruksi mutlak teknik penyimpanan pasca-pasar
+  analysisDetails  String[]     
+  storageBlueprint String[]     
   
   scannedAt        DateTime     @default(now())
 
   @@index([userId])
 }
 
-// ==========================================
-// 4. BUKU HARIAN KESEHATAN (WELLNESS JOURNAL + AI INSIGHT)
-// ==========================================
 model WellnessJournal {
   id               String       @id @default(cuid())
   userId           String
@@ -159,9 +147,7 @@ model WellnessJournal {
   @@index([userId])
 }
 
-// ==========================================
-// 5. SISTEM NOTIFIKASI DATA-DRIVEN (ANTI-SPAM)
-// ==========================================
+
 model NotificationSetting {
   id                  String       @id @default(cuid())
   userId              String       @unique
@@ -182,7 +168,7 @@ model NotificationLog {
   user        UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
   title       String       
   message     String       
-  type        String       // "BUDGET", "WELLNESS", atau "PICKER_ALERT"
+  type        String       
   isRead      Boolean      @default(false)
   createdAt   DateTime     @default(now())
 
