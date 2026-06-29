@@ -216,17 +216,17 @@ export default function RemixAreaPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/remix/generate", {
+      const res = await fetch("/api/remix/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
-          ingredients: selectedOption.ingredientsUsed,
-          imageBase64: null,
-          targetBudget: 0,
-          mode: activeMode,
+          recipeName: selectedOption.recipeName,
+          ingredientsUsed: selectedOption.ingredientsUsed,
+          instructions: selectedOption.instructions,
+          estimatedCalories: selectedOption.estimatedCalories,
         }),
       });
 

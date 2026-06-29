@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { extractToken, verifyToken } from "@/lib/auth";
 import { GoogleGenAI, Part } from "@google/genai";
 
-const apiKey = process.env.GEMINI_API_KEY_REMIX || "";
+const apiKey = process.env.GEMINI_API_KEY_CHATBOT || "";
 const ai = new GoogleGenAI({ apiKey });
 
 interface RecipeOption {
