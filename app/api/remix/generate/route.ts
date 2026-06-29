@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       Jika valid, buatkan 1 menu makanan kreatif nan hemat sesuai bahan sisa kulkas tersebut dengan mematuhi batasan medis pengguna:
       - Penyakit: ${penyakitUser}
       - Alergi: ${alergiUser}
-      - Batas Anggaran: Rp ${targetBudget || 30000}
+      ${targetBudget > 0 ? `- Batas Anggaran: Rp ${targetBudget}. Jangan melebihi anggaran ini. Kamu boleh menambahkan bahan baru selain yang dimiliki user DENGAN SYARAT total biaya semua bahan tidak melebihi batas anggaran.` : "- TIDAK ADA budget tambahan. Kamu HANYA boleh menggunakan bahan yang diinput user. Jangan menambahkan bahan apapun selain yang diberikan. Tidak ada pengeluaran tambahan."}
       `;
 
     // Skema JSON yang mendukung struktur Validasi Dinamis

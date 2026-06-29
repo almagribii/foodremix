@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/Toast";
 import PageLoader from "@/components/ui/PageLoader";
 import IngredientInputForm, { RemixMode } from "./IngredientInputForm";
 import RecipeResultCard, { RecipeData } from "./RecipeResultCard";
+import RecipeOptionCard from "./RecipeOptionCard";
 import { Button } from "@/components/ui/Button";
 import {
   CheckCircle2,
@@ -17,6 +18,8 @@ import {
   Wallet,
   Clock,
   X,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 import Lottie from "lottie-react";
 import bot from "./food.json";
@@ -28,7 +31,18 @@ interface HistoryData {
   instructions: string[];
   moneySaved: number;
   carbonPrevented: number;
+  estimatedCalories?: number;
   cookedAt: string;
+}
+
+interface OptionsResponse {
+  status: "VALID" | "INVALID";
+  reason?: string;
+  solution?: string;
+  options: RecipeData[];
+  mode: RemixMode;
+  error?: string;
+  message?: string;
 }
 
 function relativeTime(iso: string) {
@@ -49,19 +63,28 @@ export default function RemixAreaPage() {
 
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(true);
-  const [recipe, setRecipe] = useState<RecipeData | null>(null);
+
   const [activeMode, setActiveMode] = useState<RemixMode>("remix");
   const [histories, setHistories] = useState<HistoryData[]>([]);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(
     null,
   );
 
-  const [inputImagePreview, setInputImagePreview] = useState<string | null>(
-    null,
-  );
-  const [inputImageBase64, setInputImageBase64] = useState<string | null>(null);
+  const [inputImagePreview, setInputImagePreview] = useState<string | null>(null);
 
   const [isDragging, setIsDragging] = useState(false);
+
+  const [recipeOptions, setRecipeOptions] = useState<RecipeData[] | null>(null);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
+  const [selectedOption, setSelectedOption] = useState<RecipeData | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState<
+    { role: "user" | "assistant"; content: string }[]
+  >([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
 
   const getToken = useCallback(
     () =>
@@ -123,12 +146,15 @@ export default function RemixAreaPage() {
     mode: RemixMode,
   ) => {
     setLoading(true);
-    setRecipe(null);
-    setSelectedHistoryId(null);
-    setActiveMode(mode);
+    setRecipeOptions(null);
+    setSelectedOptionIndex(null);
+    setSelectedOption(null);
+    setShowChat(false);
+    setChatMessages([]);
+    setIsSaved(false);
 
     try {
-      const res = await fetch("/api/remix/generate", {
+      const res = await fetch("/api/remix/generate-options", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -137,9 +163,10 @@ export default function RemixAreaPage() {
         body: JSON.stringify({ ingredients, imageBase64, targetBudget, mode }),
       });
 
-      const data = await res.json();
+      const data: OptionsResponse = await res.json();
 
       if (res.ok) {
+        setActiveMode(mode);
         if (data.status === "INVALID") {
           toastWarning(
             mode === "detect"
@@ -150,22 +177,22 @@ export default function RemixAreaPage() {
               "Coba dengan foto yang lebih jelas.",
           );
         } else {
-          const recipeWithMeta: RecipeData = {
-            ...data.recipe,
-            detectedFrom:
-              mode === "detect" ? data.recipe?.recipeName : undefined,
-          };
-          setRecipe(recipeWithMeta);
+          setRecipeOptions(data.options || []);
           toastSuccess(
             mode === "detect"
-              ? "Makanan terdeteksi!"
-              : "Resep berhasil diracik!",
-            `"${data.recipe?.recipeName}" siap.`,
+              ? "Makanan terdeteksi! Pilih 1 dari 3 opsi."
+              : "AI meracik 3 opsi resep! Pilih favoritmu.",
+            `Berhasil menemukan ${data.options?.length || 0} pilihan resep.`,
           );
-          await loadHistories();
         }
       } else {
-        toastError("Gagal", data.error || "Terjadi kesalahan.");
+        const errorMsg = data.error || "Terjadi kesalahan.";
+        toastError(
+          "Gagal",
+          errorMsg.includes("penuh") || errorMsg.includes("sibuk")
+            ? "Server sedang sibuk. Tunggu sebentar lalu coba lagi."
+            : errorMsg,
+        );
       }
     } catch {
       toastError("Gangguan koneksi", "Tidak dapat terhubung ke server AI.");
@@ -174,20 +201,117 @@ export default function RemixAreaPage() {
     }
   };
 
+  const handleSelectOption = (index: number) => {
+    setSelectedOptionIndex(index);
+    setSelectedOption(recipeOptions![index]);
+    setIsSaved(false);
+  };
+
+  const handleConfirmAndSave = async () => {
+    if (!selectedOption || isSaved) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/remix/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          ingredients: selectedOption.ingredientsUsed,
+          imageBase64: null,
+          targetBudget: 0,
+          mode: activeMode,
+        }),
+      });
+
+      if (res.ok) {
+        await loadHistories();
+        setIsSaved(true);
+        toastSuccess(
+          "Resep Tersimpan!",
+          `"${selectedOption.recipeName}" berhasil disimpan ke riwayat.`,
+        );
+      }
+    } catch {
+      toastError("Gagal menyimpan", "Tidak dapat menyimpan resep.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAskAboutRecipe = async () => {
+    if (!chatInput.trim() || !selectedOption || chatLoading) return;
+
+    const userMessage = chatInput.trim();
+    setChatMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setChatInput("");
+    setChatLoading(true);
+
+    try {
+      const t = getToken();
+      const res = await fetch("/api/chat/remix", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${t}`,
+        },
+        body: JSON.stringify({
+          question: userMessage,
+          recipeName: selectedOption.recipeName,
+          ingredients: selectedOption.ingredientsUsed,
+          instructions: selectedOption.instructions,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setChatMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: data.answer || "Maaf, tidak ada jawaban." },
+        ]);
+      } else {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content:
+              data.error || "Maaf, gagal mendapatkan jawaban dari AI.",
+          },
+        ]);
+      }
+    } catch {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Gagal terhubung ke server. Coba lagi nanti.",
+        },
+      ]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   const handleSelectHistory = (h: HistoryData) => {
     setSelectedHistoryId(h.id);
-    setRecipe({
+    setSelectedOption({
       recipeName: h.recipeName,
       ingredientsUsed: h.ingredientsUsed,
       instructions: h.instructions || [],
       moneySaved: h.moneySaved || 0,
       carbonPrevented: h.carbonPrevented,
+      estimatedCalories: h.estimatedCalories,
     });
+    setSelectedOptionIndex(null);
+    setRecipeOptions(null);
+    setIsSaved(false);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!loading && !recipe) {
+    if (!loading && !selectedOption) {
       setIsDragging(true);
     }
   };
@@ -200,7 +324,7 @@ export default function RemixAreaPage() {
     e.preventDefault();
     setIsDragging(false);
 
-    if (loading || recipe) return;
+    if (loading || selectedOption) return;
 
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith("image/")) {
@@ -208,7 +332,6 @@ export default function RemixAreaPage() {
       reader.onloadend = () => {
         const result = reader.result as string;
         setInputImagePreview(result);
-        setInputImageBase64(result.split(",")[1]);
         toastSuccess("Gambar berhasil dimuat", "Foto siap diracik bersama AI.");
       };
       reader.readAsDataURL(file);
@@ -220,22 +343,38 @@ export default function RemixAreaPage() {
     }
   };
 
+  const handleBackToOptions = () => {
+    setSelectedOption(null);
+    setSelectedOptionIndex(null);
+    setShowChat(false);
+  };
+
+  const handleResetSession = () => {
+    setRecipeOptions(null);
+    setSelectedOptionIndex(null);
+    setSelectedOption(null);
+    setShowChat(false);
+    setChatMessages([]);
+    setInputImagePreview(null);
+    setIsSaved(false);
+  };
+
   return (
     <div className="max-w-7xl mx-auto pb-20 space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-zinc-200">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">
+          <p className="text-[10px] text-zinc-400 mb-1 font-medium">
             Remix Area
           </p>
-          <h1 className="text-3xl font-black tracking-tight text-[#1A1A1A]">
+          <h1 className="text-3xl font-bold tracking-tight text-[#1A1A1A]">
             Dapur Kreasi AI
           </h1>
           <p className="text-xs text-zinc-500 mt-1 font-medium">
-            Racik resep dari sisa bahan · Deteksi makanan &amp; dapatkan
+            Racik resep dari sisa bahan &middot; Deteksi makanan &amp; dapatkan
             tutorialnya
           </p>
         </div>
-        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-zinc-400">
+        <div className="flex items-center gap-2 text-[10px] text-zinc-400">
           <ChefHat size={12} />
           <span>{histories.length} Menu Tersimpan</span>
         </div>
@@ -247,17 +386,14 @@ export default function RemixAreaPage() {
             onGenerate={handleGenerate}
             loading={loading}
             imagePreview={inputImagePreview}
-            onImageChange={(preview, base64) => {
-              setInputImagePreview(preview);
-              setInputImageBase64(base64);
-            }}
+            onImageChange={setInputImagePreview}
           />
         </div>
 
         <div className="lg:col-span-7 xl:col-span-8">
-          <div className="w-full min-h-130 bg-white border border-zinc-200 rounded-3xl overflow-hidden relative shadow-sm flex flex-col">
+          <div className="w-full min-h-130 bg-white border border-zinc-200 rounded-2xl overflow-hidden relative shadow-sm flex flex-col">
             <AnimatePresence mode="wait">
-              {loading && !inputImagePreview && (
+              {loading && !inputImagePreview && !recipeOptions && (
                 <motion.div
                   key="loading-text"
                   initial={{ opacity: 0 }}
@@ -270,13 +406,58 @@ export default function RemixAreaPage() {
                     message={
                       activeMode === "detect"
                         ? "Mendeteksi makanan..."
-                        : "Meracik menu..."
+                        : "Meracik 3 opsi resep..."
                     }
                   />
                 </motion.div>
               )}
 
-              {!loading && recipe && (
+              {recipeOptions && recipeOptions.length > 0 && !selectedOption && (
+                <motion.div
+                  key="options-grid"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="p-6 sm:p-8 space-y-5"
+                >
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-[10px] text-zinc-500 font-medium">
+                      {activeMode === "detect"
+                        ? "3 Opsi Resep Untuk Membuat:"
+                        : "3 Opsi Resep Dari Bahan Ini:"}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {recipeOptions.map((option, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                      >
+                        <RecipeOptionCard
+                          option={option}
+                          index={idx}
+                          isSelected={selectedOptionIndex === idx}
+                          onSelect={() => handleSelectOption(idx)}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-center pt-4">
+                    <button
+                      onClick={handleResetSession}
+                      className="text-xs font-medium text-zinc-500 hover:text-[#1A1A1A] underline"
+                    >
+                      Ulangi Input
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {selectedOption && !showChat && (
                 <motion.div
                   key="recipe-result"
                   initial={{ opacity: 0, y: 12 }}
@@ -292,110 +473,215 @@ export default function RemixAreaPage() {
                     />
                   </div>
                   <div className="relative z-10">
-                    <RecipeResultCard recipe={recipe} mode={activeMode} />
+                    <RecipeResultCard
+                      recipe={selectedOption}
+                      mode={activeMode}
+                    />
+
+                    <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-zinc-200">
+                      <Button
+                        onClick={handleBackToOptions}
+                        variant="primary"
+                        disabled={loading}
+                      >
+                        <span className="flex items-center gap-2">
+                          <X size={14} /> Opsi Lain
+                        </span>
+                      </Button>
+                      <Button
+                        onClick={() => setShowChat(true)}
+                        variant="primary"
+                        disabled={loading}
+                      >
+                        <span className="flex items-center gap-2">
+                          <MessageCircle size={14} /> Tanya Resep Ini
+                        </span>
+                      </Button>
+                      <Button
+                        onClick={handleConfirmAndSave}
+                        variant={isSaved ? "secondary" : "accent"}
+                        loading={loading}
+                        disabled={isSaved || loading}
+                      >
+                        <span className="flex items-center gap-2">
+                          <CheckCircle2 size={14} />{" "}
+                          {isSaved ? "Tersimpan!" : "Simpan ke Riwayat"}
+                        </span>
+                      </Button>
+                    </div>
                   </div>
                 </motion.div>
               )}
 
-              {(!recipe || loading) && (inputImagePreview || !loading) && (
+              {showChat && selectedOption && (
                 <motion.div
-                  key="zero-state"
-                  initial={{ opacity: 0, y: 10 }}
+                  key="chat-followup"
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  className={`flex-1 flex flex-col items-center justify-center text-center p-8 relative transition-colors duration-200 ${
-                    isDragging ? "bg-zinc-50/80" : ""
-                  }`}
+                  className="flex-1 flex flex-col p-6 sm:p-8"
                 >
-                  <div
-                    className={`absolute inset-4 border-2 border-dashed rounded-2xl pointer-events-none z-10 transition-colors ${
-                      isDragging ? "border-[#1A1A1A]" : "border-zinc-200"
-                    }`}
-                  />
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xs font-bold text-[#1A1A1A]">
+                      Tanya Jawab: {selectedOption.recipeName}
+                    </h3>
+                    <button
+                      onClick={() => setShowChat(false)}
+                      className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
 
-                  {inputImagePreview ? (
-                    <div className="w-full max-w-xl relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xs z-20 p-2 bg-zinc-50/50 flex items-center justify-center">
-                      <Image
-                        src={inputImagePreview}
-                        alt="Preview Foto Kuliner"
-                        width={640}
-                        height={480}
-                        className="w-full h-auto max-h-112.5 object-contain rounded-xl"
-                        unoptimized
-                      />
-
-                      {loading && (
-                        <>
-                          <motion.div
-                            className="absolute inset-x-2 h-0.5 bg-linear-to-r from-transparent via-[#EAB308] to-transparent shadow-[0_0_12px_#EAB308] z-30"
-                            animate={{ top: ["4%", "94%", "4%"] }}
-                            transition={{
-                              duration: 2,
-                              ease: "easeInOut",
-                              repeat: Infinity,
-                            }}
-                          />
-                        </>
-                      )}
-
-                      {!loading && (
-                        <>
-                          <Button
-                            type="button"
-                            onClick={() => {
-                              setInputImagePreview(null);
-                              setInputImageBase64(null);
-                            }}
-                            variant="secondary"
-                            className="absolute top-5 right-5 p-2 px-2! py-2! shadow-md cursor-pointer z-30"
-                          >
-                            <X size={14} strokeWidth={2.5} />
-                          </Button>
-                          <div className="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl text-left flex items-center justify-between z-30">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-zinc-700">
-                              Gambar Siap Dirajang AI
-                            </span>
-                            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
-                              Asli Bersih
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center gap-4">
-                      <div
-                        className={`w-40 h-40 lg:w-56 lg:h-56 flex items-center justify-center select-none mix-blend-multiply transition-all duration-200 ${
-                          isDragging ? "scale-105 opacity-50" : "opacity-25"
-                        }`}
-                      >
-                        <Lottie
-                          animationData={bot}
-                          loop={true}
-                          className="w-full h-full"
-                        />
-                      </div>
-                      <div className="space-y-1 max-w-xs relative z-10">
-                        <h3
-                          className={`text-xs font-black uppercase tracking-wider transition-colors ${
-                            isDragging ? "text-emerald-600" : "text-[#1A1A1A]"
-                          }`}
-                        >
-                          {isDragging
-                            ? "Lepaskan Gambar Sekarang!"
-                            : "Tarik & Jatuhkan Foto Kulinermu"}
-                        </h3>
-                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
-                          Semua Format Gambar Didukung (JPEG, PNG, WebP, dll)
+                  <div className="flex-1 min-h-40 max-h-80 overflow-y-auto space-y-3 mb-4">
+                    {chatMessages.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-xs text-zinc-400 font-medium">
+                          Ajukan pertanyaan tentang resep ini...
+                        </p>
+                        <p className="text-[10px] text-zinc-300 mt-1">
+                          Contoh: &ldquo;Bisa ganti cabai dengan apa?&rdquo; atau
+                          &ldquo;Lebih detail langkahnya?&rdquo;
                         </p>
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      chatMessages.map((msg, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex ${
+                            msg.role === "user" ? "justify-end" : "justify-start"
+                          }`}
+                        >
+                          <div
+                            className={`max-w-[80%] p-3 rounded-2xl text-xs ${
+                              msg.role === "user"
+                                ? "bg-[#1A1A1A] text-white"
+                                : "bg-zinc-100 text-zinc-600"
+                            }`}
+                          >
+                            {msg.content}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && handleAskAboutRecipe()
+                      }
+                      placeholder="Tulis pertanyaan..."
+                      className="flex-1 px-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl focus:border-zinc-400 outline-none placeholder:text-zinc-400"
+                      disabled={chatLoading}
+                    />
+                    <Button
+                      onClick={handleAskAboutRecipe}
+                      loading={chatLoading}
+                      variant="primary"
+                      size="sm"
+                      disabled={!chatInput.trim()}
+                    >
+                      <Send size={14} />
+                    </Button>
+                  </div>
                 </motion.div>
               )}
+
+              {!selectedOption &&
+                !loading &&
+                !recipeOptions &&
+                (inputImagePreview || !loading) && (
+                  <motion.div
+                    key="zero-state"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`flex-1 flex flex-col items-center justify-center text-center p-8 relative transition-colors duration-200 ${
+                      isDragging ? "bg-zinc-50/80" : ""
+                    }`}
+                  >
+                    <div
+                      className={`absolute inset-4 border-2 border-dashed rounded-2xl pointer-events-none z-10 transition-colors ${
+                        isDragging ? "border-[#1A1A1A]" : "border-zinc-200"
+                      }`}
+                    />
+
+                    {inputImagePreview ? (
+                      <div className="w-full max-w-xl relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xs z-20 p-2 bg-zinc-50/50 flex items-center justify-center">
+                        <Image
+                          src={inputImagePreview}
+                          alt="Preview Foto Kuliner"
+                          width={640}
+                          height={480}
+                          className="w-full h-auto max-h-112.5 object-contain rounded-xl"
+                          unoptimized
+                        />
+
+                        {loading && (
+                          <div className="absolute inset-x-2 h-0.5 bg-linear-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_12px_#EAB308] z-30 top-1/2 -translate-y-1/2" />
+                        )}
+
+                        {!loading && (
+                          <>
+                            <Button
+                              type="button"
+                              onClick={() => {
+                                setInputImagePreview(null);
+                              }}
+                              variant="secondary"
+                              className="absolute top-5 right-5 p-2 px-2! py-2! shadow-md cursor-pointer z-30"
+                            >
+                              <X size={14} strokeWidth={2.5} />
+                            </Button>
+                            <div className="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl text-left flex items-center justify-between z-30">
+                              <span className="text-[10px] font-medium text-zinc-700">
+                                Gambar Siap Diracik AI
+                              </span>
+                              <span className="text-[9px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                                Siap
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        <div
+                          className={`w-40 h-40 lg:w-56 lg:h-56 flex items-center justify-center select-none mix-blend-multiply transition-all duration-200 ${
+                            isDragging ? "scale-105 opacity-50" : "opacity-25"
+                          }`}
+                        >
+                          <Lottie
+                            animationData={bot}
+                            loop={true}
+                            className="w-full h-full"
+                          />
+                        </div>
+                        <div className="space-y-1 max-w-xs relative z-10">
+                          <h3
+                            className={`text-xs font-medium transition-colors ${
+                              isDragging ? "text-emerald-600" : "text-[#1A1A1A]"
+                            }`}
+                          >
+                            {isDragging
+                              ? "Lepaskan Gambar Sekarang!"
+                              : "Tarik & Jatuhkan Foto Kulinermu"}
+                          </h3>
+                          <p className="text-[10px] text-zinc-400 font-medium">
+                            Semua Format Gambar Didukung (JPEG, PNG, WebP, dll)
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
             </AnimatePresence>
           </div>
         </div>
@@ -405,11 +691,11 @@ export default function RemixAreaPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CheckCircle2 size={13} className="text-zinc-400" />
-            <h3 className="text-xs font-black uppercase tracking-widest text-[#1A1A1A]">
+            <h3 className="text-xs font-medium text-[#1A1A1A]">
               Riwayat Kreasi
             </h3>
           </div>
-          <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+          <span className="text-[10px] text-zinc-400">
             {histories.length} tersimpan
           </span>
         </div>
@@ -417,8 +703,8 @@ export default function RemixAreaPage() {
         {historyLoading ? (
           <PageLoader variant="inline" message="Memuat riwayat..." />
         ) : histories.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 bg-white border border-dashed border-zinc-200 rounded-3xl gap-2">
-            <div className="w-10 h-10 bg-zinc-50 border border-zinc-200 rounded-2xl flex items-center justify-center text-lg">
+          <div className="flex flex-col items-center justify-center py-10 bg-white border border-dashed border-zinc-200 rounded-2xl gap-2">
+            <div className="w-10 h-10 bg-zinc-50 border border-zinc-200 rounded-xl flex items-center justify-center text-lg">
               🍳
             </div>
             <p className="text-xs text-zinc-400 font-medium">
@@ -438,34 +724,34 @@ export default function RemixAreaPage() {
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                   className={`text-left w-full rounded-2xl p-4 border transition-all duration-200 flex flex-col gap-3 ${
                     isSelected
-                      ? "bg-[#1A1A1A] border-[#1A1A1A] shadow-lg"
-                      : "bg-white border-zinc-200 hover:border-zinc-400 hover:shadow-sm"
+                      ? "bg-zinc-50 border-zinc-300 shadow-md"
+                      : "bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-sm"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div
-                      className={`text-[9px] font-black px-2 py-0.5 rounded-md border ${
+                      className={`text-[9px] font-medium px-2 py-0.5 rounded-md border ${
                         isSelected
-                          ? "bg-[#EAB308] border-[#EAB308] text-[#1A1A1A]"
+                          ? "bg-amber-100 border-amber-200 text-amber-700"
                           : "bg-emerald-50 text-emerald-700 border-emerald-100"
                       }`}
                     >
-                      {isSelected ? "Aktif" : "Selesai"}
+                      {isSelected ? "Dilihat" : "Selesai"}
                     </div>
                     <ArrowRight
                       size={11}
-                      className={`shrink-0 mt-0.5 transition-transform ${isSelected ? "text-zinc-500 translate-x-0" : "text-zinc-300"}`}
+                      className={`shrink-0 mt-0.5 transition-transform ${isSelected ? "text-amber-600 translate-x-0" : "text-zinc-300"}`}
                     />
                   </div>
 
                   <div className="space-y-0.5 flex-1">
                     <h4
-                      className={`text-xs font-black line-clamp-2 leading-snug ${isSelected ? "text-white" : "text-[#1A1A1A]"}`}
+                      className={`text-xs font-bold line-clamp-2 leading-snug ${isSelected ? "text-[#1A1A1A]" : "text-[#1A1A1A]"}`}
                     >
                       {h.recipeName}
                     </h4>
                     <p
-                      className={`text-[10px] font-medium line-clamp-1 ${isSelected ? "text-zinc-500" : "text-zinc-400"}`}
+                      className={`text-[10px] font-medium line-clamp-1 ${isSelected ? "text-zinc-600" : "text-zinc-400"}`}
                     >
                       {h.ingredientsUsed.slice(0, 3).join(", ")}
                       {h.ingredientsUsed.length > 3 && " …"}
@@ -473,10 +759,10 @@ export default function RemixAreaPage() {
                   </div>
 
                   <div
-                    className={`flex items-center justify-between pt-2.5 border-t text-[10px] font-black ${isSelected ? "border-zinc-700" : "border-zinc-100"}`}
+                    className={`flex items-center justify-between pt-2.5 border-t text-[10px] font-medium ${isSelected ? "border-zinc-300" : "border-zinc-100"}`}
                   >
                     <div
-                      className={`flex items-center gap-1 ${isSelected ? "text-emerald-400" : "text-emerald-600"}`}
+                      className={`flex items-center gap-1 ${isSelected ? "text-emerald-700" : "text-emerald-600"}`}
                     >
                       <Leaf size={9} fill="currentColor" />
                       {h.carbonPrevented}kg CO₂
@@ -494,24 +780,24 @@ export default function RemixAreaPage() {
 
         {histories.length > 0 && (
           <div className="flex flex-wrap gap-3 pt-2">
-            <div className="inline-flex items-center gap-2 bg-white border border-zinc-200 rounded-2xl px-4 py-2.5 shadow-sm">
+            <div className="inline-flex items-center gap-2 bg-white border border-zinc-200 rounded-xl px-4 py-2.5 shadow-sm">
               <Wallet size={12} className="text-zinc-400" />
-              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider">
+              <span className="text-[10px] text-zinc-500">
                 Total Hemat
               </span>
-              <span className="text-xs font-black text-[#1A1A1A]">
+              <span className="text-xs font-bold text-[#1A1A1A]">
                 Rp{" "}
                 {histories
                   .reduce((acc, h) => acc + (h.moneySaved || 0), 0)
                   .toLocaleString("id-ID")}
               </span>
             </div>
-            <div className="inline-flex items-center gap-2 bg-white border border-zinc-200 rounded-2xl px-4 py-2.5 shadow-sm">
+            <div className="inline-flex items-center gap-2 bg-white border border-zinc-200 rounded-xl px-4 py-2.5 shadow-sm">
               <Leaf size={12} className="text-emerald-500" />
-              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider">
+              <span className="text-[10px] text-zinc-500">
                 Total CO₂
               </span>
-              <span className="text-xs font-black text-emerald-600">
+              <span className="text-xs font-bold text-emerald-600">
                 {histories
                   .reduce((acc, h) => acc + (h.carbonPrevented || 0), 0)
                   .toFixed(1)}{" "}

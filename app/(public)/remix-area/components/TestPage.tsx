@@ -202,7 +202,7 @@ export default function RemixPickerPage() {
     <div className="w-full max-w-6xl mx-auto space-y-6 pt-4 lg:pt-0 animate-fadeIn px-4 sm:px-6">
       <div className="border-b border-zinc-200 pb-5 text-center space-y-2">
        
-        <h1 className="text-3xl font-black tracking-tight text-[#1A1A1A]">
+        <h1 className="text-3xl font-bold tracking-tight text-[#1A1A1A]">
           Penyortir Pangan AI (Guest Mode)
         </h1>
         <p className="text-xs text-zinc-500 max-w-2xl mx-auto font-medium leading-relaxed">
@@ -283,15 +283,9 @@ export default function RemixPickerPage() {
                       unoptimized
                     />
 
-                    {loading && (
-                      <motion.div
-                        className="absolute inset-x-2 h-0.5 bg-linear-to-r from-transparent via-[#EAB308] to-transparent shadow-[0_0_12px_#EAB308] z-30"
-                        animate={{ top: ["4%", "94%", "4%"] }}
-                        transition={{
-                          duration: 2,
-                          ease: "easeInOut",
-                          repeat: Infinity,
-                        }}
+{loading && (
+                      <div
+                        className="absolute inset-x-2 h-0.5 bg-linear-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_12px_#EAB308] z-30 top-1/2 -translate-y-1/2"
                       />
                     )}
 
@@ -305,11 +299,11 @@ export default function RemixPickerPage() {
                         >
                           <X size={14} strokeWidth={2.5} />
                         </Button>
-                        <div className="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl flex items-center justify-between z-30">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-zinc-700">
+<div className="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl flex items-center justify-between z-30">
+                          <span className="text-[10px] font-medium text-zinc-700">
                             Pratinjau Gambar
                           </span>
-                          <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                          <span className="text-[9px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
                             Mode Uji Coba
                           </span>
                         </div>
@@ -370,10 +364,10 @@ export default function RemixPickerPage() {
                       <FileImage size={20} />
                     </div>
                     <div className="space-y-1 text-center">
-                      <h3 className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider">
+                      <h3 className="text-xs font-medium text-[#1A1A1A]">
                         Pilih atau Seret Foto
                       </h3>
-                      <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+                      <p className="text-[10px] text-zinc-400">
                         Mendukung format gambar JPEG, PNG, maupun WebP
                       </p>
                     </div>
@@ -400,7 +394,7 @@ export default function RemixPickerPage() {
             <div className="space-y-6 flex-1 p-6 sm:p-10 animate-fadeIn w-full flex flex-col items-center text-center">
               <div className="flex flex-col items-center gap-3 w-full">
                 <div>
-                  <span className="text-[10px] font-black tracking-wider uppercase text-zinc-400 block mb-1">
+                  <span className="text-[10px] font-medium text-zinc-400 block mb-1">
                     Hasil Analisis Kamera AI
                   </span>
                   <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tight">
@@ -409,7 +403,7 @@ export default function RemixPickerPage() {
                 </div>
                 <button
                   onClick={handleResetSession}
-                  className="px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-zinc-100 transition flex items-center gap-1.5 text-zinc-600 shadow-xs mx-auto"
+                  className="px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-[10px] font-medium hover:bg-zinc-100 transition flex items-center gap-1.5 text-zinc-600 shadow-xs mx-auto"
                 >
                   <RefreshCw size={11} /> Periksa Gambar Lain
                 </button>
@@ -424,27 +418,27 @@ export default function RemixPickerPage() {
                       : "bg-rose-50/40 border-rose-200/60"
                   }`}
                 >
-                  <div className="flex items-center justify-center gap-2 text-sm font-black mx-auto">
-                    <CheckCircle2
-                      size={16}
-                      className={
-                        result.status === "VALID" &&
-                        result.verdict.includes("FRESH")
-                          ? "text-emerald-600"
-                          : "text-rose-600"
-                      }
-                    />
-                    <span
-                      className={
-                        result.status === "VALID" &&
-                        result.verdict.includes("FRESH")
-                          ? "text-emerald-800"
-                          : "text-rose-800"
-                      }
-                    >
-                      REKOMENDASI: {result.verdict}
-                    </span>
-                  </div>
+<div className="flex items-center justify-center gap-2 text-sm font-medium mx-auto">
+                      <CheckCircle2
+                        size={16}
+                        className={
+                          result.status === "VALID" &&
+                          result.verdict.includes("FRESH")
+                            ? "text-emerald-600"
+                            : "text-rose-600"
+                        }
+                      />
+                      <span
+                        className={
+                          result.status === "VALID" &&
+                          result.verdict.includes("FRESH")
+                            ? "text-emerald-800"
+                            : "text-rose-800"
+                        }
+                      >
+                        Rekomendasi: {result.verdict}
+                      </span>
+                    </div>
                   <ul className="text-xs text-zinc-600 font-medium space-y-2 text-left w-full pl-2">
                     {result.analysisDetails.map((detail, idx) => (
                       <li key={idx} className="block mb-1">
@@ -463,9 +457,9 @@ export default function RemixPickerPage() {
                 </div>
 
                 <div className="md:col-span-7 space-y-4 border border-zinc-100 rounded-2xl p-6 bg-zinc-50/20 w-full text-left">
-                  <div className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-black text-[#1A1A1A] mb-2">
+                  <div className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-medium text-[#1A1A1A] mb-2">
                     <Package size={14} />
-                    <h3>PANDUAN PENYIMPANAN BIJAK:</h3>
+                    <h3>Panduan Penyimpanan Bijak:</h3>
                   </div>
                   <ul className="text-xs text-zinc-600 font-medium space-y-3 pl-1 w-full">
                     {result.storageBlueprint.map((blueprint, idx) => (
@@ -473,7 +467,7 @@ export default function RemixPickerPage() {
                         key={idx}
                         className="flex items-start gap-3 leading-relaxed"
                       >
-                        <span className="h-5 w-5 rounded-md bg-white border border-zinc-200 text-[10px] font-black flex items-center justify-center text-zinc-500 shrink-0 mt-0.5 shadow-2xs">
+                        <span className="h-5 w-5 rounded-md bg-white border border-zinc-200 text-[10px] font-medium flex items-center justify-center text-zinc-500 shrink-0 mt-0.5">
                           {idx + 1}
                         </span>
                         <span>{blueprint}</span>
@@ -488,7 +482,7 @@ export default function RemixPickerPage() {
       </div>
 
       <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-5 space-y-2 text-xs text-zinc-600">
-        <div className="flex items-center gap-2 text-[#1A1A1A] font-black uppercase tracking-wider text-[11px]">
+        <div className="flex items-center gap-2 text-[#1A1A1A] font-medium text-[11px]">
           <Info size={14} className="text-amber-500" />
           <span>Bagaimana Cara Kerja Fitur Ini?</span>
         </div>

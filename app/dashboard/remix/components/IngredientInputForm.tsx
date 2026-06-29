@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Camera, Plus, Upload, X } from "lucide-react";
+import { Camera, Plus, Upload, X, Wallet } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 
@@ -16,7 +16,7 @@ interface IngredientFormProps {
   ) => void;
   loading: boolean;
   imagePreview: string | null;
-  onImageChange: (preview: string | null, base64: string | null) => void;
+  onImageChange: (preview: string | null) => void;
 }
 
 export default function IngredientInputForm({
@@ -46,7 +46,7 @@ export default function IngredientInputForm({
   };
 
   const startWebcam = async () => {
-    onImageChange(null, null);
+    onImageChange(null);
     setIsWebcamActive(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -87,7 +87,7 @@ export default function IngredientInputForm({
       const sy = (video.videoHeight - size) / 2;
       ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
       const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-      onImageChange(dataUrl, dataUrl.split(",")[1]);
+       onImageChange(dataUrl);
     }
     stopWebcam();
   };
@@ -99,7 +99,7 @@ export default function IngredientInputForm({
     const reader = new FileReader();
     reader.onloadend = () => {
       const result = reader.result as string;
-      onImageChange(result, result.split(",")[1]);
+       onImageChange(result);
     };
     reader.readAsDataURL(file);
     e.target.value = "";
@@ -119,7 +119,7 @@ export default function IngredientInputForm({
   const handleModeChange = (newMode: RemixMode) => {
     setMode(newMode);
     setIngredients([]);
-    onImageChange(null, null);
+    onImageChange(null);
   };
 
   const canSubmit = ingredients.length > 0 || !!imagePreview;
@@ -318,6 +318,38 @@ export default function IngredientInputForm({
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Input Estimasi Budget */}
+          <div className="space-y-2 border-t border-zinc-100 pt-5">
+            <label className="text-[10px] font-black tracking-widest uppercase text-zinc-400 block">
+              Estimasi Budget Tambahan (Opsional)
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Wallet size={13} className="text-zinc-400" />
+              </div>
+              <input
+                type="number"
+                min="0"
+                step="1000"
+                value={budget || ""}
+                onChange={(e) =>
+                  setBudget(e.target.value ? parseInt(e.target.value) : 0)
+                }
+                placeholder="0"
+                className="w-full pl-10 pr-4 py-3 text-xs bg-zinc-50 border border-zinc-200 text-[#1A1A1A] rounded-xl focus:border-zinc-400 focus:bg-white outline-none placeholder:text-zinc-400 font-medium transition-all"
+                disabled={loading}
+              />
+              <span className="absolute inset-y-0 right-3 flex items-center text-[10px] font-bold text-zinc-400 pointer-events-none">
+                Rp
+              </span>
+            </div>
+            <p className="text-[9px] text-zinc-400 font-medium leading-relaxed">
+              {mode === "remix"
+                ? "Masukkan budget tambahan jika ingin menambahkan bahan. Jika 0, AI hanya meracik dari bahan yang Anda masukkan."
+                : "Estimasi budget untuk tutorial memasak."}
+            </p>
           </div>
 
           <Button
