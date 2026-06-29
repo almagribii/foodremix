@@ -427,7 +427,7 @@ export default function RemixAreaPage() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="p-6 sm:p-8 space-y-5"
+                  className="p-6 sm:p-8 flex-1 w-full flex items-center justify-center flex-col space-y-5"
                 >
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <span className="text-[10px] text-zinc-500 font-medium">
@@ -623,30 +623,30 @@ export default function RemixAreaPage() {
                 </motion.div>
               )}
 
-              {!selectedOption &&
-                !loading &&
-                !recipeOptions &&
-                (inputImagePreview || !loading) && (
-                  <motion.div
-                    key="zero-state"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`flex-1 flex flex-col items-center justify-center text-center p-8 relative transition-colors duration-200 ${
-                      isDragging ? "bg-zinc-50/80" : ""
-                    }`}
-                  >
+              {!selectedOption && !recipeOptions && (
+                <motion.div
+                  key="zero-state"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`flex-1 flex flex-col items-center justify-center text-center p-8 relative transition-colors duration-200 ${
+                    isDragging ? "bg-zinc-50/80" : ""
+                  }`}
+                >
+                  {!loading && (
                     <div
                       className={`absolute inset-4 border-2 border-dashed rounded-2xl pointer-events-none z-10 transition-colors ${
                         isDragging ? "border-[#1A1A1A]" : "border-zinc-200"
                       }`}
                     />
+                  )}
 
-                    {inputImagePreview ? (
-                      <div className="w-full max-w-xl relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xs z-20 p-2 bg-zinc-50/50 flex items-center justify-center">
+                  {loading ? (
+                    <div className="w-full max-w-xl relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xs z-20 p-2 bg-zinc-50/50 flex items-center justify-center">
+                      {inputImagePreview && (
                         <Image
                           src={inputImagePreview}
                           alt="Preview Foto Kuliner"
@@ -655,65 +655,78 @@ export default function RemixAreaPage() {
                           className="w-full h-auto max-h-112.5 object-contain rounded-xl"
                           unoptimized
                         />
+                      )}
+                      <motion.div
+                        className="absolute inset-x-2 h-0.5 bg-linear-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_12px_#EAB308] z-30"
+                        animate={{ top: ["4%", "94%", "4%"] }}
+                        transition={{
+                          duration: 2,
+                          ease: "easeInOut",
+                          repeat: Infinity,
+                        }}
+                      />
+                    </div>
+                  ) : inputImagePreview ? (
+                    <div className="w-full max-w-xl relative rounded-2xl overflow-hidden border border-zinc-200 shadow-xs z-20 p-2 bg-zinc-50/50 flex items-center justify-center">
+                      <Image
+                        src={inputImagePreview}
+                        alt="Preview Foto Kuliner"
+                        width={640}
+                        height={480}
+                        className="w-full h-auto max-h-112.5 object-contain rounded-xl"
+                        unoptimized
+                      />
 
-                        {loading && (
-                          <div className="absolute inset-x-2 h-0.5 bg-linear-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_12px_#EAB308] z-30 top-1/2 -translate-y-1/2" />
-                        )}
-
-                        {!loading && (
-                          <>
-                            <Button
-                              type="button"
-                              onClick={() => {
-                                setInputImagePreview(null);
-                              }}
-                              variant="secondary"
-                              className="absolute top-5 right-5 p-2 px-2! py-2! shadow-md cursor-pointer z-30"
-                            >
-                              <X size={14} strokeWidth={2.5} />
-                            </Button>
-                            <div className="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl text-left flex items-center justify-between z-30">
-                              <span className="text-[10px] font-medium text-zinc-700">
-                                Gambar Siap Diracik AI
-                              </span>
-                              <span className="text-[9px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
-                                Siap
-                              </span>
-                            </div>
-                          </>
-                        )}
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setInputImagePreview(null);
+                        }}
+                        variant="secondary"
+                        className="absolute top-5 right-5 p-2 px-2! py-2! shadow-md cursor-pointer z-30"
+                      >
+                        <X size={14} strokeWidth={2.5} />
+                      </Button>
+                      <div className="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-xs border border-zinc-200/60 px-3 py-2 rounded-xl text-left flex items-center justify-between z-30">
+                        <span className="text-[10px] font-medium text-zinc-700">
+                          Gambar Siap Diracik AI
+                        </span>
+                        <span className="text-[9px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                          Siap
+                        </span>
                       </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center gap-4">
-                        <div
-                          className={`w-40 h-40 lg:w-56 lg:h-56 flex items-center justify-center select-none mix-blend-multiply transition-all duration-200 ${
-                            isDragging ? "scale-105 opacity-50" : "opacity-25"
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <div
+                        className={`w-40 h-40 lg:w-56 lg:h-56 flex items-center justify-center select-none mix-blend-multiply transition-all duration-200 ${
+                          isDragging ? "scale-105 opacity-50" : "opacity-25"
+                        }`}
+                      >
+                        <Lottie
+                          animationData={bot}
+                          loop={true}
+                          className="w-full h-full"
+                        />
+                      </div>
+                      <div className="space-y-1 max-w-xs relative z-10">
+                        <h3
+                          className={`text-xs font-medium transition-colors ${
+                            isDragging ? "text-emerald-600" : "text-[#1A1A1A]"
                           }`}
                         >
-                          <Lottie
-                            animationData={bot}
-                            loop={true}
-                            className="w-full h-full"
-                          />
-                        </div>
-                        <div className="space-y-1 max-w-xs relative z-10">
-                          <h3
-                            className={`text-xs font-medium transition-colors ${
-                              isDragging ? "text-emerald-600" : "text-[#1A1A1A]"
-                            }`}
-                          >
-                            {isDragging
-                              ? "Lepaskan Gambar Sekarang!"
-                              : "Tarik & Jatuhkan Foto Kulinermu"}
-                          </h3>
-                          <p className="text-[10px] text-zinc-400 font-medium">
-                            Semua Format Gambar Didukung (JPEG, PNG, WebP, dll)
-                          </p>
-                        </div>
+                          {isDragging
+                            ? "Lepaskan Gambar Sekarang!"
+                            : "Tarik & Jatuhkan Foto Kulinermu"}
+                        </h3>
+                        <p className="text-[10px] text-zinc-400 font-medium">
+                          Semua Format Gambar Didukung (JPEG, PNG, WebP, dll)
+                        </p>
                       </div>
-                    )}
-                  </motion.div>
-                )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         </div>
