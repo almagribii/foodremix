@@ -112,7 +112,7 @@ export default function RecipeOptionCard({
             {option.ingredientsUsed.slice(0, 4).map((ing, i) => (
               <span
                 key={i}
-                className="text-[8px] font-medium px-1.5 py-0.5 bg-white border border-zinc-200 text-zinc-600 rounded-md truncate max-w-[80px]"
+                className="text-[8px] font-medium px-1.5 py-0.5 bg-white border border-zinc-200 text-zinc-600 rounded-md truncate max-w-20"
               >
                 {ing}
               </span>

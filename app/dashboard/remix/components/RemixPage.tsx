@@ -70,12 +70,16 @@ export default function RemixAreaPage() {
     null,
   );
 
-  const [inputImagePreview, setInputImagePreview] = useState<string | null>(null);
+  const [inputImagePreview, setInputImagePreview] = useState<string | null>(
+    null,
+  );
 
   const [isDragging, setIsDragging] = useState(false);
 
   const [recipeOptions, setRecipeOptions] = useState<RecipeData[] | null>(null);
-  const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(
+    null,
+  );
   const [selectedOption, setSelectedOption] = useState<RecipeData | null>(null);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -245,7 +249,10 @@ export default function RemixAreaPage() {
     if (!chatInput.trim() || !selectedOption || chatLoading) return;
 
     const userMessage = chatInput.trim();
-    setChatMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setChatMessages((prev) => [
+      ...prev,
+      { role: "user", content: userMessage },
+    ]);
     setChatInput("");
     setChatLoading(true);
 
@@ -269,15 +276,17 @@ export default function RemixAreaPage() {
       if (res.ok) {
         setChatMessages((prev) => [
           ...prev,
-          { role: "assistant", content: data.answer || "Maaf, tidak ada jawaban." },
+          {
+            role: "assistant",
+            content: data.answer || "Maaf, tidak ada jawaban.",
+          },
         ]);
       } else {
         setChatMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content:
-              data.error || "Maaf, gagal mendapatkan jawaban dari AI.",
+            content: data.error || "Maaf, gagal mendapatkan jawaban dari AI.",
           },
         ]);
       }
@@ -391,7 +400,7 @@ export default function RemixAreaPage() {
         </div>
 
         <div className="lg:col-span-7 xl:col-span-8">
-          <div className="w-full min-h-130 bg-white border border-zinc-200 rounded-2xl overflow-hidden relative shadow-sm flex flex-col">
+          <div className="w-full min-h-160 bg-white border border-zinc-200 rounded-2xl overflow-hidden relative shadow-sm flex flex-col">
             <AnimatePresence mode="wait">
               {loading && !inputImagePreview && !recipeOptions && (
                 <motion.div
@@ -479,15 +488,28 @@ export default function RemixAreaPage() {
                     />
 
                     <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-zinc-200">
-                      <Button
-                        onClick={handleBackToOptions}
-                        variant="primary"
-                        disabled={loading}
-                      >
-                        <span className="flex items-center gap-2">
-                          <X size={14} /> Opsi Lain
-                        </span>
-                      </Button>
+                      {recipeOptions && (
+                        <Button
+                          onClick={handleBackToOptions}
+                          variant="primary"
+                          disabled={loading}
+                        >
+                          <span className="flex items-center gap-2">
+                            <X size={14} /> Opsi Lain
+                          </span>
+                        </Button>
+                      )}
+                      {!recipeOptions && (
+                        <Button
+                          onClick={handleResetSession}
+                          variant="primary"
+                          disabled={loading}
+                        >
+                          <span className="flex items-center gap-2">
+                            <X size={14} /> Kembali ke Input
+                          </span>
+                        </Button>
+                      )}
                       <Button
                         onClick={() => setShowChat(true)}
                         variant="primary"
@@ -497,17 +519,25 @@ export default function RemixAreaPage() {
                           <MessageCircle size={14} /> Tanya Resep Ini
                         </span>
                       </Button>
-                      <Button
-                        onClick={handleConfirmAndSave}
-                        variant={isSaved ? "secondary" : "accent"}
-                        loading={loading}
-                        disabled={isSaved || loading}
-                      >
-                        <span className="flex items-center gap-2">
-                          <CheckCircle2 size={14} />{" "}
-                          {isSaved ? "Tersimpan!" : "Simpan ke Riwayat"}
-                        </span>
-                      </Button>
+                      {recipeOptions && !isSaved && (
+                        <Button
+                          onClick={handleConfirmAndSave}
+                          variant="accent"
+                          loading={loading}
+                          disabled={loading}
+                        >
+                          <span className="flex items-center gap-2">
+                            <CheckCircle2 size={14} /> Simpan ke Riwayat
+                          </span>
+                        </Button>
+                      )}
+                      {recipeOptions && isSaved && (
+                        <Button variant="secondary" disabled={true}>
+                          <span className="flex items-center gap-2">
+                            <CheckCircle2 size={14} /> Tersimpan!
+                          </span>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -540,8 +570,8 @@ export default function RemixAreaPage() {
                           Ajukan pertanyaan tentang resep ini...
                         </p>
                         <p className="text-[10px] text-zinc-300 mt-1">
-                          Contoh: &ldquo;Bisa ganti cabai dengan apa?&rdquo; atau
-                          &ldquo;Lebih detail langkahnya?&rdquo;
+                          Contoh: &ldquo;Bisa ganti cabai dengan apa?&rdquo;
+                          atau &ldquo;Lebih detail langkahnya?&rdquo;
                         </p>
                       </div>
                     ) : (
@@ -549,7 +579,9 @@ export default function RemixAreaPage() {
                         <div
                           key={idx}
                           className={`flex ${
-                            msg.role === "user" ? "justify-end" : "justify-start"
+                            msg.role === "user"
+                              ? "justify-end"
+                              : "justify-start"
                           }`}
                         >
                           <div
@@ -782,9 +814,7 @@ export default function RemixAreaPage() {
           <div className="flex flex-wrap gap-3 pt-2">
             <div className="inline-flex items-center gap-2 bg-white border border-zinc-200 rounded-xl px-4 py-2.5 shadow-sm">
               <Wallet size={12} className="text-zinc-400" />
-              <span className="text-[10px] text-zinc-500">
-                Total Hemat
-              </span>
+              <span className="text-[10px] text-zinc-500">Total Hemat</span>
               <span className="text-xs font-bold text-[#1A1A1A]">
                 Rp{" "}
                 {histories
@@ -794,9 +824,7 @@ export default function RemixAreaPage() {
             </div>
             <div className="inline-flex items-center gap-2 bg-white border border-zinc-200 rounded-xl px-4 py-2.5 shadow-sm">
               <Leaf size={12} className="text-emerald-500" />
-              <span className="text-[10px] text-zinc-500">
-                Total CO₂
-              </span>
+              <span className="text-[10px] text-zinc-500">Total CO₂</span>
               <span className="text-xs font-bold text-emerald-600">
                 {histories
                   .reduce((acc, h) => acc + (h.carbonPrevented || 0), 0)
