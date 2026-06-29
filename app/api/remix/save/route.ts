@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
     const body = await request.json();
-    const { recipeName, ingredientsUsed, instructions, estimatedCalories } = body;
+    const { recipeName, ingredientsUsed, instructions, moneySaved, carbonPrevented } = body;
 
     if (!recipeName) {
       return NextResponse.json(
@@ -41,16 +41,16 @@ export async function POST(request: NextRequest) {
         recipeName,
         ingredientsUsed: ingredientsUsed || [],
         instructions: instructions || [],
-        moneySaved: 0,
-        carbonPrevented: 0,
+        moneySaved: moneySaved || 0,
+        carbonPrevented: carbonPrevented || 0,
       },
     });
 
     triggerRemixNotification(
       userProfile.id,
       recipeName,
-      0,
-      0,
+      moneySaved || 0,
+      carbonPrevented || 0,
     ).catch(() => {});
 
     return NextResponse.json(

@@ -226,7 +226,8 @@ export default function RemixAreaPage() {
           recipeName: selectedOption.recipeName,
           ingredientsUsed: selectedOption.ingredientsUsed,
           instructions: selectedOption.instructions,
-          estimatedCalories: selectedOption.estimatedCalories,
+          moneySaved: selectedOption.moneySaved,
+          carbonPrevented: selectedOption.carbonPrevented,
         }),
       });
 
