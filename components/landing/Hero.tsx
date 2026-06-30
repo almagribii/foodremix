@@ -35,14 +35,13 @@ const taglineVariants: Variants = {
 export default function Hero() {
   return (
     <section className="relative bg-[#FBFBFA] overflow-hidden pt-20 pb-28 flex flex-col items-center justify-center text-center min-h-[95vh] z-0">
-      
       {/* ─── 1. BACKGROUND PATTERN BATIK MINI ─── */}
-      <div 
+      <div
         className="absolute inset-0 pointer-events-none opacity-[0.06] select-none z-0"
         style={{
-          backgroundImage: "url('/bg-pattern.jpeg')", 
+          backgroundImage: "url('/bg-pattern.jpeg')",
           backgroundRepeat: "repeat",
-          backgroundSize: "240px auto", 
+          backgroundSize: "240px auto",
         }}
       />
 
@@ -57,7 +56,13 @@ export default function Hero() {
             className={`absolute ${item.size} opacity-40`}
             style={{ left: item.left, top: item.top }}
             animate={{ x: item.xRange, y: item.yRange, rotate: [0, 360] }}
-            transition={{ type: "tween", duration: item.duration, delay: item.delay, repeat: Infinity, ease: "easeInOut" }}
+            transition={{
+              type: "tween",
+              duration: item.duration,
+              delay: item.delay,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
           >
             {item.emoji}
           </motion.div>
@@ -66,17 +71,16 @@ export default function Hero() {
 
       {/* KONTEN UTAMA HERO */}
       <div className="relative max-w-4xl mx-auto px-6 flex flex-col items-center z-20">
-        
         {/* LOGO EMBLEM PERSEGI */}
-        <motion.div 
+        <motion.div
           className="w-28 h-28 rounded-[28px] bg-gradient-to-b from-white via-[#F5F5F3] to-[#E6E6E3] p-1.5 shadow-[0_20px_40px_rgba(234,179,8,0.08)] border border-amber-500/15 flex flex-col items-center justify-center mb-8 relative group cursor-pointer"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <div className="absolute inset-1 rounded-[24px] border border-amber-400/30 bg-gradient-to-b from-transparent to-black/[0.01]" />
-          
-          <motion.div 
+
+          <motion.div
             className="w-16 h-16 relative rounded-full overflow-hidden border border-stone-200/60 shadow-inner"
             animate={{ rotate: 360 }}
             whileHover={{ scale: 1.05 }}
@@ -84,13 +88,13 @@ export default function Hero() {
               rotate: {
                 repeat: Infinity,
                 ease: "linear",
-                duration: 25, 
+                duration: 25,
               },
-              scale: { duration: 0.2 }
+              scale: { duration: 0.2 },
             }}
           >
-            <Image 
-              src="/logo-food.png" 
+            <Image
+              src="/logo-food.png"
               alt="Foodremix Main Logo"
               fill
               sizes="64px"
@@ -104,8 +108,7 @@ export default function Hero() {
         </motion.div>
 
         <div className="space-y-6 max-w-3xl flex flex-col items-center mt-2">
-          
-          <motion.span 
+          <motion.span
             variants={taglineVariants}
             initial="hidden"
             animate="visible"
@@ -115,7 +118,11 @@ export default function Hero() {
           </motion.span>
 
           <h1 className="italic text-5xl sm:text-7xl font-normal text-stone-800 tracking-tight leading-[1.02] select-none font-serif text-center">
-            Masak <span className="font-extrabold text-[#c29b38] -ml-1 sm:-ml-2 relative">H</span>emat
+            Masak{" "}
+            <span className="font-extrabold text-[#c29b38] -ml-1 sm:-ml-2 relative">
+              H
+            </span>
+            emat
             <br />
             <span className="relative inline-block text-stone-700 font-extrabold tracking-tighter not-italic mt-1">
               Tanpa
@@ -126,51 +133,51 @@ export default function Hero() {
           </h1>
 
           <div className="w-40 h-8 relative flex items-center justify-center my-1 select-none filter drop-shadow-[0_0_8px_rgba(194,155,56,0.5)]">
-            <svg 
-              viewBox="0 0 160 30" 
-              fill="none" 
+            <svg
+              viewBox="0 0 160 30"
+              fill="none"
               xmlns="http://www.w3.org/2000/svg"
               className="w-full h-full overflow-visible"
             >
-              <path 
-                d="M10 15C30 5, 50 25, 70 15C90 5, 110 25, 130 15C140 10, 145 12, 150 15" 
-                stroke="#292524" 
-                strokeWidth="2.5" 
+              <path
+                d="M10 15C30 5, 50 25, 70 15C90 5, 110 25, 130 15C140 10, 145 12, 150 15"
+                stroke="#292524"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 opacity="0.8"
               />
-              <path 
-                d="M10 15C30 5, 50 25, 70 15C90 5, 110 25, 130 15C140 10, 145 12, 150 15" 
-                stroke="#eab308" 
-                strokeWidth="1.2" 
+              <path
+                d="M10 15C30 5, 50 25, 70 15C90 5, 110 25, 130 15C140 10, 145 12, 150 15"
+                stroke="#eab308"
+                strokeWidth="1.2"
                 strokeLinecap="round"
               />
             </svg>
-            <div className="absolute text-[9px] text-[#292524] font-bold bg-[#FBFBFA] px-1 shadow-[0_0_4px_#eab308] rounded-full border border-amber-500/30">✦</div>
+            <div className="absolute text-[9px] text-[#292524] font-bold bg-[#FBFBFA] px-1 shadow-[0_0_4px_#eab308] rounded-full border border-amber-500/30">
+              ✦
+            </div>
           </div>
 
           {/* Deskripsi */}
           <p className="text-xs sm:text-sm text-stone-400 max-w-md mx-auto font-medium leading-relaxed tracking-wide text-center">
-            Platform AI premium untuk anak kost, hemat budget harian, dan eco-friendly untuk bumi kita.
+            Platform AI premium untuk anak kost, hemat budget harian, dan
+            eco-friendly untuk bumi kita.
           </p>
         </div>
 
-        {/* TOMBOL AKSI */}
-        <motion.div 
+        <motion.div
           className="mt-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <Button 
-
-          >
-            Mulai Gratis Sekarang
-          </Button>
+          <a href="/login" className="inline-block cursor-pointer">
+            <Button>Mulai Gratis Sekarang</Button>
+          </a>
         </motion.div>
 
         {/* MOCKUP HP SMARTPHONE INTERAKTIF */}
-        <motion.div 
+        <motion.div
           className="w-full max-w-[320px] mt-16 bg-[#121211] p-3 rounded-[48px] shadow-[0_35px_80px_rgba(161,126,38,0.1)] border border-stone-800 relative flex flex-col overflow-hidden"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -191,26 +198,38 @@ export default function Hero() {
                     <Bot size={16} className="animate-pulse" />
                   </div>
                   <div>
-                    <h3 className="font-black text-xs text-stone-800 tracking-tight">Foodremix AI</h3>
+                    <h3 className="font-black text-xs text-stone-800 tracking-tight">
+                      Foodremix AI
+                    </h3>
                     <p className="text-[9px] text-emerald-600 font-bold flex items-center gap-0.5">
-                      <span className="w-1 h-1 bg-emerald-500 rounded-full inline-block animate-ping" /> Smart Agent
+                      <span className="w-1 h-1 bg-emerald-500 rounded-full inline-block animate-ping" />{" "}
+                      Smart Agent
                     </p>
                   </div>
                 </div>
-                <div className="p-1.5 bg-white rounded-lg border border-stone-200 text-stone-400 shadow-xs"><Layers size={12} /></div>
+                <div className="p-1.5 bg-white rounded-lg border border-stone-200 text-stone-400 shadow-xs">
+                  <Layers size={12} />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <span className="text-[9px] uppercase font-bold tracking-wider text-stone-400">Bahan di Kulkas</span>
+                <span className="text-[9px] uppercase font-bold tracking-wider text-stone-400">
+                  Bahan di Kulkas
+                </span>
                 <div className="grid grid-cols-3 gap-1.5 text-[11px]">
                   {[
                     { emoji: "🥚", name: "Telur" },
                     { emoji: "🍜", name: "Mie" },
-                    { emoji: "🥬", name: "Sawi" }
+                    { emoji: "🥬", name: "Sawi" },
                   ].map((item) => (
-                    <div key={item.name} className="bg-white border border-stone-200/80 py-2 px-1 rounded-xl text-center font-bold text-stone-700 shadow-xs flex flex-col items-center gap-0.5">
+                    <div
+                      key={item.name}
+                      className="bg-white border border-stone-200/80 py-2 px-1 rounded-xl text-center font-bold text-stone-700 shadow-xs flex flex-col items-center gap-0.5"
+                    >
                       <span className="text-base">{item.emoji}</span>
-                      <span className="text-[10px] text-stone-500">{item.name}</span>
+                      <span className="text-[10px] text-stone-500">
+                        {item.name}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -225,82 +244,118 @@ export default function Hero() {
                 <div className="flex justify-between items-start">
                   <div className="space-y-0.5">
                     <span className="text-[9px] uppercase tracking-widest text-amber-600 font-black flex items-center gap-1">
-                      <Flame size={10} className="fill-amber-500 text-amber-500 animate-bounce" /> Menu Teratas
+                      <Flame
+                        size={10}
+                        className="fill-amber-500 text-amber-500 animate-bounce"
+                      />{" "}
+                      Menu Teratas
                     </span>
-                    <h4 className="font-black text-sm text-stone-800 leading-tight">Mie Goreng Jepang</h4>
+                    <h4 className="font-black text-sm text-stone-800 leading-tight">
+                      Mie Goreng Jepang
+                    </h4>
                   </div>
-                  <span className="text-[9px] bg-amber-50 text-amber-700 font-bold px-1.5 py-0.5 rounded border border-amber-500/10">98% Match</span>
+                  <span className="text-[9px] bg-amber-50 text-amber-700 font-bold px-1.5 py-0.5 rounded border border-amber-500/10">
+                    98% Match
+                  </span>
                 </div>
                 <p className="text-[11px] text-stone-400 font-medium leading-relaxed">
-                  Kombinasi mi instan kenyal, irisan telur gurih, dan kesegaran sawi hijau.
+                  Kombinasi mi instan kenyal, irisan telur gurih, dan kesegaran
+                  sawi hijau.
                 </p>
                 <div className="border-t border-stone-100 pt-2 flex justify-between items-center text-[11px]">
-                  <span className="font-bold text-stone-500">Estimasi Biaya</span>
-                  <span className="font-black text-[#a17e26] text-xs">Rp 8.000</span>
+                  <span className="font-bold text-stone-500">
+                    Estimasi Biaya
+                  </span>
+                  <span className="font-black text-[#a17e26] text-xs">
+                    Rp 8.000
+                  </span>
                 </div>
               </div>
             </div>
-
           </div>
         </motion.div>
-
       </div>
 
       {/* ─── 3. SECTION DIVIDER: GLOWING WAVE (POLA BATIK COKELAT MENYATU DINAMIS) ─── */}
-      <div 
+      <div
         className="absolute bottom-0 left-0 right-0 w-full overflow-hidden select-none z-30 filter drop-shadow-[0_-8px_20px_rgba(234,179,8,0.25)]"
         style={{
-          marginBottom: "-3px" 
+          marginBottom: "-3px",
         }}
       >
-        <svg 
-          viewBox="0 0 1440 120" 
-          fill="none" 
+        <svg
+          viewBox="0 0 1440 120"
+          fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="w-full h-auto overflow-visible"
           preserveAspectRatio="none"
         >
           <defs>
-            <pattern id="batik-pattern-wave" width="240" height="240" patternUnits="userSpaceOnUse">
+            <pattern
+              id="batik-pattern-wave"
+              width="240"
+              height="240"
+              patternUnits="userSpaceOnUse"
+            >
               <rect width="240" height="240" fill="#1C1614" />
-              <image href="/bg-pattern2.png" width="240" height="240" className="opacity-[0.2]" style={{ mixBlendMode: 'overlay' }} />
+              <image
+                href="/bg-pattern2.png"
+                width="240"
+                height="240"
+                className="opacity-[0.2]"
+                style={{ mixBlendMode: "overlay" }}
+              />
             </pattern>
           </defs>
 
-          <path 
-            d="M0,120 L0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65 L1440,120 Z" 
-            fill="url(#batik-pattern-wave)" 
-          />
-          
-          <motion.path 
-            d="M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65" 
-            stroke="#1C1917" 
-            strokeWidth="2.5" 
-            strokeLinecap="round"
-            opacity="0.95"
-            animate={{ d: [
-              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65",
-              "M0,70 C120,50, 240,80, 360,70 C480,50, 600,80, 720,70 C840,50, 960,80, 1080,70 C1200,50, 1320,80, 1440,70",
-              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65"
-            ]}}
-            transition={{ type: "tween", duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          <path
+            d="M0,120 L0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65 L1440,120 Z"
+            fill="url(#batik-pattern-wave)"
           />
 
-          <motion.path 
-            d="M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65" 
-            stroke="#eab308" 
-            strokeWidth="1.2" 
+          <motion.path
+            d="M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65"
+            stroke="#1C1917"
+            strokeWidth="2.5"
             strokeLinecap="round"
-            animate={{ d: [
-              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65",
-              "M0,70 C120,50, 240,80, 360,70 C480,50, 600,80, 720,70 C840,50, 960,80, 1080,70 C1200,50, 1320,80, 1440,70",
-              "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65"
-            ]}}
-            transition={{ type: "tween", duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.08 }}
+            opacity="0.95"
+            animate={{
+              d: [
+                "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65",
+                "M0,70 C120,50, 240,80, 360,70 C480,50, 600,80, 720,70 C840,50, 960,80, 1080,70 C1200,50, 1320,80, 1440,70",
+                "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65",
+              ],
+            }}
+            transition={{
+              type: "tween",
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+
+          <motion.path
+            d="M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65"
+            stroke="#eab308"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            animate={{
+              d: [
+                "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65",
+                "M0,70 C120,50, 240,80, 360,70 C480,50, 600,80, 720,70 C840,50, 960,80, 1080,70 C1200,50, 1320,80, 1440,70",
+                "M0,65 C120,45, 240,85, 360,65 C480,45, 600,85, 720,65 C840,45, 960,85, 1080,65 C1200,45, 1320,85, 1440,65",
+              ],
+            }}
+            transition={{
+              type: "tween",
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.08,
+            }}
           />
         </svg>
       </div>
-
     </section>
   );
 }

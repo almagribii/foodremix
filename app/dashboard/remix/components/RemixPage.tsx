@@ -488,56 +488,70 @@ export default function RemixAreaPage() {
                       mode={activeMode}
                     />
 
-                    <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-zinc-200">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6 pt-4 border-t border-zinc-200 w-full">
                       {recipeOptions && (
-                        <Button
-                          onClick={handleBackToOptions}
-                          variant="primary"
-                          disabled={loading}
-                        >
-                          <span className="flex items-center gap-2">
-                            <X size={14} /> Opsi Lain
-                          </span>
-                        </Button>
+                        <div>
+                          <Button
+                            onClick={handleBackToOptions}
+                            variant="primary"
+                            disabled={loading}
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              <X size={14} /> Opsi Lain
+                            </span>
+                          </Button>
+                        </div>
                       )}
+
                       {!recipeOptions && (
+                        <div>
+                          <Button
+                            onClick={handleResetSession}
+                            variant="primary"
+                            disabled={loading}
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              <X size={14} /> Kembali ke Input
+                            </span>
+                          </Button>
+                        </div>
+                      )}
+
+                      <div>
                         <Button
-                          onClick={handleResetSession}
+                          onClick={() => setShowChat(true)}
                           variant="primary"
                           disabled={loading}
                         >
-                          <span className="flex items-center gap-2">
-                            <X size={14} /> Kembali ke Input
+                          <span className="flex items-center justify-center gap-2">
+                            <MessageCircle size={14} /> Tanya Resep Ini
                           </span>
                         </Button>
-                      )}
-                      <Button
-                        onClick={() => setShowChat(true)}
-                        variant="primary"
-                        disabled={loading}
-                      >
-                        <span className="flex items-center gap-2">
-                          <MessageCircle size={14} /> Tanya Resep Ini
-                        </span>
-                      </Button>
+                      </div>
+
                       {recipeOptions && !isSaved && (
-                        <Button
-                          onClick={handleConfirmAndSave}
-                          variant="accent"
-                          loading={loading}
-                          disabled={loading}
-                        >
-                          <span className="flex items-center gap-2">
-                            <CheckCircle2 size={14} /> Simpan ke Riwayat
-                          </span>
-                        </Button>
+                        <div>
+                          <Button
+                            onClick={handleConfirmAndSave}
+                            variant="accent"
+                            loading={loading}
+                            disabled={loading}
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              <CheckCircle2 size={14} /> Simpan ke Riwayat
+                            </span>
+                          </Button>
+                        </div>
                       )}
+
                       {recipeOptions && isSaved && (
-                        <Button variant="secondary" disabled={true}>
-                          <span className="flex items-center gap-2">
-                            <CheckCircle2 size={14} /> Tersimpan!
-                          </span>
-                        </Button>
+                        <div>
+                          <Button variant="secondary" disabled={true}>
+                            <span className="flex items-center justify-center gap-2">
+                              <CheckCircle2 size={14} /> Tersimpan!
+                            </span>
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -599,7 +613,7 @@ export default function RemixAreaPage() {
                     )}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mt-auto">
                     <input
                       type="text"
                       value={chatInput}
