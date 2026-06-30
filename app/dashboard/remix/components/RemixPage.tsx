@@ -578,7 +578,7 @@ export default function RemixAreaPage() {
                     </button>
                   </div>
 
-                  <div className="flex-1 min-h-40 max-h-80 overflow-y-auto space-y-3 mb-4">
+                  <div className="flex-1 min-h-120 max-h-80 overflow-y-auto space-y-3 mb-4">
                     {chatMessages.length === 0 ? (
                       <div className="text-center py-8">
                         <p className="text-xs text-zinc-400 font-medium">
