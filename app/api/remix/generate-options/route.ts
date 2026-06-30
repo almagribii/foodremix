@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: "Server error, Mohon coba lagi sesaat.",
+        error: "Server Penuh, Mohon coba lagi sesaat.",
         message: errorMessage,
       },
       { status: 500 },
